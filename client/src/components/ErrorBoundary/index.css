@@ -1,0 +1,28 @@
+.error-boundary {
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xl);
+}
+
+.error-boundary-card {
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.error-boundary-title {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--error-color);
+}
+
+.error-boundary-message {
+  font-size: var(--font-size-sm);
+  line-height: 1.6;
+}

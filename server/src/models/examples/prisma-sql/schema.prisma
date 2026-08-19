@@ -1,0 +1,96 @@
+// Equivalent Prisma schema for PostgreSQL (or any SQL DB).
+// Install: npm install @prisma/client prisma
+// Init:    npx prisma init
+// Migrate: npx prisma migrate dev
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  email     String   @unique
+  password  String
+  role      Role     @default(USER)
+  status    Status   @default(HIDDEN)
+  theme     Theme    @default(LIGHT)
+  bio       String   @default("")
+  avatar    String?
+  createdAt DateTime @default(now())
+  lastSeen  DateTime @default(now())
+
+  posts    Post[]
+  comments Comment[]
+  likes    Like[]
+
+  @@index([username])
+  @@index([email])
+}
+
+model Post {
+  id        String     @id @default(cuid())
+  title     String     @db.VarChar(200)
+  content   String     @db.Text
+  status    PostStatus @default(DRAFT)
+  views     Int        @default(0)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  author   User      @relation(fields: [authorId], references: [id])
+  authorId String
+
+  tags     PostTag[]
+  likes    Like[]
+  comments Comment[]
+
+  @@index([status, createdAt(sort: Desc)])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+
+  author   User   @relation(fields: [authorId], references: [id])
+  authorId String
+
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId String
+}
+
+model Tag {
+  id    String    @id @default(cuid())
+  name  String    @unique
+  posts PostTag[]
+}
+
+// Explicit many-to-many join table for Post <-> Tag
+model PostTag {
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId String
+  tag    Tag    @relation(fields: [tagId], references: [id])
+  tagId  String
+
+  @@id([postId, tagId])
+}
+
+model Like {
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId String
+
+  @@id([userId, postId])
+}
+
+enum Role       { USER ADMIN MODERATOR }
+enum Status     { ACTIVE INACTIVE AWAY HIDDEN }
+enum Theme      { LIGHT DARK SYSTEM }
+enum PostStatus { DRAFT PUBLISHED ARCHIVED }
