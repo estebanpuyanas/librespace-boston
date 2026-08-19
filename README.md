@@ -137,14 +137,6 @@ it the privileges it needs at runtime).
 
 ## Testing Strategy
 
-### E2E — `testing/cypress/`
-
-Cypress, against the real running app. `e2e/auth.cy.ts` and `e2e/posts.cy.ts`
-are leftover from the template's example domain and need real specs once
-there's an actual UI to test — not touched in this infra pass.
-
-### Backend
-
 `backend/src/test/kotlin/` — Ktor's `testApplication` test host + `kotlin.test`.
 Run: `cd backend && ./gradlew test`.
 
@@ -152,34 +144,82 @@ Run: `cd backend && ./gradlew test`.
 
 ## Running Locally
 
-**Prerequisites:** JVM 21+, Node 18+, `uv`, Podman + `podman-compose`.
+**Prerequisites:** JVM 21+ (Gradle itself is *not* required — `backend/gradlew`
+is self-contained and downloads its own pinned Gradle on first run), Node
+18+, `uv`, Podman + `podman-compose`.
+
+Run `make help` (or bare `make`) at any point to list every available
+target with a one-line description.
+
+### 1. Clone and enter the repo
 
 ```bash
-make setup       # npm install + gradle deps + uv sync
-make infra-up    # start ramalama + chroma containers
-make backend-dev # ./gradlew run --continuous
-make web-dev     # vite dev server
-make mobile-dev  # expo start
+git clone <repo-url> && cd freespace-boston
 ```
 
-Backend: `http://localhost:8081`
-Web: `http://localhost:5173`
-RamaLama: `http://localhost:8080`
-Chroma: `http://localhost:8000`
+### 2. Copy environment files
 
-### Environment Variables
+Copy each `.env.example` to `.env` in the package that needs it — do this
+**before** running anything, since `backend/.env`'s `PORT=8081` is what keeps
+the Ktor server off RamaLama's port (8080):
 
-Copy each `.env.example` to `.env` in the package that needs it:
+```bash
+cp backend/.env.example backend/.env
+cp webclient/.env.example webclient/.env
+cp mobile/.env.example mobile/.env
+cp data-service/.env.example data-service/.env
+```
 
 | Variable | Where | Purpose |
 |---|---|---|
-| `PORT` | `backend/.env` | Port the Ktor server listens on (8081) |
+| `PORT` | `backend/.env` | Port the Ktor server listens on (8081 — not 8080, which RamaLama uses) |
 | `CLIENT_URL` | `backend/.env` | CORS origin (default `http://localhost:5173`) |
-| `ANTHROPIC_API_KEY` | `backend/.env` | Hosted LLM (primary) — leave blank to force RamaLama |
+| `ANTHROPIC_API_KEY` | `backend/.env` | Hosted LLM (primary) — leave blank to force the RamaLama fallback |
 | `RAMALAMA_URL` / `RAMALAMA_MODEL` | `backend/.env` | Local LLM fallback |
 | `CHROMA_URL` | `backend/.env`, `data-service/.env` | Vector search |
 | `VITE_API_URL` | `webclient/.env` | Backend URL for Axios |
 | `EXPO_PUBLIC_API_URL` | `mobile/.env` | Backend URL for the RN app |
+
+Note: unlike Node/Vite/Expo/Python, the JVM doesn't auto-load `.env` files —
+`backend/`'s `.env` is read via `dotenv-kotlin` (see `Env.kt`), falling back
+to it only when a real environment variable isn't already set.
+
+### 3. Install dependencies
+
+```bash
+make setup   # npm install (webclient/mobile/shared) + gradle deps + uv sync
+```
+
+### 4. Start infra containers
+
+```bash
+make infra-up   # ramalama (localhost:8080) + chroma (localhost:8000)
+```
+
+First run pulls/builds the RamaLama image and, if the model volume doesn't
+already exist, downloads `llama3.2:3b` (~2GB) — do this on a good connection
+before the hackathon, not Saturday morning.
+
+### 5. Run the ETL (one-time, before you need real data)
+
+```bash
+make ingest   # joins the 5 datasets, embeds spot descriptions into chroma
+```
+
+### 6. Run the app, each in its own terminal
+
+```bash
+make backend-dev   # Ktor, http://localhost:8081, continuous reload
+make web-dev        # Vite dev server, http://localhost:5173
+make mobile-dev      # Expo dev server — scan the QR code with Expo Go
+```
+
+| Service | URL |
+|---|---|
+| Backend | `http://localhost:8081` |
+| Web | `http://localhost:5173` |
+| RamaLama | `http://localhost:8080` |
+| Chroma | `http://localhost:8000` |
 
 ### Podman
 

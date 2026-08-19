@@ -1,42 +1,46 @@
-.PHONY: setup infra-up infra-down backend-dev web-dev mobile-dev generate ingest test lint clean
+.PHONY: help setup infra-up infra-down generate ingest backend-dev web-dev mobile-dev test lint clean
 
-setup:
+.DEFAULT_GOAL := help
+
+help: ## Show this help
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}'
+
+setup: ## Install everything: npm workspaces + gradle deps + uv sync
 	npm install
 	cd backend && ./gradlew dependencies
 	cd data-service && uv sync
+	git config core.hooksPath .githooks
 
-infra-up:
+infra-up: ## Start the ramalama + chroma containers (podman-compose up -d)
 	podman-compose up -d
 
-infra-down:
+infra-down: ## Stop containers, keep volumes (model stays cached)
 	podman-compose down
 
-# Regenerate the shared TS client from backend/openapi.yaml
-generate:
+generate: ## Regenerate the shared TS client from backend/openapi.yaml
 	npm run generate --workspace=shared
 
-# One-time: join the 5 datasets, embed into chroma (see data-service/README.md)
-ingest:
+ingest: ## One-time: join the 5 datasets, embed into chroma (see data-service/README.md)
 	cd data-service && uv run etl.py && uv run ingest.py
 
-backend-dev:
+backend-dev: ## Run the Ktor backend with continuous reload (localhost:8081)
 	cd backend && ./gradlew run --continuous
 
-web-dev:
+web-dev: ## Run the Vite dev server for webclient (localhost:5173)
 	npm run dev --workspace=webclient
 
-mobile-dev:
+mobile-dev: ## Run the Expo dev server for mobile (scan QR with Expo Go)
 	npm run start --workspace=mobile
 
-test:
+test: ## Run backend tests + E2E tests
 	cd backend && ./gradlew test
 	npm run test:e2e
 
-lint:
+lint: ## Lint backend (ktlint) + webclient/mobile (eslint)
 	cd backend && ./gradlew ktlintCheck
 	npm run lint
 
-clean:
+clean: ## Wipe containers+volumes, gradle build dir, web/mobile build output
 	podman-compose down -v
 	cd backend && ./gradlew clean
 	rm -rf webclient/dist mobile/.expo

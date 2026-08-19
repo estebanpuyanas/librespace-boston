@@ -56,6 +56,12 @@ cd mobile && npx tsc --noEmit
 - After any change to it, regenerate: `npm run generate --workspace=shared`.
 - Never hand-edit `shared/generated/` — it's gitignored and fully
   reproducible from the spec.
+- CI (`.github/workflows/ci.yml`) regenerates the client and typechecks
+  `webclient`/`mobile` against it on every push/PR — that's the real gate
+  against drift. `make setup` also points git at `.githooks/` (pre-commit
+  validates the spec parses if it's staged; post-merge auto-regenerates
+  after a pull that touches it) as a local convenience, not a substitute
+  for CI.
 
 ### Backend (Kotlin/Ktor)
 - Currently just `Application.kt` (server setup, CORS, `/health`) and
@@ -164,6 +170,11 @@ cd mobile && npx tsc --noEmit
   `ollama://llama3.2:3b` — that's RamaLama's syntax for sourcing a model from
   Ollama's library, not Ollama itself. Don't add an `ollama` service; RamaLama
   already serves an OpenAI-compatible API on port 8080.
+- **Mobile is pinned to port 8082.** The Ktor backend listens on 8081
+  (`backend/openapi.yaml`'s `servers` entry) and Expo also defaults to 8081,
+  so running `make backend-dev` and `make mobile-dev` together collides.
+  `mobile/package.json`'s `start`/`android`/`ios`/`web` scripts pass
+  `--port 8082` to avoid the interactive "use another port?" prompt.
 - **Podman project name is pinned.** `podman-compose.yml` has an explicit
   `name: freespace-boston`. Don't remove it — without it, container/volume
   names derive from the clone directory name, and the model volume silently

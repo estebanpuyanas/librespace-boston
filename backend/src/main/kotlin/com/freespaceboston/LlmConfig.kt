@@ -13,10 +13,11 @@ data class LlmConfig(
     val hasHostedLlm: Boolean get() = !anthropicApiKey.isNullOrBlank()
 
     companion object {
-        fun fromEnv(): LlmConfig = LlmConfig(
-            anthropicApiKey = System.getenv("ANTHROPIC_API_KEY"),
-            ramalamaUrl = System.getenv("RAMALAMA_URL") ?: "http://localhost:8080",
-            ramalamaModel = System.getenv("RAMALAMA_MODEL") ?: "llama3.2:3b",
-        )
+        fun fromEnv(): LlmConfig =
+            LlmConfig(
+                anthropicApiKey = envVar("ANTHROPIC_API_KEY"),
+                ramalamaUrl = envVar("RAMALAMA_URL") ?: "http://localhost:8080",
+                ramalamaModel = envVar("RAMALAMA_MODEL") ?: "llama3.2:3b",
+            )
     }
 }

@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Sanity-checks backend/openapi.yaml when it's staged, by regenerating the
+# shared client from it. Blocks the commit on a malformed spec — the real
+# sync check (typechecking webclient/mobile against it) runs in CI, this is
+# just a fast local trip-wire.
+set -uo pipefail
+
+if git diff --cached --name-only | grep -q '^backend/openapi\.yaml$'; then
+  echo "backend/openapi.yaml staged — validating by regenerating shared/ client..."
+  if ! npm run generate --workspace=shared --silent; then
+    echo "error: backend/openapi.yaml failed to generate a client, fix it before committing" >&2
+    exit 1
+  fi
+fi

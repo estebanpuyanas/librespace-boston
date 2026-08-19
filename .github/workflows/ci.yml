@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend:
+    name: backend (ktlint + unit tests)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Ktlint check
+        working-directory: backend
+        run: ./gradlew ktlintCheck
+
+      - name: Unit tests
+        working-directory: backend
+        run: ./gradlew test
+
+  frontend:
+    name: frontend (generate + typecheck + lint)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # shared/generated/ is gitignored and reproducible from
+      # backend/openapi.yaml (see shared/README.md). Regenerating here
+      # both proves the spec is well-formed and gives webclient/mobile
+      # a real client to typecheck against below.
+      - name: Regenerate shared TS client from backend/openapi.yaml
+        run: npm run generate --workspace=shared
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Format check
+        run: npm run format:check
+
+      # Catches drift between backend/openapi.yaml and the code that
+      # consumes the generated client (renamed/removed fields, changed
+      # response shapes, etc.) that generation alone wouldn't surface.
+      - name: Typecheck webclient against generated client
+        run: npm run type-check --workspace=webclient
+
+      - name: Typecheck mobile against generated client
+        run: npx tsc --noEmit -p mobile
