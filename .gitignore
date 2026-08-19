@@ -77,6 +77,7 @@ data-service/.venv/
 *.pyc
 data-service/raw/*
 !data-service/raw/.gitkeep
+!data-service/raw/README.md
 data-service/output/*
 !data-service/output/.gitkeep
 

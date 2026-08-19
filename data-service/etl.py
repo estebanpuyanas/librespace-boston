@@ -34,8 +34,8 @@ class Spot:
 
 
 def load_open_space() -> gpd.GeoDataFrame:
-    # TODO: gpd.read_file(config.OPEN_SPACE_CSV) or read_csv + points_from_xy,
-    # depending on whether the export is polygons or lat/lon columns.
+    # TODO: gpd.read_file(config.OPEN_SPACE_GEOJSON) — polygons, so this loads
+    # directly with geometry already parsed (see raw/README.md).
     raise NotImplementedError
 
 

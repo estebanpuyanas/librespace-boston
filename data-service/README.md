@@ -14,17 +14,19 @@ uv sync
 
 ## Before running the ETL
 
-Download the 5 CSVs from data.boston.gov (spec.md section 4) into `raw/`,
-named to match `config.py`:
+Download the 5 datasets from data.boston.gov (spec.md section 4) into `raw/`,
+named to match `config.py`. Open Space is downloaded as GeoJSON (it's
+polygon geometry); the other four are CSV (point data). See
+`raw/README.md` for the reasoning per dataset:
 
 - `wicked_free_wifi.csv`
-- `open_space.csv`
+- `open_space.geojson`
 - `park_features.csv`
 - `accessible_park_details.csv`
 - `public_trees.csv`
 
 `raw/` and `output/` are gitignored — datasets and generated output aren't
-committed.
+committed (`raw/README.md` is the one tracked exception).
 
 ## Running
 
