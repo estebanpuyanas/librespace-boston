@@ -1,16 +1,13 @@
 {
   "name": "shared",
   "version": "1.0.0",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "private": true,
+  "main": "generated/index.ts",
+  "types": "generated/index.ts",
   "scripts": {
-    "build": "tsc"
-  },
-  "dependencies": {
-    "@types/express": "^4.17.21",
-    "mongodb": "^6.15.0"
+    "generate": "orval --config orval.config.ts"
   },
   "devDependencies": {
-    "typescript": "^5.7.2"
+    "orval": "^7.5.0"
   }
 }

@@ -1,0 +1,30 @@
+openapi: 3.1.0
+info:
+  title: FreeSpace Boston API
+  version: 0.1.0
+  description: >
+    Language-agnostic HTTP contract for the backend. This is the single
+    source of truth `shared/` generates a typed client from (see
+    shared/orval.config.ts) — never hand-edit shared/generated/.
+    The real /api/query contract (spec.md section 8) is intentionally not
+    defined yet; that's Saturday's design work, once the joined spots index
+    and query pipeline shape are settled.
+servers:
+  - url: http://localhost:8081
+paths:
+  /health:
+    get:
+      operationId: getHealth
+      summary: Liveness check
+      responses:
+        '200':
+          description: Backend is up
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status:
+                    type: string
+                    example: ok

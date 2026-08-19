@@ -50,11 +50,35 @@ cypress/videos/
 cypress/screenshots/
 test-results/
 
-# Compiled Prisma client (checked in for apps, excluded for libraries)
-prisma/generated/
-
-# Docker
-docker-volume/
-
 # Misc
 *.local
+
+# --- Generated shared TS client (see shared/README.md) ---
+shared/generated/
+
+# --- Gradle / Kotlin (backend/) ---
+backend/.gradle/
+backend/build/
+backend/.kotlin/
+!backend/gradle/wrapper/gradle-wrapper.jar
+
+# --- Expo (mobile/) ---
+mobile/.expo/
+mobile/dist/
+mobile/web-build/
+mobile/expo-env.d.ts
+mobile/.kotlin/
+mobile/ios/
+mobile/android/
+
+# --- Python / uv (data-service/) ---
+data-service/.venv/
+**/__pycache__/
+*.pyc
+data-service/raw/*
+!data-service/raw/.gitkeep
+data-service/output/*
+!data-service/output/.gitkeep
+
+# --- Podman / infra ---
+chroma-data/

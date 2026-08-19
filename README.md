@@ -1,289 +1,213 @@
-# webapp-bootstrap
+# FreeSpace Boston
 
-A production-grade full-stack web application template. Clone it, swap out the domain models (the "posts" example), and you have a working architecture ready to build on.
+A situational, multi-constraint assistant for finding free places to be in
+Boston — see `spec.md` for the full product spec, dataset list, and
+hackathon constraints. This README covers the infra: how the repo is laid
+out and how to run it.
 
 ---
 
 ## Architecture Overview
 
 ```
-webapp-bootstrap/
-├── client/          React 19 + Vite frontend
-├── server/          Node.js + Express backend (see "Backend Language" section to swap)
-├── shared/          TypeScript types: a single source of truth for client + server
+freespace-boston/
+├── Makefile
+├── podman-compose.yml   # infra only: ramalama, chroma
+├── ramalama/            # Containerfile for the RamaLama LLM container
+├── backend/             # Kotlin + Ktor API — its own Gradle root
+├── shared/              # generated TS client (from backend/openapi.yaml), consumed by webclient + mobile
+├── webclient/           # React 19 + Vite frontend
+├── mobile/              # Expo (React Native + TypeScript), managed workflow
+├── data-service/        # Python + uv — one-time ETL + Chroma ingestion, not a running service
 ├── testing/
-│   ├── backend/     Jest unit + integration tests for the server
-│   └── cypress/     Cypress E2E tests for the full stack
-├── docker-compose.yml
-└── package.json     npm workspaces monorepo root
+│   └── cypress/         # Cypress E2E tests for the full stack
+└── package.json         # npm workspaces: webclient, mobile, shared
 ```
 
-The monorepo uses **npm workspaces**. Running `npm install` at the root installs all packages. The `shared` workspace is built first because both `client` and `server` depend on its compiled types.
+Two build systems, tied together by `Makefile`:
+- **npm workspaces** (root `package.json`) for `webclient`, `mobile`, `shared`.
+- **Gradle**, rooted inside `backend/` (not at the repo root — `backend` is
+  the only JVM piece, so it owns its own `settings.gradle.kts`).
+
+`data-service` is managed by `uv` and isn't part of either — it's a batch
+job you run before the demo, not a live dependency.
+
+---
+
+## Why Kotlin backend + React Native mobile
+
+This deviates from a fully-Kotlin-multiplatform setup on purpose. Mobile
+needs both iOS and Android; the team's existing mobile experience is React
+Native, and RN + Expo (managed workflow, Expo Go) avoids needing a Mac/Xcode
+build at all for the demo. Since mobile isn't JVM, there's no payoff to
+Kotlin Multiplatform's shared-DTO trick — instead, `backend/openapi.yaml` is
+the single source of truth, and `shared/` generates a typed TS client from
+it (via `orval`) for both `webclient` and `mobile` to consume. Backend stays
+Kotlin/Ktor regardless, for JVM performance and because that's the
+preferred language for this side of the stack.
 
 ---
 
 ## OpenAPI Specification
 
-`server/openapi.yaml` is the language-agnostic HTTP contract for the entire API. It describes every endpoint, query parameter, request body, and response shape using OpenAPI 3.1.
+`backend/openapi.yaml` is the language-agnostic HTTP contract for the API —
+every endpoint, request/response shape, described with OpenAPI 3.1. It's
+the single source of truth `shared/`'s generated client is built from (see
+`shared/README.md`). Add every new endpoint here first, then implement it in
+`backend/`, then regenerate:
 
-**Two uses:**
+```bash
+npm run generate --workspace=shared
+```
 
-1. **Runtime validation** — mount `express-openapi-validator` in `app.ts` before your routers to reject malformed requests automatically:
-   ```bash
-   npm install express-openapi-validator --workspace=server
-   ```
-   ```ts
-   // server/src/app.ts
-   import { middleware as openApiValidator } from 'express-openapi-validator';
-   app.use(openApiValidator({ apiSpec: './openapi.yaml', validateRequests: true, validateResponses: false }));
-   ```
-
-2. **Backend swap contract** — when you replace Node.js with another language, this file is the single source of truth. Generate server stubs from it:
-   - Python: `openapi-generator-cli generate -i openapi.yaml -g python-fastapi`
-   - Go: `oapi-codegen -generate gin -package api openapi.yaml`
-   - Java: `openapi-generator-cli generate -i openapi.yaml -g spring`
-   - Or generate a JSON Schema for runtime validation in any language:
-     `npx ts-json-schema-generator --path 'shared/types/*.d.ts' --type '*'`
+The real `/api/query` contract (spec.md section 8) is intentionally not
+defined yet — that's part of Saturday's build, once the joined spots index
+and the query pipeline's shape are settled. Only `/health` exists so far,
+proving the full pipeline (backend route → openapi.yaml → generated client →
+webclient/mobile import) end-to-end.
 
 ---
 
-## Shared Types
+## Data layer
 
-`shared/types/` is the contract between frontend and backend. Every domain entity follows this hierarchy:
-
-| Layer | Purpose | Example |
-|---|---|---|
-| `Base` | Plain data shape, no DB concerns | `Post` |
-| `Database` | Stored document, ObjectId references | `DatabasePost` |
-| `Populated` | API response, full nested objects | `PopulatedDatabasePost` |
-| `Request` | Typed Express request | `CreatePostRequest` |
-| `Response` | Union of success \| error | `PostResponse` |
-
-**Rule:** the server returns `Populated*` types. Clients never see raw ObjectIds or password fields.
-
-Socket events are typed via `ClientToServerEvents` and `ServerToClientEvents`, the same interfaces are applied to both `socket.io-client` (frontend) and `socket.io Server` (backend), so mismatched event names are caught at compile time.
+There's no database in this stack. `data-service/etl.py` joins the 5
+Analyze Boston datasets into `output/spots.json` (spec.md section 7) — a
+small, read-mostly, batch-computed index — so the backend just loads it into
+memory at startup rather than standing up Postgres/Mongo for a few hundred
+rows. `data-service/ingest.py` embeds a generated natural-language
+description per spot into ChromaDB for the semantic layer (spec.md section
+16). See `data-service/README.md` for how to run both.
 
 ---
 
-## Frontend Architecture
+## Frontend Architecture (webclient)
 
 ```
 services/ → hooks/ → components/
 ```
 
-Each layer has exactly one responsibility:
+**`services/`**: thin wrappers around Axios. No state, no React. Returns
+typed data or throws.
 
-**`services/`**: thin wrappers around Axios. No state, no React. Returns typed data or throws.
+**`hooks/`**: own all state and side effects for a feature. Call services,
+return state + setters to components. (Currently empty — the posts/auth
+example hooks were stripped; add feature hooks here as you build.)
 
-```ts
-// postService.ts
-export const getPosts = async (order: PostOrderType): Promise<PopulatedDatabasePost[]>
-```
+**`components/`**: call a hook, render the result. No direct API calls, no
+business logic. Each component folder pairs `index.tsx` + `index.css`.
 
-**`hooks/`**: own all state and side effects for a feature. Call services, manage socket listeners, return state + setters to components.
-
-```ts
-// usePosts.ts
-const { posts, loading, setOrder, handleLike } = usePosts()
-```
-
-**`components/`**: call a hook, render the result. No direct API calls, no business logic.
-
-```ts
-// PostList/index.tsx
-const { posts, loading } = usePosts()
-return <ul>{posts.map(p => <PostCard post={p} />)}</ul>
-```
-
-Each component folder contains a paired `index.tsx` + `index.css`. The TSX is logic-free; the CSS is scoped to that component's class names.
-
-**Context** (`contexts/UserContext.ts`) holds cross-cutting data, the authenticated user and the shared socket instance. Access it via the `useUserContext()` hook, never via prop drilling.
+`mobile/` follows the same `services/` pattern (see `mobile/services/api.ts`)
+so both frontends can share the same mental model even though they can't
+share component code.
 
 ---
 
-## CSS Strategy
+## CSS Strategy (webclient)
 
-`client/src/index.css` defines the entire design token system as CSS custom properties:
-
-- **Light and dark themes**: swap by setting `data-theme="dark"` on `<html>`
-- **Spacing, typography, border-radius, shadows, z-index layers**: all tokens, never magic numbers
-- **Reusable classes**: `.btn`, `.input`, `.card`, `.badge`, `.spinner`, `.error-message` cover 90% of common UI needs
-- **Responsive breakpoints**: documented at the bottom of `index.css` as comments; apply per-component with `@media`
-
-Component-level CSS files add only component-specific rules. They use the global tokens via `var(--...)`.
+`webclient/src/index.css` defines the design token system as CSS custom
+properties — light/dark themes via `data-theme` on `<html>`, spacing/type/
+radius/shadow/z-index tokens, and reusable classes (`.btn`, `.input`,
+`.card`, `.badge`, `.spinner`, `.error-message`). Component CSS files add
+only component-specific rules, using the tokens via `var(--...)`.
 
 ---
 
-## Backend Architecture
+## Backend Architecture (backend/)
 
-```
-controllers/ → services/ → models/
-```
+Kotlin + Ktor, single Gradle module. Currently just `Application.kt` (server
+setup, CORS, `/health`) and `LlmConfig.kt` (env-driven config for the
+hosted/local LLM split below) — the `routing/ → services/ → models/`
+layering from spec.md's query pipeline (section 8) gets built out Saturday
+once the endpoint contracts exist.
 
-**`controllers/`** handle HTTP only: parse `req`, call a service, emit a socket event, return `res`. No business logic.
+### LLM strategy
 
-**`services/`** contain all business logic. They take plain arguments and return typed data. No `req`/`res` objects anywhere.
+Two backends, tried in order (`LlmConfig.kt`):
+1. **Hosted (Claude API)** — primary, for query understanding, grounded
+   synthesis, and translation quality. Set `ANTHROPIC_API_KEY`.
+2. **RamaLama (local, `llama3.2:3b`)** — fallback when there's no API key or
+   the venue connection drops. Served by the `ramalama` container at
+   `localhost:8080`, OpenAI-compatible API.
 
-**`models/`** define the Mongoose schema (`schema/*.ts`) and export the typed Model (`*.model.ts`). See `models/examples/` for equivalent schemas in SQL (Prisma) and GraphQL.
-
-**Middleware** (`middleware/`) runs before protected route handlers:
-- `auth.middleware.ts`: validates JWT, attaches `req.username / req.userId / req.role`
-- `activityTracker.middleware.ts`: throttled last-seen updates (fire-and-forget, non-blocking)
-- `rateLimit.middleware.ts`: in-memory sliding window; swap the store for Redis in production
-
-**Jobs** (`jobs/`) are long-running background tasks started in `server.ts`. Each job returns a cleanup function called on `SIGTERM`. Jobs are skipped in `NODE_ENV=test` to avoid dangling timers.
-
-**SeedData** (`seedData/`) bootstraps the database for local development:
-- `populateDB.ts`: creates users, posts, etc. in dependency order
-- `deleteDB.ts`: clears all collections
-- `resolvers/`: translate string references (e.g. `authorUsername`) to ObjectIds after the referenced collection has been inserted
-- `utils.ts` — `computeImportOrder()` does a topological sort of the dependency graph
-
-**Scripts** (`scripts/`) are one-off tools: run once after a migration, then delete or archive.
+RamaLama, not Ollama: this hackathon is Red Hat-hosted, and RamaLama is Red
+Hat's own model runner (it requires Podman specifically — Docker can't grant
+it the privileges it needs at runtime).
 
 ---
 
 ## Testing Strategy
 
-### Backend unit tests — `testing/backend/`
+### E2E — `testing/cypress/`
 
-Uses **Jest** + **Supertest** + **ts-jest**. Two categories:
+Cypress, against the real running app. `e2e/auth.cy.ts` and `e2e/posts.cy.ts`
+are leftover from the template's example domain and need real specs once
+there's an actual UI to test — not touched in this infra pass.
 
-| Type | File pattern | Tools |
-|---|---|---|
-| Controller | `tests/controllers/*.spec.ts` | `supertest(app)` for real HTTP, `jest.spyOn(service)` to mock the service layer |
-| Service | `tests/services/*.spec.ts` | `jest.spyOn(Model, 'find')` to mock Mongoose, no HTTP |
+### Backend
 
-
-**Mock data** lives entirely in `tests/mockData.models.ts`. Never define fixtures inline in spec files, shared mocks keep IDs stable and relationships obvious.
-
-Controller tests mock out `auth.middleware` so they test HTTP wiring, not JWT logic. Auth is tested in `tests/middleware/auth.middleware.spec.ts`.
-
-Run: `cd testing/backend && npm test`
-
-### E2E tests via `testing/cypress/`
-
-Uses **Cypress**. Specs interact with the real running app (both client and server must be up).
-
-- `helpers.ts` — `setupTest()` / `teardownTest()` hit a `/api/test/seed` endpoint (add one gated by `NODE_ENV=test`); `loginViaUI()`, `createPost()` drive the UI
-- `commands.js` — `cy.login()` logs in via API request to bypass the UI for tests that aren't testing auth
-
-Run: `cd testing && npm run test:open`
+`backend/src/test/kotlin/` — Ktor's `testApplication` test host + `kotlin.test`.
+Run: `cd backend && ./gradlew test`.
 
 ---
 
 ## Running Locally
 
-**Prerequisites:** Node 18+, Docker
-
-### Without Docker
+**Prerequisites:** JVM 21+, Node 18+, `uv`, Podman + `podman-compose`.
 
 ```bash
-# Install all workspace dependencies
-npm install
-
-# Build shared types first
-npm run build --workspace=shared
-
-# Start server and client in parallel
-npm run dev
+make setup       # npm install + gradle deps + uv sync
+make infra-up    # start ramalama + chroma containers
+make backend-dev # ./gradlew run --continuous
+make web-dev     # vite dev server
+make mobile-dev  # expo start
 ```
 
-Server: `http://localhost:8000`  
-Client: `http://localhost:5173`
-
-Seed the database:
-```bash
-cd server && npm run seed
-```
-
-### With Docker
-
-```bash
-npm run docker:up
-```
-
-This starts MongoDB, the server, and the client. Data is persisted in a named Docker volume (`mongodb_data`).
-
-```bash
-npm run docker:down       # stop containers
-docker volume rm webapp-bootstrap_mongodb_data  # wipe DB volume
-```
+Backend: `http://localhost:8081`
+Web: `http://localhost:5173`
+RamaLama: `http://localhost:8080`
+Chroma: `http://localhost:8000`
 
 ### Environment Variables
 
-Copy `.env.example` to `.env` in each package that needs it. Required variables:
+Copy each `.env.example` to `.env` in the package that needs it:
 
 | Variable | Where | Purpose |
 |---|---|---|
-| `MONGODB_URI` | `server/.env` | MongoDB connection string |
-| `JWT_SECRET` | `server/.env` | Signing key for JWTs — use a strong random string in production |
-| `CLIENT_URL` | `server/.env` | CORS origin (default: `http://localhost:5173`) |
-| `VITE_API_URL` | `client/.env` | Backend URL for Axios |
-| `VITE_SOCKET_URL` | `client/.env` | Backend URL for Socket.io |
+| `PORT` | `backend/.env` | Port the Ktor server listens on (8081) |
+| `CLIENT_URL` | `backend/.env` | CORS origin (default `http://localhost:5173`) |
+| `ANTHROPIC_API_KEY` | `backend/.env` | Hosted LLM (primary) — leave blank to force RamaLama |
+| `RAMALAMA_URL` / `RAMALAMA_MODEL` | `backend/.env` | Local LLM fallback |
+| `CHROMA_URL` | `backend/.env`, `data-service/.env` | Vector search |
+| `VITE_API_URL` | `webclient/.env` | Backend URL for Axios |
+| `EXPO_PUBLIC_API_URL` | `mobile/.env` | Backend URL for the RN app |
 
----
+### Podman
 
-## Adapting to a Different Backend Language
+```bash
+make infra-up    # podman-compose up -d
+make infra-down  # podman-compose down (keeps the model volume)
+make clean       # podman-compose down -v (wipes it — re-downloads llama3.2:3b next time)
+```
 
-The backend is intentionally isolated, the frontend talks to it only over HTTP and WebSockets, and the contract is fully specified in `shared/types/`. Replacing the Node.js server with Python, Go, Java, or any other language requires only these changes:
-
-### 1. Keep the shared type contract
-
-`server/openapi.yaml` is the primary contract. Use it to generate server stubs in your target language (see the OpenAPI section above). The `shared/types/*.d.ts` files remain useful as TypeScript documentation for the frontend regardless of which backend you run.
-
-### 2. Replicate the architectural layers
-
-| Node layer | Python equivalent | Go equivalent |
-|---|---|---|
-| `controllers/` | FastAPI routers / Django views | `net/http` handlers or Gin routes |
-| `services/` | Service classes / modules | Service structs with methods |
-| `models/schema/` | SQLAlchemy models / Pydantic schemas | GORM structs / sqlc queries |
-| `middleware/` | FastAPI dependencies / Django middleware | `http.Handler` wrappers |
-| `jobs/` | APScheduler / Celery Beat | `time.Ticker` goroutines |
-| `seedData/` | Alembic + seed fixtures | DB migration + seed script |
-
-### 3. Replace Socket.io
-
-Socket.io has clients for most languages. If your backend doesn't support it:
-- Use plain WebSockets, the client already wraps socket events cleanly in hooks, so swapping the transport only touches `client/src/services/` and `client/src/App.tsx`
-- Use SSE (Server-Sent Events) for one-way server→client pushes if you don't need bidirectional comms
-
-### 4. Replace Mongoose schemas
-
-See `server/src/models/examples/`:
-- `prisma-sql/schema.prisma`, PostgreSQL via Prisma (works with any SQL DB)
-- `graphql/schema.graphql`, GraphQL schema; also replaces the REST controllers
-
-### 5. Update Docker
-
-Replace `server/Dockerfile` and the `server` block in `docker-compose.yml` with your new runtime. The `client` and `mongodb` services remain unchanged.
-
-### 6. Update backend tests
-
-`testing/backend/` is Jest/Supertest — Node-specific. Replace it with your language's equivalent:
-- Python: `pytest` + `httpx` (for async) or `requests` + `pytest-mock`
-- Go: `testing` package + `net/http/httptest`
-- Java: JUnit 5 + MockMvc / RestAssured
-
-The E2E tests in `testing/cypress/` need no changesas they're fully language-agnostic.
+`podman-compose.yml` pins an explicit `name: freespace-boston` so container
+and volume names stay stable regardless of clone path or directory name on
+either teammate's machine — without it, podman-compose derives that prefix
+from the working directory, which is why porting a RamaLama container
+between differently-named project dirs looks like it silently re-downloads
+the model: it's actually just a fresh, differently-named volume.
 
 ---
 
 ## Adding a New Feature
 
-Follow this checklist to keep the architecture consistent:
-
-1. **Add types** to `shared/types/` — base, database, populated, request, response
-2. **Add Mongoose schema + model** in `server/src/models/`
-3. **Add service** in `server/src/services/` — pure functions, no HTTP
-4. **Add controller** in `server/src/controllers/` — wire routes, call service, emit socket events
-5. **Register controller** in `server/src/app.ts`
-6. **Add socket events** to `shared/types/socket.d.ts` if needed
-7. **Add service file** in `client/src/services/`
-8. **Add hook** in `client/src/hooks/`
-9. **Add component** folder with `index.tsx` + `index.css`
-10. **Add route** in `client/src/App.tsx`
-11. **Add backend tests** in `testing/backend/tests/`
-12. **Add E2E tests** in `testing/cypress/e2e/`
-13. **Add seed data** to `server/src/seedData/populateDB.ts`
+1. **Add the endpoint** to `backend/openapi.yaml` first.
+2. **Implement it** in `backend/src/main/kotlin/com/freespaceboston/`.
+3. **Regenerate the shared client**: `npm run generate --workspace=shared`.
+4. **Add a service** in `webclient/src/services/` and/or `mobile/services/`.
+5. **Add a hook** in `webclient/src/hooks/` (webclient only — mobile has no
+   hooks layer yet, add one if the pattern is worth carrying over).
+6. **Add a component** — `webclient/src/components/<Name>/index.{tsx,css}`,
+   or the equivalent screen in `mobile/`.
+7. **Add a route** in `webclient/src/App.tsx`.
+8. **Add backend tests** in `backend/src/test/kotlin/`.
+9. **Add an E2E spec** in `testing/cypress/e2e/`.

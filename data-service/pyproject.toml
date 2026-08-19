@@ -1,0 +1,29 @@
+[project]
+name = "data-service"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "chromadb>=1.5.9",
+    "geopandas>=1.1.4",
+    "sentence-transformers>=6.0.0",
+    "shapely>=2.1.2",
+    "torch>=2.13.0",
+]
+
+# torch is required by sentence-transformers; pinned here directly (not just
+# transitively) because uv only honors tool.uv.sources overrides for direct
+# dependencies. Default PyPI torch on Linux pulls the full CUDA stack (~4GB of
+# nvidia-* packages); nobody here has a CUDA GPU (one teammate is on Apple
+# Silicon, the other on x86_64 CPU-only), so force the CPU-only build on
+# Linux. macOS wheels are CPU/MPS-only already, no override needed there.
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cpu", marker = "sys_platform == 'linux'" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true

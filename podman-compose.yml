@@ -1,0 +1,40 @@
+# Infra-only containers — stateful dependencies, not app code (spec.md section 12).
+# Backend/webclient/mobile run natively on each teammate's machine; containerizing
+# them here would slow the dev loop for no benefit and complicate Android/iOS work.
+#
+# Pinned `name:` below keeps container/volume names stable regardless of the
+# clone path or directory name on either teammate's machine — podman-compose
+# otherwise derives that prefix from the working directory, which is why a
+# RamaLama container ported between two differently-named project dirs looks
+# like it re-downloads its model: it's actually just a fresh, differently-named
+# volume, not a broken container.
+name: freespace-boston
+
+services:
+  ramalama:
+    build:
+      context: ./ramalama
+      dockerfile: Containerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - ramalama_models:/root/.local/share/ramalama
+    environment:
+      - RAMALAMA_STORE=/root/.local/share/ramalama
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/v1/models || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+
+  chroma:
+    image: docker.io/chromadb/chroma:0.5.23
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+
+volumes:
+  ramalama_models:
+  chroma_data:
