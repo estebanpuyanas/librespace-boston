@@ -1,4 +1,4 @@
-# FreeSpace Boston — Project Specification
+# LibreSpace Boston — Project Specification
 
 ## 1. Problem statement
 
@@ -8,7 +8,7 @@ Boston is expensive. Students, teenagers, remote workers, recent immigrants, tou
 low-income residents, and people between appointments often need somewhere to sit, use
 Wi-Fi, cool down, charge a device, or access a restroom — without buying a $7 coffee.
 
-The assistant understands a *situational, multi-constraint* request and combines
+The assistant understands a _situational, multi-constraint_ request and combines
 multiple independent public datasets into one practical, cited recommendation — instead
 of requiring a resident to cross-reference five separate city data sources themselves.
 
@@ -35,13 +35,13 @@ government datasets to find a free place to sit.
 
 ## 4. Datasets (Analyze Boston / data.boston.gov)
 
-| Dataset | Role |
-|---|---|
-| [Wicked Free Wi-Fi Locations](https://data.boston.gov/dataset/wicked-free-wifi-locations) | Public Wi-Fi node locations |
-| [Open Space](https://data.boston.gov/dataset/open-space) | Park / green-space polygons |
-| [Park Features](https://data.boston.gov/dataset/park-features) | In-park amenities (seating, playgrounds, etc.) |
-| [Accessible Park Details](https://data.boston.gov/dataset/bprd-accessible-park-details-augmented) | ADA accessibility attributes per park |
-| [Boston Public Trees](https://data.boston.gov/dataset/bprd-trees) | Tree locations — used as an **approximate shade proxy**, not verified canopy data (flag this assumption explicitly, don't overstate it) |
+| Dataset                                                                                           | Role                                                                                                                                    |
+| ------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| [Wicked Free Wi-Fi Locations](https://data.boston.gov/dataset/wicked-free-wifi-locations)         | Public Wi-Fi node locations                                                                                                             |
+| [Open Space](https://data.boston.gov/dataset/open-space)                                          | Park / green-space polygons                                                                                                             |
+| [Park Features](https://data.boston.gov/dataset/park-features)                                    | In-park amenities (seating, playgrounds, etc.)                                                                                          |
+| [Accessible Park Details](https://data.boston.gov/dataset/bprd-accessible-park-details-augmented) | ADA accessibility attributes per park                                                                                                   |
+| [Boston Public Trees](https://data.boston.gov/dataset/bprd-trees)                                 | Tree locations — used as an **approximate shade proxy**, not verified canopy data (flag this assumption explicitly, don't overstate it) |
 
 ## 5. Hackathon constraints — "RAG the City Hack," Aug 22, 2026
 
@@ -63,7 +63,7 @@ government datasets to find a free place to sit.
 ## 6. Core technical challenge
 
 This is **not** a topic-routing problem (route to 1-of-N datasets based on question
-topic). Every query needs the *same* five datasets fused together, filtered by location
+topic). Every query needs the _same_ five datasets fused together, filtered by location
 and amenity constraints, then ranked and explained. The architecture is therefore:
 
 1. A **one-time ETL** that joins all five sources into a single "spots" index.
@@ -122,7 +122,7 @@ needed — this is a batch job, not a live path, so get it right in prep, not on
 ## 10. Repo layout (monorepo)
 
 ```
-freespace-boston/
+librespace-boston/
 ├── Makefile
 ├── docker-compose.yml        # infra only — chroma, ollama
 ├── settings.gradle.kts       # root Gradle multi-module build
@@ -173,12 +173,12 @@ it slows the dev loop, and Android emulation inside a container is a real pain.
 services:
   chroma:
     image: chromadb/chroma
-    ports: ["8000:8000"]
-    volumes: ["./data-service/chroma-data:/chroma/chroma"]
+    ports: ['8000:8000']
+    volumes: ['./data-service/chroma-data:/chroma/chroma']
   ollama:
     image: ollama/ollama
-    ports: ["11434:11434"]
-    volumes: ["ollama-data:/root/.ollama"]
+    ports: ['11434:11434']
+    volumes: ['ollama-data:/root/.ollama']
 volumes:
   ollama-data:
 ```

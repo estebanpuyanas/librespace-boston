@@ -1,4 +1,4 @@
-.PHONY: help setup infra-up infra-down generate ingest backend-dev web-dev mobile-dev test lint clean
+.PHONY: help setup infra-up infra-down generate ingest backend-dev web-dev mobile-dev test lint clean format
 
 .DEFAULT_GOAL := help
 
@@ -44,3 +44,7 @@ clean: ## Wipe containers+volumes, gradle build dir, web/mobile build output
 	podman-compose down -v
 	cd backend && ./gradlew clean
 	rm -rf webclient/dist mobile/.expo
+
+format: ## Format backend (ktlint) + webclient/mobile (prettier)
+	cd backend && ./gradlew ktlintFormat
+	npx prettier --write "webclient/**/*.{ts,tsx,css,scss,md}" "mobile/**/*.{ts,tsx,css,scss,md}"

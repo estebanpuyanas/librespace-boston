@@ -1,6 +1,6 @@
 openapi: 3.1.0
 info:
-  title: FreeSpace Boston API
+  title: LibreSpace Boston API
   version: 0.1.0
   description: >
     Language-agnostic HTTP contract for the backend. This is the single

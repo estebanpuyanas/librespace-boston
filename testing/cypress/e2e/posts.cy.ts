@@ -7,7 +7,9 @@ describe('Posts', () => {
     cy.visit('/posts');
   });
 
-  afterEach(() => { teardownTest(); });
+  afterEach(() => {
+    teardownTest();
+  });
 
   it('displays the posts list', () => {
     cy.contains('Posts');

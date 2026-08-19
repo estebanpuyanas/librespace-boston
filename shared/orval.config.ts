@@ -5,7 +5,7 @@ import { defineConfig } from 'orval';
 // files under generated/ — re-run `npm run generate --workspace=shared`
 // whenever backend/openapi.yaml changes.
 export default defineConfig({
-  freespace: {
+  librespace: {
     input: '../backend/openapi.yaml',
     output: {
       target: './generated/index.ts',

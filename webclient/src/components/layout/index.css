@@ -18,7 +18,9 @@
   box-shadow: var(--shadow-sm);
 }
 
-.header-brand { flex-shrink: 0; }
+.header-brand {
+  flex-shrink: 0;
+}
 
 .brand-name {
   font-size: var(--font-size-xl);
@@ -38,7 +40,9 @@
   font-weight: 500;
   padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: var(--border-radius);
-  transition: color var(--transition-fast), background-color var(--transition-fast);
+  transition:
+    color var(--transition-fast),
+    background-color var(--transition-fast);
 }
 
 .nav-link:hover {
@@ -72,7 +76,9 @@
   border-radius: var(--border-radius);
   color: var(--text-muted);
   padding: var(--spacing-xs);
-  transition: color var(--transition-fast), background-color var(--transition-fast);
+  transition:
+    color var(--transition-fast),
+    background-color var(--transition-fast);
 }
 
 .icon-btn:hover {
@@ -81,9 +87,15 @@
 }
 
 /* Show/hide sun or moon based on active theme */
-.theme-icon-dark { display: none; }
-[data-theme='dark'] .theme-icon-light { display: none; }
-[data-theme='dark'] .theme-icon-dark { display: block; }
+.theme-icon-dark {
+  display: none;
+}
+[data-theme='dark'] .theme-icon-light {
+  display: none;
+}
+[data-theme='dark'] .theme-icon-dark {
+  display: block;
+}
 
 .layout-main {
   flex: 1;
@@ -91,6 +103,10 @@
 }
 
 @media (max-width: 768px) {
-  .layout-header { padding: 0 var(--spacing-md); }
-  .header-username { display: none; }
+  .layout-header {
+    padding: 0 var(--spacing-md);
+  }
+  .header-username {
+    display: none;
+  }
 }

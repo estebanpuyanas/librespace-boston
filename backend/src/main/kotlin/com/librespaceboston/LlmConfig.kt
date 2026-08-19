@@ -1,4 +1,4 @@
-package com.freespaceboston
+package com.librespaceboston
 
 /**
  * Two LLM backends, tried in order: a hosted API for quality (query understanding,

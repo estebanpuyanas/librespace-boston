@@ -1,7 +1,9 @@
 /* ============================================================
    Global Reset & Box Model
    ============================================================ */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -44,7 +46,8 @@
   --shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.175);
 
   /* Typography */
-  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-family-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
   --font-size-xs: 0.75rem;
   --font-size-sm: 0.875rem;
@@ -121,7 +124,9 @@ body {
   color: var(--text-color);
   background-color: var(--bg-color);
   line-height: 1.6;
-  transition: background-color var(--transition-base), color var(--transition-base);
+  transition:
+    background-color var(--transition-base),
+    color var(--transition-base);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -132,11 +137,19 @@ a {
   transition: color var(--transition-fast);
 }
 
-a:hover { color: var(--primary-hover); }
+a:hover {
+  color: var(--primary-hover);
+}
 
-button { cursor: pointer; font-family: var(--font-family); }
+button {
+  cursor: pointer;
+  font-family: var(--font-family);
+}
 
-img { max-width: 100%; height: auto; }
+img {
+  max-width: 100%;
+  height: auto;
+}
 
 /* ============================================================
    Utility Classes
@@ -159,12 +172,28 @@ img { max-width: 100%; height: auto; }
   padding: 0 var(--spacing-md);
 }
 
-.flex { display: flex; }
-.flex-center { display: flex; align-items: center; justify-content: center; }
-.flex-between { display: flex; align-items: center; justify-content: space-between; }
-.grid { display: grid; }
-.text-muted { color: var(--text-muted); }
-.text-sm { font-size: var(--font-size-sm); }
+.flex {
+  display: flex;
+}
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.grid {
+  display: grid;
+}
+.text-muted {
+  color: var(--text-muted);
+}
+.text-sm {
+  font-size: var(--font-size-sm);
+}
 
 /* ============================================================
    Common Component Styles
@@ -178,23 +207,37 @@ img { max-width: 100%; height: auto; }
   border-radius: var(--border-radius);
   font-size: var(--font-size-base);
   font-weight: 500;
-  transition: background-color var(--transition-fast), transform var(--transition-fast);
+  transition:
+    background-color var(--transition-fast),
+    transform var(--transition-fast);
   user-select: none;
 }
 
-.btn:active { transform: translateY(1px); }
+.btn:active {
+  transform: translateY(1px);
+}
 
-.btn-primary { background-color: var(--primary-color); color: var(--text-inverse); }
-.btn-primary:hover { background-color: var(--primary-hover); }
+.btn-primary {
+  background-color: var(--primary-color);
+  color: var(--text-inverse);
+}
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+}
 
 .btn-secondary {
   background-color: var(--bg-tertiary);
   color: var(--text-color);
   border: 1px solid var(--border-color);
 }
-.btn-secondary:hover { background-color: var(--border-color); }
+.btn-secondary:hover {
+  background-color: var(--border-color);
+}
 
-.btn-danger { background-color: var(--error-color); color: white; }
+.btn-danger {
+  background-color: var(--error-color);
+  color: white;
+}
 
 .input {
   width: 100%;
@@ -204,7 +247,9 @@ img { max-width: 100%; height: auto; }
   font-size: var(--font-size-base);
   color: var(--text-color);
   background-color: var(--bg-color);
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 .input:focus {
@@ -232,9 +277,18 @@ img { max-width: 100%; height: auto; }
   letter-spacing: 0.05em;
 }
 
-.badge-primary { background-color: var(--primary-subtle); color: var(--primary-active); }
-.badge-success { background-color: var(--success-subtle); color: var(--success-color); }
-.badge-error   { background-color: var(--error-subtle);   color: var(--error-color); }
+.badge-primary {
+  background-color: var(--primary-subtle);
+  color: var(--primary-active);
+}
+.badge-success {
+  background-color: var(--success-subtle);
+  color: var(--success-color);
+}
+.badge-error {
+  background-color: var(--error-subtle);
+  color: var(--error-color);
+}
 
 /* ============================================================
    Loading & Error States
@@ -248,7 +302,11 @@ img { max-width: 100%; height: auto; }
   animation: spin 0.6s linear infinite;
 }
 
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 .error-message {
   color: var(--error-color);
@@ -268,10 +326,20 @@ img { max-width: 100%; height: auto; }
 /* ============================================================
    Scrollbar
    ============================================================ */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--bg-secondary); }
-::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
 
 /* ============================================================
    Responsive Breakpoints — use in component CSS as needed

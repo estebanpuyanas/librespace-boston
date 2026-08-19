@@ -1,4 +1,4 @@
-package com.freespaceboston
+package com.librespaceboston
 
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText

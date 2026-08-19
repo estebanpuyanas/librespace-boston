@@ -1,8 +1,12 @@
 import { setupTest, teardownTest } from '../support/helpers';
 
 describe('Authentication', () => {
-  beforeEach(() => { setupTest(); });
-  afterEach(() => { teardownTest(); });
+  beforeEach(() => {
+    setupTest();
+  });
+  afterEach(() => {
+    teardownTest();
+  });
 
   it('shows login form on initial load', () => {
     cy.visit('/');

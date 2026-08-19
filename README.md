@@ -1,4 +1,4 @@
-# FreeSpace Boston
+# LibreSpace Boston
 
 A situational, multi-constraint assistant for finding free places to be in
 Boston — see `spec.md` for the full product spec, dataset list, and
@@ -10,7 +10,7 @@ out and how to run it.
 ## Architecture Overview
 
 ```
-freespace-boston/
+librespace-boston/
 ├── Makefile
 ├── podman-compose.yml   # infra only: ramalama, chroma
 ├── ramalama/            # Containerfile for the RamaLama LLM container
@@ -25,6 +25,7 @@ freespace-boston/
 ```
 
 Two build systems, tied together by `Makefile`:
+
 - **npm workspaces** (root `package.json`) for `webclient`, `mobile`, `shared`.
 - **Gradle**, rooted inside `backend/` (not at the repo root — `backend` is
   the only JVM piece, so it owns its own `settings.gradle.kts`).
@@ -123,6 +124,7 @@ once the endpoint contracts exist.
 ### LLM strategy
 
 Two backends, tried in order (`LlmConfig.kt`):
+
 1. **Hosted (Claude API)** — primary, for query understanding, grounded
    synthesis, and translation quality. Set `ANTHROPIC_API_KEY`.
 2. **RamaLama (local, `llama3.2:3b`)** — fallback when there's no API key or
@@ -144,7 +146,7 @@ Run: `cd backend && ./gradlew test`.
 
 ## Running Locally
 
-**Prerequisites:** JVM 21+ (Gradle itself is *not* required — `backend/gradlew`
+**Prerequisites:** JVM 21+ (Gradle itself is _not_ required — `backend/gradlew`
 is self-contained and downloads its own pinned Gradle on first run), Node
 18+, `uv`, Podman + `podman-compose`.
 
@@ -154,7 +156,7 @@ target with a one-line description.
 ### 1. Clone and enter the repo
 
 ```bash
-git clone <repo-url> && cd freespace-boston
+git clone <repo-url> && cd librespace-boston
 ```
 
 ### 2. Copy environment files
@@ -170,15 +172,15 @@ cp mobile/.env.example mobile/.env
 cp data-service/.env.example data-service/.env
 ```
 
-| Variable | Where | Purpose |
-|---|---|---|
-| `PORT` | `backend/.env` | Port the Ktor server listens on (8081 — not 8080, which RamaLama uses) |
-| `CLIENT_URL` | `backend/.env` | CORS origin (default `http://localhost:5173`) |
-| `ANTHROPIC_API_KEY` | `backend/.env` | Hosted LLM (primary) — leave blank to force the RamaLama fallback |
-| `RAMALAMA_URL` / `RAMALAMA_MODEL` | `backend/.env` | Local LLM fallback |
-| `CHROMA_URL` | `backend/.env`, `data-service/.env` | Vector search |
-| `VITE_API_URL` | `webclient/.env` | Backend URL for Axios |
-| `EXPO_PUBLIC_API_URL` | `mobile/.env` | Backend URL for the RN app |
+| Variable                          | Where                               | Purpose                                                                |
+| --------------------------------- | ----------------------------------- | ---------------------------------------------------------------------- |
+| `PORT`                            | `backend/.env`                      | Port the Ktor server listens on (8081 — not 8080, which RamaLama uses) |
+| `CLIENT_URL`                      | `backend/.env`                      | CORS origin (default `http://localhost:5173`)                          |
+| `ANTHROPIC_API_KEY`               | `backend/.env`                      | Hosted LLM (primary) — leave blank to force the RamaLama fallback      |
+| `RAMALAMA_URL` / `RAMALAMA_MODEL` | `backend/.env`                      | Local LLM fallback                                                     |
+| `CHROMA_URL`                      | `backend/.env`, `data-service/.env` | Vector search                                                          |
+| `VITE_API_URL`                    | `webclient/.env`                    | Backend URL for Axios                                                  |
+| `EXPO_PUBLIC_API_URL`             | `mobile/.env`                       | Backend URL for the RN app                                             |
 
 Note: unlike Node/Vite/Expo/Python, the JVM doesn't auto-load `.env` files —
 `backend/`'s `.env` is read via `dotenv-kotlin` (see `Env.kt`), falling back
@@ -214,12 +216,12 @@ make web-dev        # Vite dev server, http://localhost:5173
 make mobile-dev      # Expo dev server — scan the QR code with Expo Go
 ```
 
-| Service | URL |
-|---|---|
-| Backend | `http://localhost:8081` |
-| Web | `http://localhost:5173` |
+| Service  | URL                     |
+| -------- | ----------------------- |
+| Backend  | `http://localhost:8081` |
+| Web      | `http://localhost:5173` |
 | RamaLama | `http://localhost:8080` |
-| Chroma | `http://localhost:8000` |
+| Chroma   | `http://localhost:8000` |
 
 ### Podman
 
@@ -229,7 +231,7 @@ make infra-down  # podman-compose down (keeps the model volume)
 make clean       # podman-compose down -v (wipes it — re-downloads llama3.2:3b next time)
 ```
 
-`podman-compose.yml` pins an explicit `name: freespace-boston` so container
+`podman-compose.yml` pins an explicit `name: librespace-boston` so container
 and volume names stay stable regardless of clone path or directory name on
 either teammate's machine — without it, podman-compose derives that prefix
 from the working directory, which is why porting a RamaLama container
@@ -241,7 +243,7 @@ the model: it's actually just a fresh, differently-named volume.
 ## Adding a New Feature
 
 1. **Add the endpoint** to `backend/openapi.yaml` first.
-2. **Implement it** in `backend/src/main/kotlin/com/freespaceboston/`.
+2. **Implement it** in `backend/src/main/kotlin/com/librespaceboston/`.
 3. **Regenerate the shared client**: `npm run generate --workspace=shared`.
 4. **Add a service** in `webclient/src/services/` and/or `mobile/services/`.
 5. **Add a hook** in `webclient/src/hooks/` (webclient only — mobile has no

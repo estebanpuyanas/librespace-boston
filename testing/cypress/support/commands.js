@@ -4,11 +4,12 @@
 // cy.login() — logs in via API, bypassing the UI.
 // Use this in tests that don't specifically test authentication to save time.
 Cypress.Commands.add('login', (username, password = 'password123') => {
-  cy.request('POST', `${Cypress.env('API_URL')}/auth/login`, { username, password })
-    .then(({ body }) => {
+  cy.request('POST', `${Cypress.env('API_URL')}/auth/login`, { username, password }).then(
+    ({ body }) => {
       localStorage.setItem('token', body.token);
       localStorage.setItem('user', JSON.stringify(body.user));
-    });
+    },
+  );
 });
 
 // cy.logout()

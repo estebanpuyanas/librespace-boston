@@ -10,11 +10,11 @@ plugins {
     application
 }
 
-group = "com.freespaceboston"
+group = "com.librespaceboston"
 version = "0.0.1"
 
 application {
-    mainClass.set("com.freespaceboston.ApplicationKt")
+    mainClass.set("com.librespaceboston.ApplicationKt")
 }
 
 repositories {

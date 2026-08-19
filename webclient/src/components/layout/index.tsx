@@ -7,7 +7,7 @@ const Layout = () => (
   <div className='layout'>
     <header className='layout-header'>
       <div className='header-brand'>
-        <span className='brand-name'>FreeSpace Boston</span>
+        <span className='brand-name'>LibreSpace Boston</span>
       </div>
 
       <nav className='header-nav'>

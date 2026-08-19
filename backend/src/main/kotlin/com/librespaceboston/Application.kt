@@ -1,4 +1,4 @@
-package com.freespaceboston
+package com.librespaceboston
 
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode

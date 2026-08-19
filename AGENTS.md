@@ -8,13 +8,13 @@ hackathon constraints) and `README.md` (fuller architecture rationale).
 
 ## Project at a Glance
 
-| Workspace | Path | Role | Build tool |
-|---|---|---|---|
-| `backend` | `backend/` | Kotlin + Ktor API | Gradle (own root, not repo-root) |
-| `shared` | `shared/` | Generated TS client from `backend/openapi.yaml` | npm |
-| `webclient` | `webclient/` | React 19 + Vite SPA | npm |
-| `mobile` | `mobile/` | Expo (React Native + TS), managed workflow | npm |
-| `data-service` | `data-service/` | One-time Python ETL + Chroma ingestion, not a live service | uv |
+| Workspace      | Path            | Role                                                       | Build tool                       |
+| -------------- | --------------- | ---------------------------------------------------------- | -------------------------------- |
+| `backend`      | `backend/`      | Kotlin + Ktor API                                          | Gradle (own root, not repo-root) |
+| `shared`       | `shared/`       | Generated TS client from `backend/openapi.yaml`            | npm                              |
+| `webclient`    | `webclient/`    | React 19 + Vite SPA                                        | npm                              |
+| `mobile`       | `mobile/`       | Expo (React Native + TS), managed workflow                 | npm                              |
+| `data-service` | `data-service/` | One-time Python ETL + Chroma ingestion, not a live service | uv                               |
 
 `webclient`, `mobile`, `shared` are one npm workspace (root `package.json`).
 `backend` is a separate Gradle root. `data-service` is a separate `uv`
@@ -41,6 +41,7 @@ make lint         # ktlintCheck + eslint
 ```
 
 Type-checking without building:
+
 ```bash
 cd webclient && npx tsc --noEmit
 cd mobile && npx tsc --noEmit
@@ -51,6 +52,7 @@ cd mobile && npx tsc --noEmit
 ## Architecture Rules
 
 ### The OpenAPI contract comes first
+
 - `backend/openapi.yaml` is the single source of truth. Add every new
   endpoint and schema here **before or alongside** writing the Ktor route.
 - After any change to it, regenerate: `npm run generate --workspace=shared`.
@@ -64,6 +66,7 @@ cd mobile && npx tsc --noEmit
   for CI.
 
 ### Backend (Kotlin/Ktor)
+
 - Currently just `Application.kt` (server setup, CORS, `/health`) and
   `LlmConfig.kt`. As real endpoints get built: routes stay HTTP-only, business
   logic goes in a services layer, no `req`/`call` object leaks past the route
@@ -74,6 +77,7 @@ cd mobile && npx tsc --noEmit
   single provider — always route through this config.
 
 ### Frontend (webclient + mobile)
+
 - **Services** (`webclient/src/services/`, `mobile/services/`): Axios calls
   only. No state, no hooks, no React/RN. Returns typed data or throws.
 - **Hooks** (`webclient/src/hooks/`): own state and side effects. Call
@@ -86,6 +90,7 @@ cd mobile && npx tsc --noEmit
   template; they were deliberately stripped.
 
 ### CSS (webclient)
+
 - `webclient/src/index.css` owns all design tokens as CSS custom properties.
   Never introduce a new hardcoded color, spacing value, or z-index in a
   component file — use `var(--...)`.
@@ -94,6 +99,7 @@ cd mobile && npx tsc --noEmit
   theming.
 
 ### data-service (Python/uv)
+
 - One-time batch job (`etl.py` then `ingest.py`), not a live path. Never add
   a live HTTP server here — if the backend needs to talk to it at query time,
   that's a design mistake per spec.md section 6 (every query needs the same
@@ -110,6 +116,7 @@ cd mobile && npx tsc --noEmit
 ## Style Guide
 
 ### TypeScript
+
 - Prefer `interface` over `type` for object shapes; `type` for unions,
   aliases, primitives.
 - No `any`. Use `unknown` and narrow, or specific generics.
@@ -117,12 +124,14 @@ cd mobile && npx tsc --noEmit
 - Cast with `as SomeType` only at trust boundaries. Never cast through `any`.
 
 ### Kotlin
+
 - `ktlintCheck` (`./gradlew ktlintCheck` inside `backend/`) is the formatting
   authority — don't hand-tune formatting against it.
 - Prefer `data class` for DTOs, `@Serializable` (kotlinx.serialization) for
   anything crossing the HTTP boundary.
 
 ### Naming
+
 - TS files: `kebab-case.ts` for utilities/services; `PascalCase/index.tsx`
   for React components. Hooks: `useCamelCase`.
 - Kotlin files: `PascalCase.kt`, one primary class/object per file matching
@@ -130,10 +139,12 @@ cd mobile && npx tsc --noEmit
 - CSS classes: `kebab-case`, prefixed with the component name.
 
 ### Comments
+
 - Write a comment only when the **why** is non-obvious. Never multi-line
   docblocks — one short line max. Don't comment out code and commit it.
 
 ### React
+
 - Function components only (exception: `ErrorBoundary`, must stay a class).
 - Always clean up `useEffect` side effects.
 - `useEffect` is not for deriving state from other state — compute inline or
@@ -144,7 +155,7 @@ cd mobile && npx tsc --noEmit
 ## Adding a New Feature — Checklist
 
 1. `backend/openapi.yaml` — add paths and schemas first.
-2. `backend/src/main/kotlin/com/freespaceboston/` — implement the route +
+2. `backend/src/main/kotlin/com/librespaceboston/` — implement the route +
    whatever service/model layer it needs.
 3. `npm run generate --workspace=shared` — regenerate the TS client.
 4. `webclient/src/services/` and/or `mobile/services/` — typed wrappers.
@@ -176,7 +187,7 @@ cd mobile && npx tsc --noEmit
   `mobile/package.json`'s `start`/`android`/`ios`/`web` scripts pass
   `--port 8082` to avoid the interactive "use another port?" prompt.
 - **Podman project name is pinned.** `podman-compose.yml` has an explicit
-  `name: freespace-boston`. Don't remove it — without it, container/volume
+  `name: librespace-boston`. Don't remove it — without it, container/volume
   names derive from the clone directory name, and the model volume silently
   becomes a new (empty) one on a differently-named clone.
 - **`data-service/` is not a running service.** Despite the name, it's a

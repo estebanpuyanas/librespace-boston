@@ -1,4 +1,4 @@
-package com.freespaceboston
+package com.librespaceboston
 
 import io.github.cdimascio.dotenv.dotenv
 

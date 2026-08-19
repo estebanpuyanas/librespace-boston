@@ -1,8 +1,12 @@
 {
-  "name": "freespace-boston",
+  "name": "librespace-boston",
   "private": true,
   "type": "module",
-  "workspaces": ["webclient", "mobile", "shared"],
+  "workspaces": [
+    "webclient",
+    "mobile",
+    "shared"
+  ],
   "scripts": {
     "dev": "npm run dev --workspace=webclient",
     "generate": "npm run generate --workspace=shared",
