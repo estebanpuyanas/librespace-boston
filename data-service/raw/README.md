@@ -19,5 +19,8 @@ formats. GeoJSON was only worth the extra parsing step for Open Space, where
 the geometry is a genuine multi-point polygon that a single lat/lon pair
 can't represent.
 
-Downloaded from data.boston.gov (spec.md section 4) on 2026-08-19. `raw/` is
-gitignored (see root `.gitignore`) — only this README is tracked.
+Downloaded from data.boston.gov (spec.md section 4) on 2026-08-19, committed
+to the repo on 2026-08-20. These are small (~16MB total) public open datasets,
+not secrets and not derived — committing them pins the exact data every
+teammate builds against and removes a live network dependency on
+data.boston.gov.
