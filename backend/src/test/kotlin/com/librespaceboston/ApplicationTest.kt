@@ -11,6 +11,7 @@ import io.ktor.server.testing.testApplication
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -86,4 +87,19 @@ class ApplicationTest {
             assertNull(body.translated_query)
             assertTrue(body.disclaimers.isNotEmpty())
         }
+
+    @Test
+    fun resolvePortAcceptsAValidConfiguredPort() {
+        assertEquals(8081, resolvePort("8081"))
+    }
+
+    @Test
+    fun resolvePortRefusesToFallBackToTheRamalamaPortWhenUnset() {
+        assertFailsWith<IllegalStateException> { resolvePort(null) }
+    }
+
+    @Test
+    fun resolvePortRefusesToFallBackToTheRamalamaPortWhenUnparseable() {
+        assertFailsWith<IllegalStateException> { resolvePort("not-a-port") }
+    }
 }
