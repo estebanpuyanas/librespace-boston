@@ -16,4 +16,13 @@ class ApplicationTest {
             assertEquals(HttpStatusCode.OK, response.status)
             assertEquals("""{"status":"ok"}""", response.bodyAsText())
         }
+
+    @Test
+    fun pingReturnsHelloWorld() =
+        testApplication {
+            application { module() }
+            val response = client.get("/api/ping")
+            assertEquals(HttpStatusCode.OK, response.status)
+            assertEquals("""{"message":"Hello, world!"}""", response.bodyAsText())
+        }
 }

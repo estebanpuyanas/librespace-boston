@@ -1,11 +1,5 @@
-import axios from 'axios';
+import { setApiBaseUrl } from 'shared/mutator';
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8081';
-
-const api = axios.create({
-  baseURL: `${API_URL}/api`,
-  timeout: 10000,
-  headers: { 'Content-Type': 'application/json' },
-});
-
-export default api;
+// Points the generated client (shared/generated/index.ts) at the backend.
+// Import this once for its side effect before making any API calls.
+setApiBaseUrl(import.meta.env.VITE_API_URL ?? 'http://localhost:8081');

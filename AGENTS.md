@@ -195,3 +195,20 @@ cd mobile && npx tsc --noEmit
 - **Dark theme is CSS-only.** `webclient/src/utils/theme.ts` just sets
   `data-theme` on `<html>` — everything else is CSS variable overrides in
   `index.css`.
+- **The generated client is routed through `shared/mutator.ts`, not bare
+  axios.** `orval.config.ts` configures every generated call to go through
+  `customInstance`, which reads its base URL from a module-level axios
+  instance. Each app calls `setApiBaseUrl(...)` once at startup
+  (`webclient/src/services/axios.ts`, `mobile/services/api.ts`) — don't
+  create a second, parallel axios instance for API calls; import
+  `getLibreSpaceBostonAPI` from `shared` instead.
+- **Mobile resolves the backend host automatically on a physical device.**
+  `EXPO_PUBLIC_API_URL` defaults to `localhost`, which on a real phone means
+  the phone itself, not your laptop. `mobile/services/api.ts` falls back to
+  deriving the LAN IP from Expo's own dev-server host
+  (`Constants.expoConfig.hostUri`) when the env var isn't set explicitly —
+  no manual `.env` editing needed per teammate/laptop.
+- **If venue wifi blocks phone-to-laptop LAN traffic** (AP isolation is
+  common on campus/conference networks), `npx expo start --tunnel` routes
+  through Expo's relay instead of the LAN — slower, but works when direct
+  connection doesn't.

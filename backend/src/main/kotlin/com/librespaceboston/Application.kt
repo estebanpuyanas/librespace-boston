@@ -46,5 +46,10 @@ fun Application.module() {
         get("/health") {
             call.respondText("""{"status":"ok"}""", ContentType.Application.Json)
         }
+        // Scaffolding smoke test for the openapi -> Kotlin route -> generated client round trip.
+        // Remove once a real /api endpoint exists.
+        get("/api/ping") {
+            call.respondText("""{"message":"Hello, world!"}""", ContentType.Application.Json)
+        }
     }
 }

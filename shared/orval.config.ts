@@ -11,6 +11,12 @@ export default defineConfig({
       target: './generated/index.ts',
       client: 'axios',
       mode: 'single',
+      override: {
+        mutator: {
+          path: './mutator.ts',
+          name: 'customInstance',
+        },
+      },
     },
   },
 });

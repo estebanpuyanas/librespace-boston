@@ -6,9 +6,6 @@ info:
     Language-agnostic HTTP contract for the backend. This is the single
     source of truth `shared/` generates a typed client from (see
     shared/orval.config.ts) — never hand-edit shared/generated/.
-    The real /api/query contract (spec.md section 8) is intentionally not
-    defined yet; that's Saturday's design work, once the joined spots index
-    and query pipeline shape are settled.
 servers:
   - url: http://localhost:8081
 paths:
@@ -28,3 +25,191 @@ paths:
                   status:
                     type: string
                     example: ok
+  /api/ping:
+    get:
+      operationId: getPing
+      summary: Scaffolding smoke test — full openapi -> Kotlin route -> generated client round trip
+      responses:
+        '200':
+          description: Pong
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [message]
+                properties:
+                  message:
+                    type: string
+                    example: Hello, world!
+  /api/query:
+    post:
+      operationId: postQuery
+      summary: >
+        Fused-dataset spots query (spec.md section 8). Omit `query` for a
+        plain nearby-spots lookup with no LLM synthesis (used by the
+        homepage bento grid); include `query` to run the full
+        natural-language RAG pipeline.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryRequest'
+      responses:
+        '200':
+          description: Ranked, cited spots matching the request, plus a synthesized answer when `query` was supplied.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryResponse'
+components:
+  schemas:
+    QueryRequest:
+      type: object
+      required: [location]
+      properties:
+        query:
+          type: string
+          nullable: true
+          description: >
+            Free-text natural-language question, in any language. Omit this
+            field entirely for a structured "what's near me" lookup (no
+            LLM call, no synthesized answer) — that's the bento-grid path.
+          example: I need a free place near Downtown where I can sit and use Wi-Fi.
+        location:
+          $ref: '#/components/schemas/Coordinates'
+        radius_meters:
+          type: integer
+          default: 800
+          description: Search radius around `location`. Ignored if the query text names an explicit neighborhood.
+        amenities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Amenity'
+          description: >
+            Structured amenity filter. Required input when `query` is
+            omitted; when `query` is present these are treated as a hint/
+            override alongside whatever the LLM extracts from the text.
+        language:
+          type: string
+          nullable: true
+          description: BCP-47 hint (e.g. "es", "vi"). Otherwise auto-detected from `query`.
+    Coordinates:
+      type: object
+      required: [lat, lon]
+      properties:
+        lat:
+          type: number
+          format: double
+        lon:
+          type: number
+          format: double
+        source:
+          type: string
+          enum: [device, ip]
+          description: How these coordinates were obtained — precise device geolocation vs. coarse IP-based fallback. Informational only; doesn't change server behavior.
+    Amenity:
+      type: string
+      enum: [wifi, shade, accessible, playground, restroom, free]
+    QueryResponse:
+      type: object
+      required: [spots, disclaimers]
+      properties:
+        detected_language:
+          type: string
+          nullable: true
+          description: BCP-47 code detected from `query`. Null when `query` was omitted.
+        translated_query:
+          type: string
+          nullable: true
+          description: English translation of `query`, for citation/debugging clarity. Null when `query` was omitted or already English.
+        answer:
+          type: string
+          nullable: true
+          description: >
+            Grounded natural-language answer, in the user's detected
+            language, citing which dataset backs each claim. Null when
+            `query` was omitted (bento-grid mode returns spots only, no synthesis).
+        disclaimers:
+          type: array
+          items:
+            type: string
+          description: >
+            e.g. "machine-translated — verify details", or a note that a
+            requested attribute (like "quiet") has no supporting dataset
+            field and was not evaluated.
+        spots:
+          type: array
+          items:
+            $ref: '#/components/schemas/Spot'
+        highlights:
+          $ref: '#/components/schemas/Highlights'
+    Spot:
+      type: object
+      required:
+        [
+          spot_id,
+          name,
+          lat,
+          lon,
+          distance_meters,
+          has_wifi,
+          is_park,
+          features,
+          accessible,
+          tree_density_nearby,
+          source_dataset,
+        ]
+      properties:
+        spot_id:
+          type: string
+        name:
+          type: string
+        lat:
+          type: number
+          format: double
+        lon:
+          type: number
+          format: double
+        distance_meters:
+          type: number
+          format: double
+        has_wifi:
+          type: boolean
+        is_park:
+          type: boolean
+        features:
+          type: array
+          items:
+            type: string
+            enum: [seating, playground, restroom, shade_structure]
+        accessible:
+          type: object
+          required: [value]
+          properties:
+            value:
+              type: boolean
+            notes:
+              type: string
+              nullable: true
+        tree_density_nearby:
+          type: integer
+          description: Approximate shade proxy — tree count within a fixed radius, not verified canopy coverage.
+        source_dataset:
+          type: object
+          additionalProperties:
+            type: string
+          description: 'Per-field dataset attribution, e.g. {"has_wifi": "Wicked Free Wi-Fi Locations"}.'
+    Highlights:
+      type: object
+      description: Convenience pointers into `spots`, one per bento-grid tile category. Null when no matching spot is in range.
+      properties:
+        closest_wifi:
+          type: string
+          nullable: true
+        closest_park:
+          type: string
+          nullable: true
+        closest_restroom:
+          type: string
+          nullable: true
