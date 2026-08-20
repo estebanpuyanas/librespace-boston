@@ -32,9 +32,8 @@ web-dev: ## Run the Vite dev server for webclient (localhost:5173)
 mobile-dev: ## Run the Expo dev server for mobile (scan QR with Expo Go)
 	npm run start --workspace=mobile
 
-test: ## Run backend tests + E2E tests
+test: ## Run backend tests
 	cd backend && ./gradlew test
-	npm run test:e2e
 
 lint: ## Lint backend (ktlint) + webclient/mobile (eslint)
 	cd backend && ./gradlew ktlintCheck

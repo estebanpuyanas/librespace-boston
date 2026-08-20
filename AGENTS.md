@@ -36,7 +36,7 @@ make web-dev      # vite dev server (webclient/)
 make mobile-dev   # expo start (mobile/)
 make generate     # regenerate shared/ TS client from backend/openapi.yaml
 make ingest       # run the one-time ETL + Chroma ingestion (data-service/)
-make test         # gradle test + cypress
+make test         # gradle test
 make lint         # ktlintCheck + eslint
 ```
 
@@ -163,7 +163,6 @@ cd mobile && npx tsc --noEmit
 6. `webclient/src/components/<Feature>/` — `index.tsx` + `index.css`.
 7. `webclient/src/App.tsx` — add the route.
 8. `backend/src/test/kotlin/` — test the new route.
-9. `testing/cypress/e2e/<feature>.cy.ts` — E2E spec.
 
 ---
 

@@ -46,8 +46,6 @@ Thumbs.db
 # Test output
 coverage/
 .nyc_output/
-cypress/videos/
-cypress/screenshots/
 test-results/
 
 # Misc

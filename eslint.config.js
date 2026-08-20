@@ -2,7 +2,6 @@ import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
-import globals from 'globals';
 
 export default tseslint.config(
   // Files to ignore globally. backend/ is Kotlin (its own ktlintCheck task
@@ -36,14 +35,6 @@ export default tseslint.config(
     rules: {
       ...reactHooks.configs.recommended.rules,
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
-    },
-  },
-
-  // Cypress support/e2e files run in Cypress's own browser+test-runner global scope
-  {
-    files: ['testing/cypress/**/*.js'],
-    languageOptions: {
-      globals: { ...globals.browser, cy: 'readonly', Cypress: 'readonly' },
     },
   },
 
