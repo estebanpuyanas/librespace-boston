@@ -26,7 +26,9 @@ fun main() {
 
 fun Application.module(
     spotsRepository: SpotsRepository =
-        SpotsRepository.loadFromFile(envVar("SPOTS_DATA_PATH") ?: "../data-service/output/spots.json"),
+        SpotsRepository.loadFromFile(
+            envVar("SPOTS_DATA_PATH")?.takeIf { it.isNotBlank() } ?: "../data-service/output/spots.json",
+        ),
 ) {
     install(ContentNegotiation) {
         json(Json { ignoreUnknownKeys = true })
