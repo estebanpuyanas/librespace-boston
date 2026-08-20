@@ -38,7 +38,9 @@ uv run etl.py
 uv run ingest.py
 ```
 
-`etl.py`'s join functions are stubs (`NotImplementedError`) until the actual
-CSVs are downloaded and their real column names/geometry formats are known —
-see the TODOs inline. Verify the join against 10-15 known Boston
+`etl.py` uses Open Space's polygons as the base set of spots: Park_Features
+and BPRD Accessible Park Details join onto it by `OS_ID`/`polygon_id`;
+Wi-Fi and public trees, which lack a reliable per-park id, join by spatial
+proximity (point-in-buffered-polygon) instead — see the module docstring in
+`etl.py`. If you change the join, re-verify it against 10-15 known Boston
 addresses/parks before trusting it, per spec.md section 15.

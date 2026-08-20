@@ -59,11 +59,12 @@ the single source of truth `shared/`'s generated client is built from (see
 npm run generate --workspace=shared
 ```
 
-The real `/api/query` contract (spec.md section 8) is intentionally not
-defined yet — that's part of Saturday's build, once the joined spots index
-and the query pipeline's shape are settled. Only `/health` exists so far,
-proving the full pipeline (backend route → openapi.yaml → generated client →
-webclient/mobile import) end-to-end.
+`POST /api/query` (spec.md section 8) is fully specified. The backend
+implements its structured/no-LLM path (location + optional radius/amenities
+→ ranked spots + highlights); the natural-language RAG path (query
+understanding, translation, LLM-synthesized `answer`) is intentionally
+reserved for hackathon-day core product work — see `backend/src/main/kotlin/
+com/librespaceboston/Query.kt`.
 
 ---
 
@@ -113,11 +114,14 @@ only component-specific rules, using the tokens via `var(--...)`.
 
 ## Backend Architecture (backend/)
 
-Kotlin + Ktor, single Gradle module. Currently just `Application.kt` (server
-setup, CORS, `/health`) and `LlmConfig.kt` (env-driven config for the
-hosted/local LLM split below) — the `routing/ → services/ → models/`
-layering from spec.md's query pipeline (section 8) gets built out Saturday
-once the endpoint contracts exist.
+Kotlin + Ktor, single Gradle module. `Application.kt` owns server setup,
+CORS, and routing (`/health`, `/api/ping`, `POST /api/query`); `LlmConfig.kt`
+is env-driven config for the hosted/local LLM split below; `Spots.kt` loads
+`data-service/output/spots.json` into memory and ranks by haversine
+distance; `Query.kt` holds the `/api/query` request/response models and the
+structured-path logic (`buildQueryResponse`). Route handlers stay
+HTTP-only — no business logic past the route, same layering discipline as
+any other backend.
 
 ### LLM strategy
 
@@ -177,6 +181,7 @@ cp data-service/.env.example data-service/.env
 | `ANTHROPIC_API_KEY`               | `backend/.env`                      | Hosted LLM (primary) — leave blank to force the RamaLama fallback      |
 | `RAMALAMA_URL` / `RAMALAMA_MODEL` | `backend/.env`                      | Local LLM fallback                                                     |
 | `CHROMA_URL`                      | `backend/.env`, `data-service/.env` | Vector search                                                          |
+| `SPOTS_DATA_PATH`                 | `backend/.env`                      | Path to `output/spots.json` (default `../data-service/output/spots.json`) |
 | `VITE_API_URL`                    | `webclient/.env`                    | Backend URL for Axios                                                  |
 | `EXPO_PUBLIC_API_URL`             | `mobile/.env`                       | Backend URL for the RN app                                             |
 
