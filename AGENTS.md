@@ -185,6 +185,11 @@ cd mobile && npx tsc --noEmit
   so running `make backend-dev` and `make mobile-dev` together collides.
   `mobile/package.json`'s `start`/`android`/`ios`/`web` scripts pass
   `--port 8082` to avoid the interactive "use another port?" prompt.
+- **`chromadb` client and the `chroma` container image must be version-matched.**
+  `data-service/pyproject.toml` pins the `chromadb` Python client; `podman-compose.yml`
+  pins the `chroma` server image to the same version (currently `1.5.9`). A mismatch
+  (e.g. client `1.5.x` against server `0.5.x`) fails collection creation with
+  `KeyError('_type')` — bump both together.
 - **Podman project name is pinned.** `podman-compose.yml` has an explicit
   `name: librespace-boston`. Don't remove it — without it, container/volume
   names derive from the clone directory name, and the model volume silently
@@ -211,3 +216,10 @@ cd mobile && npx tsc --noEmit
   common on campus/conference networks), `npx expo start --tunnel` routes
   through Expo's relay instead of the LAN — slower, but works when direct
   connection doesn't.
+
+## Maintaining this file
+
+Keep this file for knowledge useful to almost every future agent session in this project.
+Do not repeat what the codebase already shows; point to the authoritative file or command instead.
+Prefer rewriting or pruning existing entries over appending new ones.
+When updating this file, preserve this bar for all agents and keep entries concise.
