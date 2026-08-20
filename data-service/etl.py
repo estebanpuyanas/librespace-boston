@@ -13,6 +13,7 @@ join onto it:
 """
 
 import json
+import math
 from dataclasses import asdict, dataclass, field
 
 import geopandas as gpd
@@ -106,8 +107,22 @@ def load_trees() -> gpd.GeoDataFrame:
     )
 
 
+def _str_value(value: object) -> str:
+    if value is None or (isinstance(value, float) and math.isnan(value)):
+        return ""
+    return str(value).strip()
+
+
+def _str_field(row: pd.Series, key: str) -> str:
+    return _str_value(row.get(key))
+
+
 def _park_name(row: pd.Series) -> str:
-    return row["SITE_NAME"] or row["ALT_NAME"] or f"Unnamed Open Space #{row['OBJECTID']}"
+    return (
+        _str_value(row["SITE_NAME"])
+        or _str_value(row["ALT_NAME"])
+        or f"Unnamed Open Space #{row['OBJECTID']}"
+    )
 
 
 def _park_features_for(os_id: str, features_df: pd.DataFrame) -> list[str]:
@@ -122,13 +137,13 @@ def _accessible_for(os_id: str, accessible_df: pd.DataFrame) -> Accessible:
         return Accessible(value=False, notes=None)
     row = matches.iloc[0]
 
-    stair_free = str(row.get("stair_free") or "").strip()
+    stair_free = _str_field(row, "stair_free")
     stair_free_ok = stair_free not in ("", "No stair free access at this park")
 
-    benches_wheelchair = str(row.get("benches_wheelchair") or "").strip() == "Y"
-    table_wheelchair = str(row.get("table_wheelchair") or "").strip() == "Y"
+    benches_wheelchair = _str_field(row, "benches_wheelchair") == "Y"
+    table_wheelchair = _str_field(row, "table_wheelchair") == "Y"
 
-    accessible_play = str(row.get("accessible_play") or "").strip()
+    accessible_play = _str_field(row, "accessible_play")
     accessible_play_ok = accessible_play not in (
         "",
         "No playground at this park",
