@@ -13,7 +13,6 @@
   "scripts": {
     "dev": "npm run dev --workspace=webclient",
     "generate": "npm run generate --workspace=shared",
-    "test:e2e": "npm run test --workspace=testing",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",

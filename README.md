@@ -19,8 +19,6 @@ librespace-boston/
 ├── webclient/           # React 19 + Vite frontend
 ├── mobile/              # Expo (React Native + TypeScript), managed workflow
 ├── data-service/        # Python + uv — one-time ETL + Chroma ingestion, not a running service
-├── testing/
-│   └── cypress/         # Cypress E2E tests for the full stack
 └── package.json         # npm workspaces: webclient, mobile, shared
 ```
 
@@ -252,4 +250,3 @@ the model: it's actually just a fresh, differently-named volume.
    or the equivalent screen in `mobile/`.
 7. **Add a route** in `webclient/src/App.tsx`.
 8. **Add backend tests** in `backend/src/test/kotlin/`.
-9. **Add an E2E spec** in `testing/cypress/e2e/`.
