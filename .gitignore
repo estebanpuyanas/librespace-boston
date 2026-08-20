@@ -1,14 +1,10 @@
 # Dependencies
 node_modules/
-.pnp
-.pnp.js
 
 # Build output
 dist/
 build/
 out/
-.next/
-.nuxt/
 
 # Environment variables — never commit secrets
 .env
@@ -21,10 +17,6 @@ out/
 # Logs
 *.log
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-lerna-debug.log*
-.pnpm-debug.log*
 
 # Runtime / OS
 .DS_Store
@@ -34,10 +26,6 @@ Thumbs.db
 # Editor directories
 .idea/
 .vscode/extensions.json
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
 *.sw?
 
 # TypeScript cache
@@ -65,7 +53,6 @@ mobile/.expo/
 mobile/dist/
 mobile/web-build/
 mobile/expo-env.d.ts
-mobile/.kotlin/
 mobile/ios/
 mobile/android/
 
@@ -73,11 +60,5 @@ mobile/android/
 data-service/.venv/
 **/__pycache__/
 *.pyc
-data-service/raw/*
-!data-service/raw/.gitkeep
-!data-service/raw/README.md
 data-service/output/*
 !data-service/output/.gitkeep
-
-# --- Podman / infra ---
-chroma-data/
