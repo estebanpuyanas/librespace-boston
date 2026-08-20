@@ -12,12 +12,12 @@ fixing (spec.md section 7).
 uv sync
 ```
 
-## Before running the ETL
+## Datasets
 
-Download the 5 datasets from data.boston.gov (spec.md section 4) into `raw/`,
-named to match `config.py`. Open Space is downloaded as GeoJSON (it's
-polygon geometry); the other four are CSV (point data). See
-`raw/README.md` for the reasoning per dataset:
+The 5 Analyze Boston datasets (spec.md section 4) are committed under
+`raw/`, named to match `config.py`. Open Space is GeoJSON (polygon
+geometry); the other four are CSV (point data). See `raw/README.md` for the
+reasoning per dataset:
 
 - `wicked_free_wifi.csv`
 - `open_space.geojson`
@@ -25,8 +25,8 @@ polygon geometry); the other four are CSV (point data). See
 - `accessible_park_details.csv`
 - `public_trees.csv`
 
-`raw/` and `output/` are gitignored — datasets and generated output aren't
-committed (`raw/README.md` is the one tracked exception).
+`output/` (the ETL's generated index) is gitignored — only `raw/` is
+committed.
 
 ## Running
 

@@ -35,15 +35,13 @@ job you run before the demo, not a live dependency.
 
 ## Why Kotlin backend + React Native mobile
 
-This deviates from a fully-Kotlin-multiplatform setup on purpose. Mobile
-needs both iOS and Android; the team's existing mobile experience is React
-Native, and RN + Expo (managed workflow, Expo Go) avoids needing a Mac/Xcode
-build at all for the demo. Since mobile isn't JVM, there's no payoff to
-Kotlin Multiplatform's shared-DTO trick — instead, `backend/openapi.yaml` is
-the single source of truth, and `shared/` generates a typed TS client from
-it (via `orval`) for both `webclient` and `mobile` to consume. Backend stays
-Kotlin/Ktor regardless, for JVM performance and because that's the
-preferred language for this side of the stack.
+This deviates from a fully-Kotlin-multiplatform setup on purpose: the team's
+mobile experience is React Native, and Expo's managed workflow (Expo Go)
+avoids needing a Mac/Xcode build for the demo. Since mobile isn't JVM,
+Kotlin Multiplatform's shared-DTO trick doesn't pay off — instead,
+`backend/openapi.yaml` is the single source of truth, and `shared/`
+generates a typed TS client from it (via `orval`) for both `webclient` and
+`mobile` to consume.
 
 ---
 
@@ -70,11 +68,12 @@ com/librespaceboston/Query.kt`.
 
 ## Data layer
 
-There's no database in this stack. `data-service/etl.py` joins the 5
-Analyze Boston datasets into `output/spots.json` (spec.md section 7) — a
-small, read-mostly, batch-computed index — so the backend just loads it into
-memory at startup rather than standing up Postgres/Mongo for a few hundred
-rows. `data-service/ingest.py` embeds a generated natural-language
+There's no database in this stack. The 5 Analyze Boston source datasets are
+committed under `data-service/raw/` (no download step needed).
+`data-service/etl.py` joins them into `output/spots.json` (spec.md section
+7) — a small, read-mostly, batch-computed index — so the backend just loads
+it into memory at startup rather than standing up Postgres/Mongo for a few
+hundred rows. `data-service/ingest.py` embeds a generated natural-language
 description per spot into ChromaDB for the semantic layer (spec.md section
 16). See `data-service/README.md` for how to run both.
 
@@ -187,7 +186,10 @@ cp data-service/.env.example data-service/.env
 
 Note: unlike Node/Vite/Expo/Python, the JVM doesn't auto-load `.env` files —
 `backend/`'s `.env` is read via `dotenv-kotlin` (see `Env.kt`), falling back
-to it only when a real environment variable isn't already set.
+to it only when a real environment variable isn't already set. If `PORT` is
+unset or non-numeric, the backend refuses to start rather than silently
+defaulting to 8080 (which would collide with RamaLama) — see
+`resolvePort()` in `Application.kt`.
 
 ### 3. Install dependencies
 
@@ -234,12 +236,10 @@ make infra-down  # podman-compose down (keeps the model volume)
 make clean       # podman-compose down -v (wipes it — re-downloads llama3.2:3b next time)
 ```
 
-`podman-compose.yml` pins an explicit `name: librespace-boston` so container
-and volume names stay stable regardless of clone path or directory name on
-either teammate's machine — without it, podman-compose derives that prefix
-from the working directory, which is why porting a RamaLama container
-between differently-named project dirs looks like it silently re-downloads
-the model: it's actually just a fresh, differently-named volume.
+`podman-compose.yml` pins an explicit `name: librespace-boston` so
+container/volume names stay stable regardless of clone path — without it, a
+differently-named clone gets a fresh, empty model volume, which looks like a
+silent re-download.
 
 ---
 

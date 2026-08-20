@@ -67,10 +67,8 @@ cd mobile && npx tsc --noEmit
 
 ### Backend (Kotlin/Ktor)
 
-- Currently just `Application.kt` (server setup, CORS, `/health`) and
-  `LlmConfig.kt`. As real endpoints get built: routes stay HTTP-only, business
-  logic goes in a services layer, no `req`/`call` object leaks past the route
-  handler — same layering discipline as any other backend, adjusted for Ktor.
+- Routes stay HTTP-only, business logic goes in a services layer, no
+  `req`/`call` object leaks past the route handler.
 - `LlmConfig.kt` encodes the two-tier LLM strategy: hosted Claude API primary
   (`ANTHROPIC_API_KEY`), RamaLama local fallback (`RAMALAMA_URL`,
   `RAMALAMA_MODEL`, served by the `ramalama` container). Don't hardcode a
@@ -196,6 +194,9 @@ cd mobile && npx tsc --noEmit
   becomes a new (empty) one on a differently-named clone.
 - **`data-service/` is not a running service.** Despite the name, it's a
   batch job (`make ingest`). Nothing else depends on it being "up."
+- **Backend refuses to start with an unset/invalid `PORT`.** No silent
+  fallback to 8080 (that's RamaLama's port) — `resolvePort()` in
+  `Application.kt` fails loudly and points at `backend/.env.example`.
 - **Dark theme is CSS-only.** `webclient/src/utils/theme.ts` just sets
   `data-theme` on `<html>` — everything else is CSS variable overrides in
   `index.css`.
