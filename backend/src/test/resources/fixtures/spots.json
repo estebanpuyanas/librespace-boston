@@ -1,0 +1,112 @@
+[
+  {
+    "spot_id": "os-27",
+    "name": "Boston Common",
+    "lat": 42.35518557853899,
+    "lon": -71.06569163410525,
+    "has_wifi": true,
+    "is_park": true,
+    "features": ["playground", "restroom", "seating"],
+    "accessible": {
+      "value": true,
+      "notes": "Stair-free access: Baseball diamond, Field viewing area, Free sunscreen station, Monuments, Tennis court, Ornamental fountain, Ornamental garden, Playground, Public art, Seating area, Spray play; wheelchair-accessible tables; accessible play: Ground level play, Play panels, Transfer station"
+    },
+    "tree_density_nearby": 858,
+    "source_dataset": {
+      "name": "Open Space",
+      "is_park": "Open Space",
+      "has_wifi": "Wicked Free Wi-Fi Locations",
+      "features": "Park_Features",
+      "accessible": "BPRD Accessible Park Details Augmented",
+      "tree_density_nearby": "BPRD Trees"
+    }
+  },
+  {
+    "spot_id": "os-246",
+    "name": "Public Garden",
+    "lat": 42.35404405543608,
+    "lon": -71.07002114229907,
+    "has_wifi": false,
+    "is_park": true,
+    "features": [],
+    "accessible": {
+      "value": true,
+      "notes": "Stair-free access: Ornamental fountain, Grass area, Loop path; wheelchair-accessible benches"
+    },
+    "tree_density_nearby": 740,
+    "source_dataset": {
+      "name": "Open Space",
+      "is_park": "Open Space",
+      "has_wifi": "Wicked Free Wi-Fi Locations",
+      "features": "Park_Features",
+      "accessible": "BPRD Accessible Park Details Augmented",
+      "tree_density_nearby": "BPRD Trees"
+    }
+  },
+  {
+    "spot_id": "os-69",
+    "name": "Copley Square Park I",
+    "lat": 42.34995033346158,
+    "lon": -71.0763568506514,
+    "has_wifi": false,
+    "is_park": true,
+    "features": [],
+    "accessible": {
+      "value": true,
+      "notes": "Stair-free access: Ornamental fountain, Seating area, Grass area, Drinking fountain; wheelchair-accessible benches"
+    },
+    "tree_density_nearby": 104,
+    "source_dataset": {
+      "name": "Open Space",
+      "is_park": "Open Space",
+      "has_wifi": "Wicked Free Wi-Fi Locations",
+      "features": "Park_Features",
+      "accessible": "BPRD Accessible Park Details Augmented",
+      "tree_density_nearby": "BPRD Trees"
+    }
+  },
+  {
+    "spot_id": "os-56",
+    "name": "Christopher Columbus Park",
+    "lat": 42.36107407882825,
+    "lon": -71.05149422140587,
+    "has_wifi": false,
+    "is_park": true,
+    "features": ["playground"],
+    "accessible": {
+      "value": true,
+      "notes": "Stair-free access: Seating area, Spray play, Playground, Monuments, Ornamental garden, Dock viewing area; wheelchair-accessible benches; accessible play: Ground level play"
+    },
+    "tree_density_nearby": 97,
+    "source_dataset": {
+      "name": "Open Space",
+      "is_park": "Open Space",
+      "has_wifi": "Wicked Free Wi-Fi Locations",
+      "features": "Park_Features",
+      "accessible": "BPRD Accessible Park Details Augmented",
+      "tree_density_nearby": "BPRD Trees"
+    }
+  },
+  {
+    "spot_id": "os-163",
+    "name": "Jamaica Pond Park",
+    "lat": 42.31762963555226,
+    "lon": -71.12013776191124,
+    "has_wifi": true,
+    "is_park": true,
+    "features": ["restroom", "seating"],
+    "accessible": {
+      "value": true,
+      "notes": "Stair-free access: Boat dock, Fitness equipment, Loop path; wheelchair-accessible benches"
+    },
+    "tree_density_nearby": 114,
+    "source_dataset": {
+      "name": "Open Space",
+      "is_park": "Open Space",
+      "has_wifi": "Wicked Free Wi-Fi Locations",
+      "features": "Park_Features",
+      "accessible": "BPRD Accessible Park Details Augmented",
+      "tree_density_nearby": "BPRD Trees"
+    }
+  }
+]
