@@ -11,8 +11,11 @@ import io.ktor.server.plugins.calllogging.CallLogging
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.cors.routing.CORS
 import io.ktor.server.plugins.statuspages.StatusPages
+import io.ktor.server.request.receive
+import io.ktor.server.response.respond
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
+import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
 import kotlinx.serialization.json.Json
 
@@ -42,6 +45,8 @@ fun Application.module() {
         allowHeader(io.ktor.http.HttpHeaders.ContentType)
     }
 
+    val spotsRepository = SpotsRepository.loadFromFile(envVar("SPOTS_DATA_PATH") ?: "../data-service/output/spots.json")
+
     routing {
         get("/health") {
             call.respondText("""{"status":"ok"}""", ContentType.Application.Json)
@@ -50,6 +55,10 @@ fun Application.module() {
         // Remove once a real /api endpoint exists.
         get("/api/ping") {
             call.respondText("""{"message":"Hello, world!"}""", ContentType.Application.Json)
+        }
+        post("/api/query") {
+            val request = call.receive<QueryRequest>()
+            call.respond(buildQueryResponse(request, spotsRepository))
         }
     }
 }
