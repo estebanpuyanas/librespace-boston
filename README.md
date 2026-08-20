@@ -174,16 +174,16 @@ cp mobile/.env.example mobile/.env
 cp data-service/.env.example data-service/.env
 ```
 
-| Variable                          | Where                               | Purpose                                                                |
-| --------------------------------- | ----------------------------------- | ---------------------------------------------------------------------- |
-| `PORT`                            | `backend/.env`                      | Port the Ktor server listens on (8081 — not 8080, which RamaLama uses) |
-| `CLIENT_URL`                      | `backend/.env`                      | CORS origin (default `http://localhost:5173`)                          |
-| `ANTHROPIC_API_KEY`               | `backend/.env`                      | Hosted LLM (primary) — leave blank to force the RamaLama fallback      |
-| `RAMALAMA_URL` / `RAMALAMA_MODEL` | `backend/.env`                      | Local LLM fallback                                                     |
-| `CHROMA_URL`                      | `backend/.env`, `data-service/.env` | Vector search                                                          |
+| Variable                          | Where                               | Purpose                                                                   |
+| --------------------------------- | ----------------------------------- | ------------------------------------------------------------------------- |
+| `PORT`                            | `backend/.env`                      | Port the Ktor server listens on (8081 — not 8080, which RamaLama uses)    |
+| `CLIENT_URL`                      | `backend/.env`                      | CORS origin (default `http://localhost:5173`)                             |
+| `ANTHROPIC_API_KEY`               | `backend/.env`                      | Hosted LLM (primary) — leave blank to force the RamaLama fallback         |
+| `RAMALAMA_URL` / `RAMALAMA_MODEL` | `backend/.env`                      | Local LLM fallback                                                        |
+| `CHROMA_URL`                      | `backend/.env`, `data-service/.env` | Vector search                                                             |
 | `SPOTS_DATA_PATH`                 | `backend/.env`                      | Path to `output/spots.json` (default `../data-service/output/spots.json`) |
-| `VITE_API_URL`                    | `webclient/.env`                    | Backend URL for Axios                                                  |
-| `EXPO_PUBLIC_API_URL`             | `mobile/.env`                       | Backend URL for the RN app                                             |
+| `VITE_API_URL`                    | `webclient/.env`                    | Backend URL for Axios                                                     |
+| `EXPO_PUBLIC_API_URL`             | `mobile/.env`                       | Backend URL for the RN app                                                |
 
 Note: unlike Node/Vite/Expo/Python, the JVM doesn't auto-load `.env` files —
 `backend/`'s `.env` is read via `dotenv-kotlin` (see `Env.kt`), falling back
