@@ -17,6 +17,11 @@ import kotlin.test.assertTrue
 class ApplicationTest {
     private val json = Json { ignoreUnknownKeys = true }
 
+    // A small checked-in fixture (backend/src/test/resources/fixtures/spots.json) with a
+    // handful of real spots.json records from a past ETL run (Boston Common et al.), so
+    // /api/query tests are hermetic and don't depend on data-service's ETL having been run.
+    private val fixtureSpots = SpotsRepository.loadFromResource("fixtures/spots.json")
+
     @Test
     fun healthCheckReturnsOk() =
         testApplication {
@@ -36,12 +41,12 @@ class ApplicationTest {
         }
 
     // Boston Common's real coordinates — verifies the structured (no `query`) path
-    // returns actual spots joined by data-service/etl.py from output/spots.json,
+    // returns real spots (from the fixture, itself real data-service/etl.py output),
     // not stubbed/empty data.
     @Test
     fun queryWithLocationOnlyReturnsNearbySeededSpots() =
         testApplication {
-            application { module() }
+            application { module(fixtureSpots) }
             val response =
                 client.post("/api/query") {
                     contentType(ContentType.Application.Json)
@@ -65,7 +70,7 @@ class ApplicationTest {
     @Test
     fun queryWithFreeTextDoesNotAttemptSynthesis() =
         testApplication {
-            application { module() }
+            application { module(fixtureSpots) }
             val response =
                 client.post("/api/query") {
                     contentType(ContentType.Application.Json)

@@ -24,7 +24,10 @@ fun main() {
     embeddedServer(Netty, port = port, host = "0.0.0.0", module = Application::module).start(wait = true)
 }
 
-fun Application.module() {
+fun Application.module(
+    spotsRepository: SpotsRepository =
+        SpotsRepository.loadFromFile(envVar("SPOTS_DATA_PATH") ?: "../data-service/output/spots.json"),
+) {
     install(ContentNegotiation) {
         json(Json { ignoreUnknownKeys = true })
     }
@@ -44,8 +47,6 @@ fun Application.module() {
         allowMethod(io.ktor.http.HttpMethod.Post)
         allowHeader(io.ktor.http.HttpHeaders.ContentType)
     }
-
-    val spotsRepository = SpotsRepository.loadFromFile(envVar("SPOTS_DATA_PATH") ?: "../data-service/output/spots.json")
 
     routing {
         get("/health") {

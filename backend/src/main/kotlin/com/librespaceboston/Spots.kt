@@ -122,5 +122,16 @@ class SpotsRepository(private val records: List<SpotRecord>) {
             val records = json.decodeFromString<List<SpotRecord>>(file.readText())
             return SpotsRepository(records)
         }
+
+        // For tests: loads a small checked-in fixture from the classpath instead of
+        // data-service's real (gitignored, ETL-generated) output/spots.json, so tests
+        // are hermetic and don't depend on the ETL having been run.
+        fun loadFromResource(resourceName: String): SpotsRepository {
+            val text =
+                requireNotNull(SpotsRepository::class.java.classLoader.getResourceAsStream(resourceName)) {
+                    "Missing test fixture resource: $resourceName"
+                }.bufferedReader().readText()
+            return SpotsRepository(json.decodeFromString<List<SpotRecord>>(text))
+        }
     }
 }
