@@ -19,8 +19,21 @@ import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
 import kotlinx.serialization.json.Json
 
+/**
+ * `PORT` has no safe fallback: `podman-compose.yml` maps the `ramalama` container to host port
+ * 8080, so silently defaulting to 8080 here just moves the failure to whichever process binds
+ * second, surfacing as a bare `BindException` with no hint of the real cause. Fail loudly
+ * instead and point at the fix.
+ */
+fun resolvePort(rawPortValue: String?): Int =
+    rawPortValue?.toIntOrNull() ?: error(
+        "PORT is not set or not a valid integer (got: ${rawPortValue ?: "<unset>"}). " +
+            "Run `cp backend/.env.example backend/.env` and keep PORT=8081 - the unset/default " +
+            "value of 8080 collides with the ramalama container's host port in podman-compose.yml.",
+    )
+
 fun main() {
-    val port = envVar("PORT")?.toIntOrNull() ?: 8080
+    val port = resolvePort(envVar("PORT"))
     embeddedServer(Netty, port = port, host = "0.0.0.0", module = Application::module).start(wait = true)
 }
 
