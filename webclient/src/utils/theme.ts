@@ -24,7 +24,7 @@ export const toggleTheme = (): Theme => {
   return next;
 };
 
-// Returns cleanup fn — pass to useEffect return
+// Returns cleanup fn. pass to useEffect return
 export const watchSystemTheme = (callback: (theme: 'dark' | 'light') => void): (() => void) => {
   const mq = window.matchMedia('(prefers-color-scheme: dark)');
   const handler = (e: MediaQueryListEvent) => callback(e.matches ? 'dark' : 'light');

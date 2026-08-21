@@ -41,7 +41,7 @@ class ApplicationTest {
             assertEquals("""{"message":"Hello, world!"}""", response.bodyAsText())
         }
 
-    // Boston Common's real coordinates — verifies the structured (no `query`) path
+    // Boston Common's real coordinates, this verifies the structured (no `query`) path
     // returns real spots (from the fixture, itself real data-service/etl.py output),
     // not stubbed/empty data.
     @Test

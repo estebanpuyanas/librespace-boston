@@ -2,17 +2,17 @@
 
 Prioritization for hackathon day. Every item below is scored on:
 
-- **Impact** — how much it moves the Track B rubric (conversational UX,
+- **Impact** how much it moves the Track B rubric (conversational UX,
   visual answers, progressive disclosure, multilingual, accessibility,
   personalization, trust/transparency, mobile-first) or product quality.
-- **Complexity** — implementation effort given the current stack
+- **Complexity** implementation effort given the current stack
   (React 19/Vite webclient, Expo mobile, Ktor backend, no database, no
   auth system, ~4.5hr build window).
 
 Sorted into four quadrants. On hacking day: clear **Quick Wins** first,
 then pull from **Major Projects** as time allows, use **Fill-ins** as
 gap-filler polish, and only reach for **Cut First** if there's spare
-capacity — don't start there.
+capacity don't start there.
 
 ---
 
@@ -35,7 +35,7 @@ capacity — don't start there.
 
 ---
 
-## Major Projects — High impact, high complexity (do next, as time allows)
+## Major Projects. High impact, high complexity (do next, as time allows)
 
 | Item                                                                               | Rubric tie-in                                           | Why it's expensive                                                                                                                                         |
 | ---------------------------------------------------------------------------------- | ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |

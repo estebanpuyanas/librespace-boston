@@ -20,7 +20,7 @@ export const useGeolocation = (): AsyncState<Coordinates> => {
         if (!cancelled) setState({ data: location, loading: false, error: null });
         return;
       } catch {
-        // Denied, timed out, or unsupported — fall back to the IP-based lookup below.
+        // Denied, timed out, or unsupported, fall back to the IP-based lookup below.
       }
 
       try {

@@ -2,6 +2,10 @@ package com.librespaceboston
 
 import kotlinx.serialization.Serializable
 
+/**
+ * @Serializable is required for Ktor's ContentNegotiation plugin to serialize/deserialize JSON request/response bodies.
+ */
+
 @Serializable
 data class Coordinates(
     val lat: Double,
@@ -36,7 +40,7 @@ data class QueryResponse(
 )
 
 // Natural-language RAG synthesis (query understanding, translation, LLM-grounded
-// `answer`) is out of scope here — hackathon-day core product work. When `query`
+// `answer`) is out of scope here, hackathon-day core product work. When `query`
 // is present we still return the same structured/no-LLM result, with a disclaimer
 // noting synthesis isn't implemented yet, instead of calling any LLM.
 fun buildQueryResponse(
@@ -60,7 +64,7 @@ fun buildQueryResponse(
 
     val disclaimers =
         if (request.query != null) {
-            listOf("Natural-language answer synthesis isn't implemented yet — showing nearby spots only.")
+            listOf("Natural-language answer synthesis isn't implemented yet, showing nearby spots only.")
         } else {
             emptyList()
         }

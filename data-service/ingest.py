@@ -1,11 +1,11 @@
 """
 Embed a natural-language description per spot and upsert into ChromaDB.
-Run after etl.py has produced output/spots.json. Also one-time/batch — see
+Run after etl.py has produced output/spots.json. Also one-time/batch. see
 spec.md section 7. Re-run is safe: upsert by spot_id is idempotent.
 
 Vector search here is a semantic layer on top of the joined index, not a
 replacement for the structured boolean filters (has_wifi, accessible, etc.)
-— those are hard-filtered directly on the fields. Embeddings help match
+those are hard-filtered directly on the fields. Embeddings help match
 free-text query phrasing against spot descriptions for fuzzy/soft attributes
 that don't map cleanly to a field (see spec.md sections 8-9, 16).
 """
@@ -17,7 +17,7 @@ from sentence_transformers import SentenceTransformer
 
 import config
 
-MODEL_NAME = "all-MiniLM-L6-v2"  # CPU-friendly, same as drillbit's backend
+MODEL_NAME = "all-MiniLM-L6-v2"
 
 
 def describe(spot: dict) -> str:
@@ -36,7 +36,7 @@ def describe(spot: dict) -> str:
 
 
 def _flatten_metadata(spot: dict) -> dict:
-    # Chroma metadata values must be scalar (str/int/float/bool) — the raw
+    # Chroma metadata values must be scalar (str/int/float/bool), the raw
     # spot dict has a nested `accessible` object, a `features` list, and a
     # `source_dataset` object, so those get JSON-encoded for storage here.
     # The full structured record still lives in output/spots.json.
@@ -74,7 +74,9 @@ def main() -> None:
         documents=descriptions,
         metadatas=[_flatten_metadata(s) for s in spots],
     )
-    print(f"Upserted {len(spots)} spots into Chroma collection '{config.CHROMA_COLLECTION}'")
+    print(
+        f"Upserted {len(spots)} spots into Chroma collection '{config.CHROMA_COLLECTION}'"
+    )
 
 
 if __name__ == "__main__":

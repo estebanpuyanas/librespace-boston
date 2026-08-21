@@ -3,7 +3,7 @@ import './index.css';
 
 interface Props {
   children: ReactNode;
-  // Optional custom fallback UI — defaults to the built-in error card
+  // Optional custom fallback UI defaults to the built-in error card
   fallback?: ReactNode;
 }
 
@@ -12,7 +12,7 @@ interface State {
   error: Error | null;
 }
 
-// Must be a class component — React does not support function-based error boundaries.
+// Must be a class component React does not support function-based error boundaries.
 class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
@@ -24,7 +24,6 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    // Replace with your error reporting service (Sentry, Datadog, etc.)
     console.error('[ErrorBoundary]', error, info.componentStack);
   }
 

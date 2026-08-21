@@ -21,7 +21,7 @@ import pandas as pd
 
 import config
 
-# Massachusetts Mainland State Plane (meters) — used for buffering/proximity
+# Massachusetts Mainland State Plane (meters), used for buffering/proximity
 # math; everything is converted back to WGS84 (lat/lon) for output.
 METRIC_CRS = "EPSG:26986"
 GEOGRAPHIC_CRS = "EPSG:4326"
@@ -150,7 +150,9 @@ def _accessible_for(os_id: str, accessible_df: pd.DataFrame) -> Accessible:
         "No accessible play elements",
     )
 
-    value = stair_free_ok or benches_wheelchair or table_wheelchair or accessible_play_ok
+    value = (
+        stair_free_ok or benches_wheelchair or table_wheelchair or accessible_play_ok
+    )
 
     notes_parts = []
     if stair_free_ok:
@@ -162,7 +164,9 @@ def _accessible_for(os_id: str, accessible_df: pd.DataFrame) -> Accessible:
     if accessible_play_ok:
         notes_parts.append(f"accessible play: {accessible_play}")
 
-    return Accessible(value=value, notes="; ".join(notes_parts) if notes_parts else None)
+    return Accessible(
+        value=value, notes="; ".join(notes_parts) if notes_parts else None
+    )
 
 
 def join_datasets() -> list[Spot]:

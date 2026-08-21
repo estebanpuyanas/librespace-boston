@@ -14,7 +14,7 @@ const Home = () => {
 
       {!location.loading && !location.data && (
         <p className='text-muted'>
-          Couldn't determine your location — ask a question below to get started.
+          Couldn't determine your location. Ask a question below to get started.
         </p>
       )}
 

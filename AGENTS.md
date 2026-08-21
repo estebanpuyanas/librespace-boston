@@ -21,7 +21,7 @@ hackathon constraints) and `README.md` (fuller architecture rationale).
 project. `Makefile` ties all three build tools together.
 
 There is no database. The ETL's output (`data-service/output/spots.json`) is
-small and read-mostly — backend loads it into memory rather than standing up
+small and read-mostly, backend loads it into memory rather than standing up
 Postgres/Mongo.
 
 ---
@@ -56,10 +56,10 @@ cd mobile && npx tsc --noEmit
 - `backend/openapi.yaml` is the single source of truth. Add every new
   endpoint and schema here **before or alongside** writing the Ktor route.
 - After any change to it, regenerate: `npm run generate --workspace=shared`.
-- Never hand-edit `shared/generated/` — it's gitignored and fully
+- Never hand-edit `shared/generated/` it's gitignored and fully
   reproducible from the spec.
 - CI (`.github/workflows/ci.yml`) regenerates the client and typechecks
-  `webclient`/`mobile` against it on every push/PR — that's the real gate
+  `webclient`/`mobile` against it on every push/PR that's the real gate
   against drift. `make setup` also points git at `.githooks/` (pre-commit
   validates the spec parses if it's staged; post-merge auto-regenerates
   after a pull that touches it) as a local convenience, not a substitute
@@ -72,7 +72,7 @@ cd mobile && npx tsc --noEmit
 - `LlmConfig.kt` encodes the two-tier LLM strategy: hosted Claude API primary
   (`ANTHROPIC_API_KEY`), RamaLama local fallback (`RAMALAMA_URL`,
   `RAMALAMA_MODEL`, served by the `ramalama` container). Don't hardcode a
-  single provider — always route through this config.
+  single provider always route through this config.
 
 ### Frontend (webclient + mobile)
 
@@ -91,7 +91,7 @@ cd mobile && npx tsc --noEmit
 
 - `webclient/src/index.css` owns all design tokens as CSS custom properties.
   Never introduce a new hardcoded color, spacing value, or z-index in a
-  component file — use `var(--...)`.
+  component file use `var(--...)`.
 - Dark theme is `[data-theme='dark']` overrides in `index.css`, toggled via
   `webclient/src/utils/theme.ts`. CSS-only — no conditional rendering for
   theming.
@@ -99,7 +99,7 @@ cd mobile && npx tsc --noEmit
 ### data-service (Python/uv)
 
 - One-time batch job (`etl.py` then `ingest.py`), not a live path. Never add
-  a live HTTP server here — if the backend needs to talk to it at query time,
+  a live HTTP server here if the backend needs to talk to it at query time,
   that's a design mistake per spec.md section 6 (every query needs the same
   fused index, not a per-request call to a separate service).
 - `torch` is pinned as a **direct** dependency in `pyproject.toml` even
@@ -107,7 +107,7 @@ cd mobile && npx tsc --noEmit
   overrides only apply to direct dependencies, and the override is what
   forces the CPU-only build (see the comment in `pyproject.toml`). If you add
   a new dependency that pulls torch back in as CUDA, re-check
-  `.venv` size (`du -sh data-service/.venv` — should be ~1.5GB, not ~5GB).
+  `.venv` size (`du -sh data-service/.venv` should be ~1.5GB, not ~5GB).
 
 ---
 
@@ -139,40 +139,40 @@ cd mobile && npx tsc --noEmit
 ### Comments
 
 - Write a comment only when the **why** is non-obvious. Never multi-line
-  docblocks — one short line max. Don't comment out code and commit it.
+  docblocks, one short line max. Don't comment out code and commit it.
 
 ### React
 
 - Function components only (exception: `ErrorBoundary`, must stay a class).
 - Always clean up `useEffect` side effects.
-- `useEffect` is not for deriving state from other state — compute inline or
+- `useEffect` is not for deriving state from other state, compute inline or
   `useMemo`.
 
 ---
 
 ## Adding a New Feature — Checklist
 
-1. `backend/openapi.yaml` — add paths and schemas first.
-2. `backend/src/main/kotlin/com/librespaceboston/` — implement the route +
+1. `backend/openapi.yaml` add paths and schemas first.
+2. `backend/src/main/kotlin/com/librespaceboston/` implement the route +
    whatever service/model layer it needs.
-3. `npm run generate --workspace=shared` — regenerate the TS client.
-4. `webclient/src/services/` and/or `mobile/services/` — typed wrappers.
-5. `webclient/src/hooks/use<Feature>.ts` — state + side effects (webclient).
-6. `webclient/src/components/<Feature>/` — `index.tsx` + `index.css`.
-7. `webclient/src/App.tsx` — add the route.
-8. `backend/src/test/kotlin/` — test the new route.
+3. `npm run generate --workspace=shared` regenerate the TS client.
+4. `webclient/src/services/` and/or `mobile/services/` typed wrappers.
+5. `webclient/src/hooks/use<Feature>.ts` state + side effects (webclient).
+6. `webclient/src/components/<Feature>/` index.tsx` + `index.css`.
+7. `webclient/src/App.tsx` add the route.
+8. `backend/src/test/kotlin/` test the new route.
 
 ---
 
 ## Common Gotchas
 
 - **Two build systems, two "roots."** `backend/` has its own Gradle root
-  (`settings.gradle.kts` lives there, not at the repo root) — `cd backend`
+  (`settings.gradle.kts` lives there, not at the repo root) `cd backend`
   before any `./gradlew` command, or use the `Makefile` targets.
 - **`shared/generated/` doesn't exist until you generate it.** Fresh clone →
   `npm install` does **not** auto-generate it. Run
   `npm run generate --workspace=shared` (needs `backend/openapi.yaml` to
-  exist, which it does — just needs to be current for whatever you're
+  exist, which it does just needs to be current for whatever you're
   building against).
 - **RamaLama vs Ollama.** The `ramalama` container pulls
   `ollama://llama3.2:3b` — that's RamaLama's syntax for sourcing a model from
@@ -204,14 +204,14 @@ cd mobile && npx tsc --noEmit
   axios.** `orval.config.ts` configures every generated call to go through
   `customInstance`, which reads its base URL from a module-level axios
   instance. Each app calls `setApiBaseUrl(...)` once at startup
-  (`webclient/src/services/axios.ts`, `mobile/services/api.ts`) — don't
+  (`webclient/src/services/axios.ts`, `mobile/services/api.ts`) don't
   create a second, parallel axios instance for API calls; import
   `getLibreSpaceBostonAPI` from `shared` instead.
 - **Mobile resolves the backend host automatically on a physical device.**
   `EXPO_PUBLIC_API_URL` defaults to `localhost`, which on a real phone means
   the phone itself, not your laptop. `mobile/services/api.ts` falls back to
   deriving the LAN IP from Expo's own dev-server host
-  (`Constants.expoConfig.hostUri`) when the env var isn't set explicitly —
+  (`Constants.expoConfig.hostUri`) when the env var isn't set explicitly
   no manual `.env` editing needed per teammate/laptop.
 - **If venue wifi blocks phone-to-laptop LAN traffic** (AP isolation is
   common on campus/conference networks), `npx expo start --tunnel` routes

@@ -6,7 +6,7 @@ import type { AsyncState } from '../types/types';
 const initialState: AsyncState<QueryResponse> = { data: null, loading: false, error: null };
 
 // Fetches the plain "what's near me" spots list (no `query` text, so the
-// backend skips LLM synthesis) once a location is available — this is what
+// backend skips LLM synthesis) once a location is available and this is what
 // populates the homepage bento grid.
 export const useNearbySpots = (location: Coordinates | null): AsyncState<QueryResponse> => {
   const [state, setState] = useState<AsyncState<QueryResponse>>(initialState);

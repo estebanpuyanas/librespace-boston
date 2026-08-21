@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Sanity-checks backend/openapi.yaml when it's staged, by regenerating the
-# shared client from it. Blocks the commit on a malformed spec — the real
+# shared client from it. Blocks the commit on a malformed spec. the real
 # sync check (typechecking webclient/mobile against it) runs in CI, this is
 # just a fast local trip-wire.
 set -uo pipefail

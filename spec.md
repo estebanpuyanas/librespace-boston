@@ -6,10 +6,10 @@
 
 Boston is expensive. Students, teenagers, remote workers, recent immigrants, tourists,
 low-income residents, and people between appointments often need somewhere to sit, use
-Wi-Fi, cool down, charge a device, or access a restroom — without buying a $7 coffee.
+Wi-Fi, cool down, charge a device, or access a restroom without buying a $7 coffee.
 
 The assistant understands a _situational, multi-constraint_ request and combines
-multiple independent public datasets into one practical, cited recommendation — instead
+multiple independent public datasets into one practical, cited recommendation instead
 of requiring a resident to cross-reference five separate city data sources themselves.
 
 ## 2. Example queries
@@ -23,7 +23,7 @@ of requiring a resident to cross-reference five separate city data sources thems
 
 ## 3. Why it stands out
 
-Not a map of parks, not a Wi-Fi finder — the assistant fuses five independent datasets
+Not a map of parks, not a Wi-Fi finder the assistant fuses five independent datasets
 into one situational answer with per-claim source grounding:
 
 > "Malcolm X Park is 0.4 miles away. It has accessible entrances, seating-related park
@@ -68,7 +68,7 @@ and amenity constraints, then ranked and explained. The architecture is therefor
 
 1. A **one-time ETL** that joins all five sources into a single "spots" index.
 2. A **per-query pipeline** that extracts structured constraints from the question and
-   filters/ranks that index — reaching for semantic/vector search only on genuinely
+   filters/ranks that index reaching for semantic/vector search only on genuinely
    fuzzy attributes (e.g. "quiet," "peaceful") that have no direct field.
 
 ## 7. Data layer — one-time ETL
@@ -88,18 +88,18 @@ source_dataset    (per field, for citation)
 
 Spatial join approach: nearest-neighbor / within-radius joins on lat/lon
 (`geopandas` + `shapely`, or JTS if staying entirely on the JVM). Inspect and rerun as
-needed — this is a batch job, not a live path, so get it right in prep, not on the day.
+needed this is a batch job, not a live path, so get it right in prep, not on the day.
 
 ## 8. Query pipeline (per request)
 
 1. **Query understanding** (one LLM call): detect language, translate to English,
-   extract structured constraints — location/neighborhood or device geolocation, time
+   extract structured constraints location/neighborhood or device geolocation, time
    budget if given, required amenities (Wi-Fi, shade, accessible, playground, restroom,
    free-by-default). Explicitly flag any requested attribute with no matching field
    (e.g. "quiet") as unsupported rather than guessing.
 2. **Geo-filter**: resolve location to a radius, filter the joined index to candidates
    within it.
-3. **Constraint filter/rank**: hard-filter on boolean amenity flags (structured filter —
+3. **Constraint filter/rank**: hard-filter on boolean amenity flags (structured filter
    no embeddings needed); rank on fuzzy proxies (e.g. "shade" → `tree_density_nearby`).
 4. **Grounded synthesis**: generate the answer in English, citing which dataset backs
    each claim, and say plainly when a requested attribute isn't something the data can
@@ -113,11 +113,11 @@ needed — this is a batch job, not a live path, so get it right in prep, not on
   answer edges.
 - Tier your language support honestly: fully validate English + Spanish before the
   event; treat others (Vietnamese, etc.) as best-effort with a visible
-  "machine-translated — verify details" disclaimer. An honest tiered approach scores
+  "machine-translated verify details" disclaimer. An honest tiered approach scores
   better under Track B's "Trust & Transparency" criterion than silent underperformance
   in a less-tested language.
 - Test the actual target languages named in your own demo script (Vietnamese) against
-  the chosen model before Saturday — don't assume quality.
+  the chosen model before Saturday don't assume quality.
 
 ## 10. Repo layout (monorepo)
 
@@ -139,32 +139,32 @@ outside Gradle — Make is the top-level layer that ties everything together.
 
 ## 11. Language/framework choices
 
-- **Backend:** Kotlin + **Ktor** (not Spring — faster cold start, less reflection,
+- **Backend:** Kotlin + **Ktor** (not Spring faster cold start, less reflection,
   native fit with `kotlinx.serialization`).
 - **Shared module:** plain Kotlin/JVM, not full Kotlin Multiplatform. Android already
   runs JVM bytecode, so a shared `@Serializable` DTO module gives type-safety between
   backend and mobile without KMP tooling. Full KMP would add real complexity for no
-  payoff here, since the web client is React/TS, not Kotlin/JS — save it for if iOS is
+  payoff here, since the web client is React/TS, not Kotlin/JS save it for if iOS is
   ever added.
 - **Mobile:** Android, Kotlin. Compose is recommended for speed, but only if the
-  teammate is already comfortable in it. Use **Ktor Client** for HTTP — same library
+  teammate is already comfortable in it. Use **Ktor Client** for HTTP same library
   and serializer as the backend, one dependency graph instead of two.
 - **Web:** React + TypeScript.
-- **Data/ETL — two viable forks:**
-  - **Option A — all-Kotlin.** Backend performs the spatial join itself via JTS, calls
+- **Data/ETL two viable forks:**
+  - **Option A all-Kotlin.** Backend performs the spatial join itself via JTS, calls
     Ollama/Chroma directly over their HTTP APIs. One language, one deploy unit, no
     cross-service boundary during the demo.
-  - **Option B — split.** A separate `data-service/` (Python + geopandas/shapely +
+  - **Option B split.** A separate `data-service/` (Python + geopandas/shapely +
     LangChain/Chroma) does the one-time ETL and hosts retrieval; the Kotlin backend
     proxies to it. Only worth the extra moving part if someone is meaningfully faster in
     Python specifically for the geospatial join.
   - **Recommendation:** decide based on actual team fluency (Python vs. JTS). The ETL is
     one-time and batch, so Option A's risk is front-loaded into setup, not live during
-    the demo — it's less risky than it sounds.
+    the demo it's less risky than it sounds.
 
 ## 12. Containers
 
-Use Docker/Podman only for **stateful infra dependencies** — ChromaDB and Ollama both
+Use Docker/Podman only for **stateful infra dependencies** ChromaDB and Ollama both
 ship official images. Don't containerize actively-edited app code (backend/web/mobile):
 it slows the dev loop, and Android emulation inside a container is a real pain.
 
@@ -186,7 +186,7 @@ volumes:
 ## 13. Build orchestration (Makefile)
 
 Gradle owns the JVM side (backend, shared, mobile), npm owns web, Python (if used) owns
-the ETL service — Make is a thin layer tying them together, not a replacement for any of
+the ETL service Make is a thin layer tying them together, not a replacement for any of
 them.
 
 ```makefile
@@ -248,11 +248,11 @@ type drift without cross-language codegen headaches.
 
 ## 16. Open risks to stress-test
 
-- **Join key mismatches** across datasets from different city departments — a known,
+- **Join key mismatches** across datasets from different city departments a known,
   recurring problem in Boston open data. Verify field-level join keys during ETL
   prototyping, not assume they align.
 - **Tree-density-as-shade-proxy is an approximation.** Worth an explicit caveat in the
-  demo narrative — turns a real limitation into a trust/honesty point rather than an
+  demo narrative turns a real limitation into a trust/honesty point rather than an
   unaddressed gap.
 - **Unsupported soft attributes** ("quiet," "peaceful") have no dataset field and must
   be explicitly flagged as unsupported by the assistant, never guessed.

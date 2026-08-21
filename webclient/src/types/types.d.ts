@@ -1,8 +1,8 @@
 // Client-side type augmentations and convenience aliases.
-// Domain types are generated into 'shared' from backend/openapi.yaml — see shared/README.md.
+// Domain types are generated into 'shared' from backend/openapi.yaml. see shared/README.md.
 
 declare global {
-  // Vite environment variables — extend this as you add VITE_* vars to .env
+  // Vite environment variables, extend this as you add VITE_* vars to .env
   interface ImportMetaEnv {
     readonly VITE_API_URL: string;
   }
