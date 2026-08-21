@@ -28,8 +28,8 @@ import kotlinx.serialization.json.Json
 fun resolvePort(rawPortValue: String?): Int =
     rawPortValue?.toIntOrNull() ?: error(
         "PORT is not set or not a valid integer (got: ${rawPortValue ?: "<unset>"}). " +
-                "Run `cp backend/.env.example backend/.env` and keep PORT=8081 - the unset/default " +
-                "value of 8080 collides with the ramalama container's host port in podman-compose.yml.",
+            "Run `cp backend/.env.example backend/.env` and keep PORT=8081 - the unset/default " +
+            "value of 8080 collides with the ramalama container's host port in podman-compose.yml.",
     )
 
 fun main() {
