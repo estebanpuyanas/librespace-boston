@@ -7,7 +7,7 @@
 }
 
 .error-boundary-card {
-  max-width: 480px;
+  max-width: 30rem;
   width: 100%;
   text-align: center;
   display: flex;
