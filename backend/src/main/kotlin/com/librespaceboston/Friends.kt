@@ -3,9 +3,9 @@ package com.librespaceboston
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.insertIgnore
 import org.jetbrains.exposed.sql.javatime.timestamp
 import org.jetbrains.exposed.sql.selectAll
@@ -135,17 +135,26 @@ class ExposedFriendsRepository(private val database: Database) : FriendsReposito
                     while (!FriendCodes.selectAll().where { FriendCodes.code eq code }.empty()) {
                         code = generateFriendCode()
                     }
-                    FriendCodes.insert {
+                    // insertIgnore, not insert - two concurrent first-time requests for the
+                    // same device both reach here; the loser's insert is a race-safe no-op
+                    // instead of a unique-constraint 500, and the re-select below picks up
+                    // whichever code actually won.
+                    FriendCodes.insertIgnore {
                         it[FriendCodes.deviceId] = deviceId
                         it[FriendCodes.code] = code
                     }
-                    code
+                    FriendCodes
+                        .selectAll()
+                        .where { FriendCodes.deviceId eq deviceId }
+                        .single()
+                        .get(FriendCodes.code)
                 }
         }
 
     override suspend fun findDeviceIdByCode(code: String): UUID? =
         newSuspendedTransaction(db = database) {
-            FriendCodes.selectAll().where { FriendCodes.code eq code }.singleOrNull()?.get(FriendCodes.deviceId)
+            val normalized = code.trim().uppercase()
+            FriendCodes.selectAll().where { FriendCodes.code eq normalized }.singleOrNull()?.get(FriendCodes.deviceId)
         }
 
     override suspend fun addFriend(
@@ -177,19 +186,19 @@ class ExposedFriendsRepository(private val database: Database) : FriendsReposito
 
     override suspend fun listFriends(deviceId: UUID): List<Friend> =
         newSuspendedTransaction(db = database) {
-            Friendships
-                .selectAll()
-                .where { Friendships.deviceId eq deviceId }
-                .map { row ->
-                    val friendId = row[Friendships.friendDeviceId]
-                    val code =
-                        FriendCodes
-                            .selectAll()
-                            .where { FriendCodes.deviceId eq friendId }
-                            .singleOrNull()
-                            ?.get(FriendCodes.code)
-                    Friend(device_id = friendId.toString(), friend_code = code)
-                }
+            val friendIds =
+                Friendships
+                    .selectAll()
+                    .where { Friendships.deviceId eq deviceId }
+                    .map { it[Friendships.friendDeviceId] }
+            val codesByFriendId =
+                FriendCodes
+                    .selectAll()
+                    .where { FriendCodes.deviceId inList friendIds }
+                    .associate { it[FriendCodes.deviceId] to it[FriendCodes.code] }
+            friendIds.map { friendId ->
+                Friend(device_id = friendId.toString(), friend_code = codesByFriendId[friendId])
+            }
         }
 
     override suspend fun shareSpot(
@@ -239,7 +248,7 @@ class InMemoryFriendsRepository : FriendsRepository {
             code
         }
 
-    override suspend fun findDeviceIdByCode(code: String): UUID? = deviceByCode[code]
+    override suspend fun findDeviceIdByCode(code: String): UUID? = deviceByCode[code.trim().uppercase()]
 
     override suspend fun addFriend(
         deviceId: UUID,
