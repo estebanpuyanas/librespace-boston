@@ -66,6 +66,17 @@
   color: var(--text-muted);
 }
 
+.language-picker {
+  min-height: 32px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  background: var(--bg-color);
+  color: var(--text-color);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  padding: 0 var(--spacing-sm);
+}
+
 .icon-btn {
   display: flex;
   align-items: center;

@@ -1,0 +1,24 @@
+{
+  "app": { "name": "FreeSpace Boston" },
+  "home": {
+    "headline": "Encuentra un lugar gratuito donde estar.",
+    "description": "Encuentra lugares públicos para sentarte, recargar, refrescarte y pasar el tiempo — gratis.",
+    "searchPlaceholder": "¿Qué necesitas ahora mismo?",
+    "freeNote": "Siempre gratis"
+  },
+  "language": {
+    "title": "Elige tu idioma",
+    "description": "Puedes cambiarlo cuando quieras en configuración.",
+    "deviceLanguage": "Usando el idioma de tu dispositivo"
+  },
+  "result": {
+    "bestMatch": "Mejor opción",
+    "getDirections": "Cómo llegar",
+    "save": "Guardar lugar",
+    "saved": "Guardado",
+    "sources": "Fuentes",
+    "shadeDisclaimer": "Los árboles públicos cercanos son una señal aproximada de sombra, no datos verificados de cobertura arbórea."
+  },
+  "settings": { "title": "Configuración", "language": "Idioma", "notifications": "Notificaciones" },
+  "translation": { "disclaimer": "Traducción automática — verifica los detalles." }
+}

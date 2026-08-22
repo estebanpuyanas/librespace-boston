@@ -1,0 +1,16 @@
+{
+  "app": { "name": "FreeSpace Boston" },
+  "settings": { "language": "语言" },
+  "web": {
+    "navigation": { "home": "首页" },
+    "theme": { "toggle": "切换主题" },
+    "home": {
+      "title": "FreeSpace Boston",
+      "description": "询问在波士顿有哪些不用花钱就能去的地方。",
+      "findingNearby": "正在查找附近地点…",
+      "locationUnavailable": "无法确定你的位置。请在下方提问以开始使用。",
+      "loadingSpots": "正在加载附近地点…",
+      "distanceAway": "{{distance}} 米外"
+    }
+  }
+}

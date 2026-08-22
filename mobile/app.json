@@ -7,6 +7,17 @@
     "orientation": "portrait",
     "icon": "./assets/librespace-logo.png",
     "userInterfaceStyle": "light",
+    "plugins": [
+      [
+        "expo-localization",
+        {
+          "supportedLocales": {
+            "android": ["en", "es", "vi", "zh-Hans"],
+            "ios": ["en", "es", "vi", "zh-Hans"]
+          }
+        }
+      ]
+    ],
     "ios": {
       "bundleIdentifier": "com.librespace.boston",
       "supportsTablet": true,

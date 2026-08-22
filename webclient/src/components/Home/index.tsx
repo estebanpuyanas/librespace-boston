@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useGeolocation } from '../../hooks/useGeolocation';
 import { useNearbySpots } from '../../hooks/useNearbySpots';
+import { useTranslation } from 'react-i18next';
 import type { Spot } from 'shared';
 import './index.css';
 
@@ -52,6 +53,7 @@ const spotTags = (spot: Spot) =>
   ].filter(Boolean) as string[];
 
 const Home = () => {
+  const { t } = useTranslation();
   const location = useGeolocation();
   const nearby = useNearbySpots(location.data);
   const [query, setQuery] = useState(
