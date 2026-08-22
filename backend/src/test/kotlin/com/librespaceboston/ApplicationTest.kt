@@ -328,6 +328,39 @@ class ApplicationTest {
             assertTrue(body.disclaimers.isNotEmpty())
         }
 
+    // Regression for the review fix in this change: when no spots match the structural filter,
+    // buildQueryResponse must return early with the "no nearby spots" disclaimer and skip both
+    // LLM calls entirely, rather than translating/synthesizing against an empty spot list. Wiring
+    // a brokenLlmClient() here proves it: if either LLM call were attempted, the broken client's
+    // failure would surface as the "unavailable" disclaimers instead of the expected one.
+    @Test
+    fun queryWithFreeTextAndNoMatchingSpotsSkipsLlmCallsEntirely() =
+        testApplication {
+            application {
+                module(
+                    spotsRepository = fixtureSpots,
+                    chromaClient = mockChromaClient(),
+                    embeddingClient = mockEmbeddingClient(),
+                    llmClient = brokenLlmClient(),
+                )
+            }
+            val response =
+                client.post("/api/query") {
+                    contentType(ContentType.Application.Json)
+                    setBody(
+                        """{"query": "somewhere quiet with wifi", "location": {"lat": 0.0, "lon": 0.0}, "radius_meters": 100}""",
+                    )
+                }
+            assertEquals(HttpStatusCode.OK, response.status)
+
+            val body = json.decodeFromString<QueryResponse>(response.bodyAsText())
+            assertNull(body.detected_language)
+            assertNull(body.translated_query)
+            assertNull(body.answer)
+            assertTrue(body.spots.isEmpty())
+            assertEquals(listOf("No nearby spots matched your search, try a larger radius or fewer filters."), body.disclaimers)
+        }
+
     // Real semantic-retrieval path: a free-text query ("quiet place to sit") that wouldn't match
     // any structured amenity filter re-ranks the structurally-filtered spots by the relevance
     // order a (mocked) Chroma similarity query returns, instead of pure distance.
