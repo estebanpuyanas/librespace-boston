@@ -1,5 +1,6 @@
 package com.librespaceboston
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -122,14 +123,19 @@ private suspend fun rankBySemanticRelevance(
     totalSpotCount: Int,
     chromaClient: ChromaClient,
     embeddingClient: EmbeddingClient,
-): List<Spot> {
-    val collection = chromaClient.findCollectionByName(SPOTS_COLLECTION_NAME) ?: return structuralSpots
-    val queryEmbedding = embeddingClient.embed(queryText)
-    val where = if ("wifi" in amenities) buildJsonObject { put("has_wifi", true) } else null
-    val response = chromaClient.query(collection.id, queryEmbedding, where = where, nResults = totalSpotCount)
+): List<Spot> =
+    try {
+        val collection = chromaClient.findCollectionByName(SPOTS_COLLECTION_NAME) ?: return structuralSpots
+        val queryEmbedding = embeddingClient.embed(queryText)
+        val where = if ("wifi" in amenities) buildJsonObject { put("has_wifi", true) } else null
+        val response = chromaClient.query(collection.id, queryEmbedding, where = where, nResults = totalSpotCount)
 
-    val rank = response.matches().withIndex().associate { (index, match) -> match.id to index }
-    return structuralSpots.sortedWith(
-        compareBy({ rank[it.spot_id] ?: Int.MAX_VALUE }, { it.distance_meters }),
-    )
-}
+        val rank = response.matches().withIndex().associate { (index, match) -> match.id to index }
+        structuralSpots.sortedWith(
+            compareBy({ rank[it.spot_id] ?: Int.MAX_VALUE }, { it.distance_meters }),
+        )
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        structuralSpots
+    }
