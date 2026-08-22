@@ -25,6 +25,15 @@
     },
     "plugins": [
       [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#F5F4ED",
+          "image": "./assets/librespace-logo.png",
+          "imageWidth": 180,
+          "resizeMode": "contain"
+        }
+      ],
+      [
         "expo-location",
         {
           "locationWhenInUsePermission": "LibreSpace uses your location to show free places near you."

@@ -23,6 +23,7 @@ import { ProfileSheet } from '../components/ProfileSheet';
 import type { ProfileDetails } from '../components/ProfileSheet';
 import { PromptList } from '../components/PromptList';
 import { QueryComposer } from '../components/QueryComposer';
+import { RagAnswer } from '../components/RagAnswer';
 import { ResultViewToggle } from '../components/ResultViewToggle';
 import type { ResultView } from '../components/ResultViewToggle';
 import { SpotCard } from '../components/SpotCard';
@@ -50,7 +51,10 @@ export const HomeScreen = () => {
   const [view, setView] = useState<ResultView>('list');
   const { isLive, location: liveLocation } = useLiveLocation(liveLocationEnabled);
   const locationForSearch = liveLocation ?? manualLocation;
-  const { loading, response, search, usingDemoData } = useFreeSpaceSearch(locationForSearch);
+  const { error, loading, response, search, usingDemoData } = useFreeSpaceSearch(
+    locationForSearch,
+    language,
+  );
   const copy = getMobileCopy(language);
   const { loading: ipLocationLoading, location: ipSuggestion } = useIpLocation(
     locationPickerOpen && locationForSearch === null,
@@ -169,6 +173,7 @@ export const HomeScreen = () => {
             <Text style={styles.loadingText}>{copy.loading}</Text>
           </View>
         )}
+        {error && !loading && <Text style={styles.errorBanner}>{error}</Text>}
         {response && !loading && (
           <View style={styles.results}>
             <View style={styles.resultHeader}>
@@ -179,6 +184,7 @@ export const HomeScreen = () => {
               <Text style={styles.sortedLabel}>{copy.sortedByFit}</Text>
             </View>
             {usingDemoData && <Text style={styles.demoBanner}>{copy.demoNotice}</Text>}
+            <RagAnswer answer={response.answer} copy={copy} disclaimers={response.disclaimers} />
             <ResultViewToggle view={view} onChange={setView} />
             {spots.length > 0 ? (
               view === 'map' && mapLocation ? (
@@ -294,6 +300,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#E6EEE2',
     borderRadius: 10,
     color: '#456049',
+    fontSize: 11,
+    lineHeight: 16,
+    marginHorizontal: 22,
+    marginTop: 14,
+    padding: 10,
+  },
+  errorBanner: {
+    backgroundColor: '#F1E7D5',
+    borderRadius: 10,
+    color: '#71562E',
     fontSize: 11,
     lineHeight: 16,
     marginHorizontal: 22,

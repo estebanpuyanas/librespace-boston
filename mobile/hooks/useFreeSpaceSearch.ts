@@ -3,7 +3,7 @@ import { useCallback, useState } from 'react';
 import type { Amenity, QueryResponse } from 'shared';
 import { filterSpotsForAmenities, getDemoResponse } from '../data/demo-spots';
 import { postQuery } from '../services/query';
-import type { AmenityLabel, SearchLocation } from '../types/app';
+import type { AmenityLabel, AppLanguage, SearchLocation } from '../types/app';
 
 interface SearchState {
   error: string | null;
@@ -23,7 +23,7 @@ const apiAmenity: Partial<Record<AmenityLabel, Amenity>> = {
 const toApiAmenities = (selected: AmenityLabel[]): Amenity[] =>
   selected.flatMap(label => (apiAmenity[label] ? [apiAmenity[label]] : []));
 
-export const useFreeSpaceSearch = (location: SearchLocation | null) => {
+export const useFreeSpaceSearch = (location: SearchLocation | null, language: AppLanguage) => {
   const [state, setState] = useState<SearchState>({
     error: null,
     loading: false,
@@ -47,6 +47,7 @@ export const useFreeSpaceSearch = (location: SearchLocation | null) => {
               source: searchLocation.source,
             },
           }),
+          language,
           query,
           radius_meters: 1500,
         });
@@ -72,7 +73,7 @@ export const useFreeSpaceSearch = (location: SearchLocation | null) => {
         return needsManualLocation;
       }
     },
-    [location],
+    [language, location],
   );
 
   return { ...state, search };
