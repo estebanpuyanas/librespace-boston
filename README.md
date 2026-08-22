@@ -58,11 +58,13 @@ npm run generate --workspace=shared
 ```
 
 `POST /api/query` (spec.md section 8) is fully specified. The backend
-implements its structured/no-LLM path (location + optional radius/amenities
-→ ranked spots + highlights); the natural-language RAG path (query
-understanding, translation, LLM-synthesized `answer`) is intentionally
-reserved for hackathon-day core product work — see `backend/src/main/kotlin/
-com/librespaceboston/Query.kt`.
+implements the structured path (location + optional radius/amenities →
+ranked spots + highlights) plus real semantic retrieval: when `query` is
+present it's embedded and used to re-rank the structurally-filtered spots
+by similarity against ChromaDB (see `ChromaClient.kt`, `EmbeddingClient.kt`).
+Query understanding, translation, and the LLM-synthesized `answer` are still
+intentionally reserved for hackathon-day core product work — see
+`backend/src/main/kotlin/com/librespaceboston/Query.kt`.
 
 ---
 
@@ -117,7 +119,9 @@ CORS, and routing (`/health`, `/api/ping`, `POST /api/query`); `LlmConfig.kt`
 is env-driven config for the local LLM setup below; `Spots.kt` loads
 `data-service/output/spots.json` into memory and ranks by haversine
 distance; `Query.kt` holds the `/api/query` request/response models and the
-structured-path logic (`buildQueryResponse`). Route handlers stay
+query-handling logic (`buildQueryResponse`), including semantic re-ranking
+via `ChromaClient.kt`/`EmbeddingClient.kt` when `query` is present. Route
+handlers stay
 HTTP-only — no business logic past the route, same layering discipline as
 any other backend.
 
@@ -169,15 +173,16 @@ cp mobile/.env.example mobile/.env
 cp data-service/.env.example data-service/.env
 ```
 
-| Variable                          | Where                               | Purpose                                                                   |
-| --------------------------------- | ----------------------------------- | ------------------------------------------------------------------------- |
-| `PORT`                            | `backend/.env`                      | Port the Ktor server listens on (8081 — not 8080, which RamaLama uses)    |
-| `CLIENT_URL`                      | `backend/.env`                      | CORS origin (default `http://localhost:5173`)                             |
-| `RAMALAMA_URL` / `RAMALAMA_MODEL` | `backend/.env`                      | Local LLM config                                                          |
-| `CHROMA_URL`                      | `backend/.env`, `data-service/.env` | Vector search                                                             |
-| `SPOTS_DATA_PATH`                 | `backend/.env`                      | Path to `output/spots.json` (default `../data-service/output/spots.json`) |
-| `VITE_API_URL`                    | `webclient/.env`                    | Backend URL for Axios                                                     |
-| `EXPO_PUBLIC_API_URL`             | `mobile/.env`                       | Backend URL for the RN app                                                |
+| Variable                            | Where                               | Purpose                                                                   |
+| ----------------------------------- | ----------------------------------- | ------------------------------------------------------------------------- |
+| `PORT`                              | `backend/.env`                      | Port the Ktor server listens on (8081 — not 8080, which RamaLama uses)    |
+| `CLIENT_URL`                        | `backend/.env`                      | CORS origin (default `http://localhost:5173`)                             |
+| `RAMALAMA_URL` / `RAMALAMA_MODEL`   | `backend/.env`                      | Local LLM config                                                          |
+| `CHROMA_URL`                        | `backend/.env`, `data-service/.env` | Vector search                                                             |
+| `EMBEDDING_URL` / `EMBEDDING_MODEL` | `backend/.env`                      | `ramalama-embeddings` container, used to embed `/api/query` text          |
+| `SPOTS_DATA_PATH`                   | `backend/.env`                      | Path to `output/spots.json` (default `../data-service/output/spots.json`) |
+| `VITE_API_URL`                      | `webclient/.env`                    | Backend URL for Axios                                                     |
+| `EXPO_PUBLIC_API_URL`               | `mobile/.env`                       | Backend URL for the RN app                                                |
 
 Note: unlike Node/Vite/Expo/Python, the JVM doesn't auto-load `.env` files —
 `backend/`'s `.env` is read via `dotenv-kotlin` (see `Env.kt`), falling back
@@ -195,7 +200,7 @@ make setup   # npm install (webclient/mobile/shared) + gradle deps + uv sync
 ### 4. Start infra containers
 
 ```bash
-make infra-up   # ramalama (localhost:8080) + chroma (localhost:8000)
+make infra-up   # ramalama (localhost:8080) + ramalama-embeddings (localhost:8180) + chroma (localhost:8000)
 ```
 
 First run pulls/builds the RamaLama image and, if the model volume doesn't
@@ -216,12 +221,13 @@ make web-dev        # Vite dev server, http://localhost:5173
 make mobile-dev      # Expo dev server — scan the QR code with Expo Go
 ```
 
-| Service  | URL                     |
-| -------- | ----------------------- |
-| Backend  | `http://localhost:8081` |
-| Web      | `http://localhost:5173` |
-| RamaLama | `http://localhost:8080` |
-| Chroma   | `http://localhost:8000` |
+| Service             | URL                     |
+| ------------------- | ----------------------- |
+| Backend             | `http://localhost:8081` |
+| Web                 | `http://localhost:5173` |
+| RamaLama            | `http://localhost:8080` |
+| RamaLama Embeddings | `http://localhost:8180` |
+| Chroma              | `http://localhost:8000` |
 
 ### Podman
 

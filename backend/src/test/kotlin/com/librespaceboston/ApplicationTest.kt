@@ -62,6 +62,27 @@ class ApplicationTest {
                 },
         )
 
+    // Simulates the real Chroma/embeddings containers being unreachable or misbehaving: the
+    // /collections lookup returns a body that fails to parse, so findCollectionByName throws.
+    private fun brokenChromaClient(): ChromaClient =
+        ChromaClient(
+            config = ChromaConfig(baseUrl = "http://localhost:8000"),
+            httpClient =
+                HttpClient(
+                    MockEngine {
+                        respond(
+                            content = "not valid json",
+                            status = HttpStatusCode.InternalServerError,
+                            headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                        )
+                    },
+                ) {
+                    install(ContentNegotiation) {
+                        json(Json { ignoreUnknownKeys = true })
+                    }
+                },
+        )
+
     private fun mockEmbeddingClient(): EmbeddingClient =
         EmbeddingClient(
             config = EmbeddingConfig(baseUrl = "http://localhost:8180", model = "all-minilm"),
@@ -172,6 +193,27 @@ class ApplicationTest {
             val body = json.decodeFromString<QueryResponse>(response.bodyAsText())
             assertTrue(body.spots.isNotEmpty())
             assertEquals(semanticWinner, body.spots.first().spot_id)
+        }
+
+    // Regression coverage for the review fix that wraps semantic ranking in a try/catch: if
+    // Chroma/embeddings are unreachable or return something unparseable, /api/query must still
+    // succeed with the structurally-filtered, distance-sorted spots rather than erroring out.
+    @Test
+    fun queryFallsBackToStructuralOrderWhenSemanticRankingFails() =
+        testApplication {
+            application { module(fixtureSpots, brokenChromaClient(), mockEmbeddingClient()) }
+            val response =
+                client.post("/api/query") {
+                    contentType(ContentType.Application.Json)
+                    setBody(
+                        """{"query": "quiet place to sit", "location": {"lat": 42.3551, "lon": -71.0657}, "radius_meters": 5000}""",
+                    )
+                }
+            assertEquals(HttpStatusCode.OK, response.status)
+
+            val expectedOrder = fixtureSpots.nearby(42.3551, -71.0657, 5000.0, emptyList()).map { it.spot_id }
+            val body = json.decodeFromString<QueryResponse>(response.bodyAsText())
+            assertEquals(expectedOrder, body.spots.map { it.spot_id })
         }
 
     @Test
