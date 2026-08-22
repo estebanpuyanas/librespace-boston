@@ -45,6 +45,8 @@ fun Application.module(
         ),
     locationResolver: LocationResolver = IpLocationResolver(),
     weatherResolver: WeatherResolver = OpenMeteoWeatherResolver(),
+    chromaClient: ChromaClient = ChromaClient(),
+    embeddingClient: EmbeddingClient = EmbeddingClient(),
 ) {
     install(ContentNegotiation) {
         json(Json { ignoreUnknownKeys = true })
@@ -104,7 +106,7 @@ fun Application.module(
                 call.respond(HttpStatusCode.UnprocessableEntity, LocationRequiredError())
                 return@post
             }
-            call.respond(buildQueryResponse(request, spotsRepository, location))
+            call.respond(buildQueryResponse(request, spotsRepository, location, chromaClient, embeddingClient))
         }
     }
 }

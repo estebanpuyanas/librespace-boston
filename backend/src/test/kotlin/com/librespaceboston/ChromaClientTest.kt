@@ -158,4 +158,47 @@ class ChromaClientTest {
             assertTrue(capturedBody!!.contains(""""has_wifi":true"""))
             assertTrue(capturedBody!!.contains(""""limit":2"""))
         }
+
+    @Test
+    fun querySendsEmbeddingAndParsesRankedMatches() =
+        runTest {
+            var capturedBody: String? = null
+            val mockEngine =
+                MockEngine { request ->
+                    assertTrue(request.url.toString().endsWith("/collections/$collectionId/query"))
+                    capturedBody = String((request.body as OutgoingContent.ByteArrayContent).bytes())
+                    respond(
+                        content =
+                            """
+                            {
+                              "ids": [["os-27", "os-47"]],
+                              "documents": [["Boston Common. is a park", "Central Burying Ground. is a park"]],
+                              "metadatas": [[{"spot_id": "os-27"}, {"spot_id": "os-47"}]],
+                              "distances": [[0.12, 0.45]]
+                            }
+                            """.trimIndent(),
+                        status = HttpStatusCode.OK,
+                        headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                    )
+                }
+
+            val embedding = List(384) { 0.01 }
+            val where = buildJsonObject { put("has_wifi", true) }
+            val response = clientWith(mockEngine).query(collectionId, embedding, where = where, nResults = 2)
+
+            assertTrue(capturedBody!!.contains(""""n_results":2"""))
+            assertTrue(capturedBody!!.contains(""""has_wifi":true"""))
+
+            val matches = response.matches()
+            assertEquals(2, matches.size)
+            assertEquals("os-27", matches[0].id)
+            assertEquals(0.12, matches[0].distance)
+            assertEquals("os-47", matches[1].id)
+        }
+
+    @Test
+    fun matchesReturnsEmptyWhenNoResults() {
+        val response = ChromaQueryResponse(ids = emptyList())
+        assertTrue(response.matches().isEmpty())
+    }
 }

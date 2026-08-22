@@ -36,6 +36,64 @@
   --warning-subtle: #fff3cd;
   --info-color: #0dcaf0;
 
+  /* FreeSpace experience palette */
+  --fs-canvas: #f5f4ed;
+  --fs-surface: #ffffff;
+  --fs-ink: #153a29;
+  --fs-muted: #718076;
+  --fs-muted-strong: #4f6256;
+  --fs-green: #246a48;
+  --fs-accent: #c45e3d;
+  --fs-live: #3d9566;
+  --fs-border: #d8d9cd;
+  --fs-divider: #e5e6dc;
+  --fs-filter-bg: #ecede6;
+  --fs-filter-border: #dfe0d5;
+  --fs-filter-selected-bg: #dceadd;
+  --fs-notice-bg: #e6eee2;
+  --fs-notice-text: #456049;
+  --fs-card-green: #214e37;
+  --fs-card-text: #ffffff;
+  --fs-card-text-muted: #bed1c1;
+  --fs-card-outline: #8dba98;
+  --fs-card-tag-bg: #36674c;
+  --fs-card-note-bg: #2c5a42;
+  --fs-card-note-text: #d9e4d7;
+  --fs-card-check: #a6dfaa;
+  --fs-button-text: #ffffff;
+
+  /* FreeSpace dimensions */
+  --content-width: 760px;
+  --hero-width: 560px;
+  --search-width: 620px;
+  --results-width: 640px;
+  --copy-width: 510px;
+  --display-size: 3.25rem;
+  --display-size-mobile: 2.5rem;
+  --feature-heading-size: 2rem;
+  --display-tracking: -0.08rem;
+  --heading-tracking: -0.03rem;
+  --display-line-height: 1.02;
+  --heading-line-height: 1.08;
+  --body-line-height: 1.5;
+  --eyebrow-tracking: 0.11em;
+  --font-family-display: Georgia, 'Times New Roman', serif;
+  --fs-card-radius: 1.125rem;
+  --fs-feature-radius: 1.375rem;
+  --fs-small-radius: 0.75rem;
+  --pill-radius: 999px;
+  --round-button-size: 2.25rem;
+  --alt-number-size: 2rem;
+  --header-mark-size: 1.45rem;
+  --header-city-size: 0.6rem;
+  --dot-size: 0.45rem;
+  --filter-padding: 0.5rem 0.8rem;
+  --tag-padding: 0.35rem 0.6rem;
+  --card-number-padding: 0.28rem 0.55rem;
+  --direction-padding: 0.75rem 0.9rem;
+  --data-card-min-width: 11rem;
+  --fs-card-shadow: 0 0.45rem 1.3rem rgba(42, 62, 48, 0.08);
+
   /* Borders & Shadows */
   --border-color: #dee2e6;
   --border-radius: 0.375rem;
@@ -108,6 +166,19 @@
   --shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.3);
   --shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.5);
+
+  --fs-canvas: #172019;
+  --fs-surface: #223126;
+  --fs-ink: #f0f5ea;
+  --fs-muted: #a9b7a9;
+  --fs-muted-strong: #c2cebf;
+  --fs-border: #455448;
+  --fs-divider: #3a4a3e;
+  --fs-filter-bg: #2b3b2e;
+  --fs-filter-border: #4b5c4e;
+  --fs-filter-selected-bg: #294836;
+  --fs-notice-bg: #294235;
+  --fs-notice-text: #d2e7d2;
 }
 
 /* ============================================================
@@ -122,7 +193,7 @@ body {
   font-family: var(--font-family);
   font-size: var(--font-size-base);
   color: var(--text-color);
-  background-color: var(--bg-color);
+  background-color: var(--fs-canvas);
   line-height: 1.6;
   transition:
     background-color var(--transition-base),

@@ -14,11 +14,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 
-/**
- * Not referenced anywhere in backend/src today - CHROMA_URL was dead in .env.example before
- * this. Configures the reusable Chroma v2 REST client; wiring it into a live route (e.g.
- * POST /api/query) is separate follow-up work.
- */
+/** Configures the reusable Chroma v2 REST client used by [ChromaClient], wired into POST /api/query's semantic path (Query.kt). */
 data class ChromaConfig(
     val baseUrl: String,
     val tenant: String = "default_tenant",
@@ -50,6 +46,47 @@ data class ChromaGetResponse(
     val metadatas: List<Map<String, JsonElement>?>? = null,
 )
 
+@Serializable
+data class ChromaQueryRequest(
+    val query_embeddings: List<List<Double>>,
+    val n_results: Int,
+    val where: JsonElement? = null,
+    val include: List<String> = listOf("documents", "metadatas", "distances"),
+)
+
+// Chroma nests results by query embedding (`query_embeddings` accepts a batch); we always send
+// exactly one, so every field here has exactly one outer entry.
+@Serializable
+data class ChromaQueryResponse(
+    val ids: List<List<String>>,
+    val documents: List<List<String?>>? = null,
+    val metadatas: List<List<Map<String, JsonElement>?>>? = null,
+    val distances: List<List<Double>>? = null,
+)
+
+/** One ranked match, flattened out of [ChromaQueryResponse]'s single-query-embedding batch shape. */
+data class ChromaQueryMatch(
+    val id: String,
+    val document: String?,
+    val metadata: Map<String, JsonElement>?,
+    val distance: Double?,
+)
+
+fun ChromaQueryResponse.matches(): List<ChromaQueryMatch> {
+    val matchedIds = ids.firstOrNull() ?: return emptyList()
+    val matchedDocuments = documents?.firstOrNull()
+    val matchedMetadatas = metadatas?.firstOrNull()
+    val matchedDistances = distances?.firstOrNull()
+    return matchedIds.mapIndexed { index, id ->
+        ChromaQueryMatch(
+            id = id,
+            document = matchedDocuments?.getOrNull(index),
+            metadata = matchedMetadatas?.getOrNull(index),
+            distance = matchedDistances?.getOrNull(index),
+        )
+    }
+}
+
 fun defaultChromaHttpClient(): HttpClient =
     HttpClient(CIO) {
         install(ContentNegotiation) {
@@ -58,11 +95,9 @@ fun defaultChromaHttpClient(): HttpClient =
     }
 
 /**
- * Thin client over Chroma's v2 REST API (collection lookup, count, get-by-id/metadata).
- * Deliberately does NOT implement Chroma's similarity/vector `query` endpoint - that needs a
- * query embedding generated the same way data-service/ingest.py does (sentence-transformers'
- * all-MiniLM-L6-v2, 384-dim), and there's no JVM-native equivalent wired up. See the comment
- * on `query` below for where that plugs in.
+ * Thin client over Chroma's v2 REST API: collection lookup, count, get-by-id/metadata, and
+ * similarity `query` (via a query embedding produced by [EmbeddingClient], the same embedding
+ * space data-service/ingest.py used to populate the collection).
  */
 class ChromaClient(
     private val config: ChromaConfig = ChromaConfig.fromEnv(),
@@ -89,12 +124,27 @@ class ChromaClient(
                 setBody(ChromaGetRequest(ids = ids, where = where, limit = limit))
             }.body()
 
-    // Similarity/vector search (Chroma's `query` endpoint, as opposed to `get`) is out of
-    // scope here - it requires a query embedding vector generated the same way
-    // data-service/ingest.py does (sentence-transformers' all-MiniLM-L6-v2, 384-dim), and
-    // choosing how to produce a compatible embedding from Kotlin (call out to a small
-    // embedding service, port the model via ONNX Runtime, etc.) is a real RAG-architecture
-    // decision for hackathon day. It would plug in here as a POST to
-    // "${collectionsUrl()}/$collectionId/query" with a body of
-    // {"query_embeddings": [[<384 floats>]], "n_results": N}.
+    /**
+     * Similarity/vector search (Chroma's `query` endpoint, as opposed to `get`). [queryEmbedding]
+     * must come from the same embedding space as what's stored in the collection (see
+     * [EmbeddingClient]). [where] is the same metadata filter shape [get] accepts, for combining
+     * semantic search with structured amenity filters.
+     */
+    suspend fun query(
+        collectionId: String,
+        queryEmbedding: List<Double>,
+        where: JsonElement? = null,
+        nResults: Int = 10,
+    ): ChromaQueryResponse =
+        httpClient
+            .post("${collectionsUrl()}/$collectionId/query") {
+                contentType(ContentType.Application.Json)
+                setBody(
+                    ChromaQueryRequest(
+                        query_embeddings = listOf(queryEmbedding),
+                        n_results = nResults,
+                        where = where,
+                    ),
+                )
+            }.body()
 }
