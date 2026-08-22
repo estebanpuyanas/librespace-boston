@@ -6,8 +6,8 @@
 
 .layout-header {
   height: var(--header-height);
-  background-color: var(--bg-secondary);
-  border-bottom: 1px solid var(--border-color);
+  background-color: color-mix(in srgb, var(--fs-canvas) 92%, transparent);
+  border-bottom: 1px solid var(--fs-divider);
   display: flex;
   align-items: center;
   gap: var(--spacing-lg);
@@ -15,44 +15,43 @@
   position: sticky;
   top: 0;
   z-index: var(--z-sticky);
-  box-shadow: var(--shadow-sm);
+  box-shadow: none;
+  backdrop-filter: blur(0.75rem);
 }
 
 .header-brand {
+  align-items: center;
+  display: flex;
   flex-shrink: 0;
+  gap: var(--spacing-xs);
+}
+
+.brand-mark {
+  align-items: center;
+  background-color: var(--fs-green);
+  border-radius: var(--fs-small-radius);
+  color: var(--fs-button-text);
+  display: inline-flex;
+  font-size: var(--font-size-sm);
+  height: var(--header-mark-size);
+  justify-content: center;
+  width: var(--header-mark-size);
 }
 
 .brand-name {
+  color: var(--fs-ink);
+  font-family: var(--font-family-display);
   font-size: var(--font-size-xl);
   font-weight: 700;
-  color: var(--primary-color);
+  letter-spacing: var(--heading-tracking);
 }
 
-.header-nav {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  flex: 1;
-}
-
-.nav-link {
-  color: var(--text-muted);
-  font-weight: 500;
-  padding: var(--spacing-xs) var(--spacing-sm);
-  border-radius: var(--border-radius);
-  transition:
-    color var(--transition-fast),
-    background-color var(--transition-fast);
-}
-
-.nav-link:hover {
-  color: var(--text-color);
-  background-color: var(--bg-tertiary);
-}
-
-.nav-link.active {
-  color: var(--primary-color);
-  background-color: var(--primary-subtle);
+.brand-city {
+  color: var(--fs-muted);
+  font-size: var(--header-city-size);
+  font-weight: 800;
+  letter-spacing: var(--eyebrow-tracking);
+  margin-left: var(--spacing-xs);
 }
 
 .header-actions {
@@ -83,9 +82,9 @@
   align-items: center;
   justify-content: center;
   background: none;
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius);
-  color: var(--text-muted);
+  border: 1px solid var(--fs-border);
+  border-radius: var(--pill-radius);
+  color: var(--fs-muted-strong);
   padding: var(--spacing-xs);
   transition:
     color var(--transition-fast),
@@ -94,7 +93,7 @@
 
 .icon-btn:hover {
   color: var(--text-color);
-  background-color: var(--bg-tertiary);
+  background-color: var(--fs-filter-bg);
 }
 
 /* Show/hide sun or moon based on active theme */
@@ -110,7 +109,7 @@
 
 .layout-main {
   flex: 1;
-  padding: var(--spacing-xl) 0;
+  padding: var(--spacing-lg) 0;
 }
 
 @media (max-width: 768px) {

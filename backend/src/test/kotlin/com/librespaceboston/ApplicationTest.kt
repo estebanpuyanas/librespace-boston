@@ -1,12 +1,19 @@
 package com.librespaceboston
 
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.mock.MockEngine
+import io.ktor.client.engine.mock.respond
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
+import io.ktor.http.headersOf
+import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.testing.testApplication
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
@@ -22,6 +29,78 @@ class ApplicationTest {
     // handful of real spots.json records from a past ETL run (Boston Common et al.), so
     // /api/query tests are hermetic and don't depend on data-service's ETL having been run.
     private val fixtureSpots = SpotsRepository.loadFromResource("fixtures/spots.json")
+    private val collectionId = "e14ba1c0-66fb-472e-9dc0-cc9d45842f9c"
+
+    // Hermetic stand-ins for the live ramalama-embeddings/Chroma containers (same MockEngine
+    // precedent as ChromaClientTest.kt) - CI has neither, so the `query` present path must not
+    // depend on real network calls. `matchIds`, in relevance order, is what Chroma "returns".
+    private fun mockChromaClient(matchIds: List<String> = emptyList()): ChromaClient =
+        ChromaClient(
+            config = ChromaConfig(baseUrl = "http://localhost:8000"),
+            httpClient =
+                HttpClient(
+                    MockEngine { request ->
+                        if (request.url.encodedPath.endsWith("/collections")) {
+                            respond(
+                                content = """[{"id":"$collectionId","name":"spots"}]""",
+                                status = HttpStatusCode.OK,
+                                headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                            )
+                        } else {
+                            val idsJson = matchIds.joinToString(",") { "\"$it\"" }
+                            respond(
+                                content = """{"ids": [[$idsJson]]}""",
+                                status = HttpStatusCode.OK,
+                                headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                            )
+                        }
+                    },
+                ) {
+                    install(ContentNegotiation) {
+                        json(Json { ignoreUnknownKeys = true })
+                    }
+                },
+        )
+
+    // Simulates the real Chroma/embeddings containers being unreachable or misbehaving: the
+    // /collections lookup returns a body that fails to parse, so findCollectionByName throws.
+    private fun brokenChromaClient(): ChromaClient =
+        ChromaClient(
+            config = ChromaConfig(baseUrl = "http://localhost:8000"),
+            httpClient =
+                HttpClient(
+                    MockEngine {
+                        respond(
+                            content = "not valid json",
+                            status = HttpStatusCode.InternalServerError,
+                            headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                        )
+                    },
+                ) {
+                    install(ContentNegotiation) {
+                        json(Json { ignoreUnknownKeys = true })
+                    }
+                },
+        )
+
+    private fun mockEmbeddingClient(): EmbeddingClient =
+        EmbeddingClient(
+            config = EmbeddingConfig(baseUrl = "http://localhost:8180", model = "all-minilm"),
+            httpClient =
+                HttpClient(
+                    MockEngine {
+                        respond(
+                            content = """{"data": [{"embedding": [0.1, 0.2, 0.3]}]}""",
+                            status = HttpStatusCode.OK,
+                            headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                        )
+                    },
+                ) {
+                    install(ContentNegotiation) {
+                        json(Json { ignoreUnknownKeys = true })
+                    }
+                },
+        )
 
     @Test
     fun healthCheckReturnsOk() =
@@ -39,6 +118,28 @@ class ApplicationTest {
             val response = client.get("/api/ping")
             assertEquals(HttpStatusCode.OK, response.status)
             assertEquals("""{"message":"Hello, world!"}""", response.bodyAsText())
+        }
+
+    @Test
+    fun weatherEndpointReturnsProviderConditions() =
+        testApplication {
+            application {
+                module(
+                    weatherResolver =
+                        object : WeatherResolver {
+                            override suspend fun current(
+                                lat: Double,
+                                lon: Double,
+                            ): WeatherConditions = WeatherConditions(temperature_fahrenheit = 72, weather_code = 1)
+                        },
+                )
+            }
+            val response = client.get("/api/weather?lat=42.3554&lon=-71.0657")
+
+            assertEquals(HttpStatusCode.OK, response.status)
+            val body = json.decodeFromString<WeatherConditions>(response.bodyAsText())
+            assertEquals(72, body.temperature_fahrenheit)
+            assertEquals(1, body.weather_code)
         }
 
     // Boston Common's real coordinates, this verifies the structured (no `query`) path
@@ -71,7 +172,7 @@ class ApplicationTest {
     @Test
     fun queryWithFreeTextDoesNotAttemptSynthesis() =
         testApplication {
-            application { module(fixtureSpots) }
+            application { module(fixtureSpots, mockChromaClient(), mockEmbeddingClient()) }
             val response =
                 client.post("/api/query") {
                     contentType(ContentType.Application.Json)
@@ -86,6 +187,111 @@ class ApplicationTest {
             assertNull(body.detected_language)
             assertNull(body.translated_query)
             assertTrue(body.disclaimers.isNotEmpty())
+        }
+
+    // Real semantic-retrieval path: a free-text query ("quiet place to sit") that wouldn't match
+    // any structured amenity filter re-ranks the structurally-filtered spots by the relevance
+    // order a (mocked) Chroma similarity query returns, instead of pure distance.
+    @Test
+    fun queryWithFreeTextRanksSpotsBySemanticRelevance() =
+        testApplication {
+            // Fixture spots nearest-to-farthest from this location; assert the response
+            // reorders them to put the semantically "closer" match first even though it's
+            // farther away in plain distance.
+            val nearestFirst = fixtureSpots.nearby(42.3551, -71.0657, 5000.0, emptyList())
+            assertTrue(nearestFirst.size >= 2, "fixture needs at least 2 spots within range for this test")
+            val semanticWinner = nearestFirst.last().spot_id
+
+            application { module(fixtureSpots, mockChromaClient(matchIds = listOf(semanticWinner)), mockEmbeddingClient()) }
+            val response =
+                client.post("/api/query") {
+                    contentType(ContentType.Application.Json)
+                    setBody(
+                        """{"query": "quiet place to sit", "location": {"lat": 42.3551, "lon": -71.0657}, "radius_meters": 5000}""",
+                    )
+                }
+            assertEquals(HttpStatusCode.OK, response.status)
+
+            val body = json.decodeFromString<QueryResponse>(response.bodyAsText())
+            assertTrue(body.spots.isNotEmpty())
+            assertEquals(semanticWinner, body.spots.first().spot_id)
+        }
+
+    // Regression coverage for the review fix that wraps semantic ranking in a try/catch: if
+    // Chroma/embeddings are unreachable or return something unparseable, /api/query must still
+    // succeed with the structurally-filtered, distance-sorted spots rather than erroring out.
+    @Test
+    fun queryFallsBackToStructuralOrderWhenSemanticRankingFails() =
+        testApplication {
+            application { module(fixtureSpots, brokenChromaClient(), mockEmbeddingClient()) }
+            val response =
+                client.post("/api/query") {
+                    contentType(ContentType.Application.Json)
+                    setBody(
+                        """{"query": "quiet place to sit", "location": {"lat": 42.3551, "lon": -71.0657}, "radius_meters": 5000}""",
+                    )
+                }
+            assertEquals(HttpStatusCode.OK, response.status)
+
+            val expectedOrder = fixtureSpots.nearby(42.3551, -71.0657, 5000.0, emptyList()).map { it.spot_id }
+            val body = json.decodeFromString<QueryResponse>(response.bodyAsText())
+            assertEquals(expectedOrder, body.spots.map { it.spot_id })
+        }
+
+    @Test
+    fun queryWithoutDeviceCoordinatesUsesTheCoarseLocationResolver() =
+        testApplication {
+            val coarseLocation =
+                ResolvedLocation(
+                    lat = 42.3551,
+                    lon = -71.0657,
+                    source = "ip",
+                    label = "Near Boston (approximate)",
+                    approximate = true,
+                )
+            application {
+                module(
+                    spotsRepository = fixtureSpots,
+                    locationResolver =
+                        object : LocationResolver {
+                            override suspend fun resolve(clientIp: String?): ResolvedLocation? = coarseLocation
+                        },
+                )
+            }
+            val response =
+                client.post("/api/query") {
+                    contentType(ContentType.Application.Json)
+                    setBody("""{"radius_meters": 1500}""")
+                }
+
+            assertEquals(HttpStatusCode.OK, response.status)
+            val body = json.decodeFromString<QueryResponse>(response.bodyAsText())
+            assertEquals("ip", body.resolved_location?.source)
+            assertTrue(body.resolved_location?.approximate == true)
+            assertTrue(body.disclaimers.any { it.contains("approximate area") })
+        }
+
+    @Test
+    fun queryWithoutAnyLocationReturnsAnActionableError() =
+        testApplication {
+            application {
+                module(
+                    spotsRepository = fixtureSpots,
+                    locationResolver =
+                        object : LocationResolver {
+                            override suspend fun resolve(clientIp: String?): ResolvedLocation? = null
+                        },
+                )
+            }
+            val response =
+                client.post("/api/query") {
+                    contentType(ContentType.Application.Json)
+                    setBody("{}")
+                }
+
+            assertEquals(HttpStatusCode.UnprocessableEntity, response.status)
+            val body = json.decodeFromString<LocationRequiredError>(response.bodyAsText())
+            assertEquals("location_required", body.code)
         }
 
     @Test

@@ -10,6 +10,7 @@ import io.ktor.server.netty.Netty
 import io.ktor.server.plugins.calllogging.CallLogging
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.cors.routing.CORS
+import io.ktor.server.plugins.origin
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
@@ -42,6 +43,10 @@ fun Application.module(
         SpotsRepository.loadFromFile(
             envVar("SPOTS_DATA_PATH")?.takeIf { it.isNotBlank() } ?: "../data-service/output/spots.json",
         ),
+    locationResolver: LocationResolver = IpLocationResolver(),
+    weatherResolver: WeatherResolver = OpenMeteoWeatherResolver(),
+    chromaClient: ChromaClient = ChromaClient(),
+    embeddingClient: EmbeddingClient = EmbeddingClient(),
 ) {
     install(ContentNegotiation) {
         json(Json { ignoreUnknownKeys = true })
@@ -72,9 +77,45 @@ fun Application.module(
         get("/api/ping") {
             call.respondText("""{"message":"Hello, world!"}""", ContentType.Application.Json)
         }
+        get("/api/weather") {
+            val lat = call.request.queryParameters["lat"]?.toDoubleOrNull()
+            val lon = call.request.queryParameters["lon"]?.toDoubleOrNull()
+            if (lat == null || lon == null) {
+                call.respond(HttpStatusCode.BadRequest, "lat and lon are required")
+                return@get
+            }
+            val weather = weatherResolver.current(lat, lon)
+            if (weather == null) {
+                call.respond(HttpStatusCode.BadGateway, "Weather provider is unavailable")
+                return@get
+            }
+            call.respond(weather)
+        }
+        get("/api/location/ip") {
+            val location = locationResolver.resolve(clientIp(call))
+            if (location == null) {
+                call.respond(HttpStatusCode.UnprocessableEntity, LocationRequiredError())
+                return@get
+            }
+            call.respond(location)
+        }
         post("/api/query") {
             val request = call.receive<QueryRequest>()
-            call.respond(buildQueryResponse(request, spotsRepository))
+            val location = request.location?.toResolvedLocation() ?: locationResolver.resolve(clientIp(call))
+            if (location == null) {
+                call.respond(HttpStatusCode.UnprocessableEntity, LocationRequiredError())
+                return@post
+            }
+            call.respond(buildQueryResponse(request, spotsRepository, location, chromaClient, embeddingClient))
         }
     }
+}
+
+private fun clientIp(call: io.ktor.server.application.ApplicationCall): String? {
+    val forwardedIp =
+        call.request.headers["X-Forwarded-For"]
+            ?.substringBefore(',')
+            ?.trim()
+            ?.takeIf { envVar("TRUST_PROXY_HEADERS") == "true" }
+    return forwardedIp ?: call.request.origin.remoteHost
 }

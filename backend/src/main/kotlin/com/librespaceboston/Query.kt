@@ -1,6 +1,9 @@
 package com.librespaceboston
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 
 /**
  * @Serializable is required for Ktor's ContentNegotiation plugin to serialize/deserialize JSON request/response bodies.
@@ -16,7 +19,7 @@ data class Coordinates(
 @Serializable
 data class QueryRequest(
     val query: String? = null,
-    val location: Coordinates,
+    val location: Coordinates? = null,
     val radius_meters: Int = 800,
     val amenities: List<String> = emptyList(),
     val language: String? = null,
@@ -30,6 +33,21 @@ data class Highlights(
 )
 
 @Serializable
+data class ResolvedLocation(
+    val lat: Double,
+    val lon: Double,
+    val source: String,
+    val label: String,
+    val approximate: Boolean,
+)
+
+@Serializable
+data class LocationRequiredError(
+    val code: String = "location_required",
+    val message: String = "Choose a Boston neighborhood to find nearby places.",
+)
+
+@Serializable
 data class QueryResponse(
     val detected_language: String? = null,
     val translated_query: String? = null,
@@ -37,23 +55,46 @@ data class QueryResponse(
     val disclaimers: List<String> = emptyList(),
     val spots: List<Spot>,
     val highlights: Highlights? = null,
+    val resolved_location: ResolvedLocation? = null,
 )
+
+private const val SPOTS_COLLECTION_NAME = "spots"
 
 // Natural-language RAG synthesis (query understanding, translation, LLM-grounded
 // `answer`) is out of scope here, hackathon-day core product work. When `query`
 // is present we still return the same structured/no-LLM result, with a disclaimer
-// noting synthesis isn't implemented yet, instead of calling any LLM.
-fun buildQueryResponse(
+// noting synthesis isn't implemented yet, instead of calling any LLM. What `query`
+// DOES do is re-rank the structurally-filtered spots by semantic relevance (see
+// [rankBySemanticRelevance]) - real retrieval, no synthesis.
+suspend fun buildQueryResponse(
     request: QueryRequest,
     repository: SpotsRepository,
+    location: ResolvedLocation,
+    chromaClient: ChromaClient = ChromaClient(),
+    embeddingClient: EmbeddingClient = EmbeddingClient(),
 ): QueryResponse {
-    val spots =
+    val structuralSpots =
         repository.nearby(
-            lat = request.location.lat,
-            lon = request.location.lon,
+            lat = location.lat,
+            lon = location.lon,
             radiusMeters = request.radius_meters.toDouble(),
             amenities = request.amenities,
         )
+
+    val queryText = request.query
+    val spots =
+        if (!queryText.isNullOrBlank() && structuralSpots.isNotEmpty()) {
+            rankBySemanticRelevance(
+                queryText = queryText,
+                amenities = request.amenities,
+                structuralSpots = structuralSpots,
+                totalSpotCount = repository.size,
+                chromaClient = chromaClient,
+                embeddingClient = embeddingClient,
+            )
+        } else {
+            structuralSpots
+        }
 
     val highlights =
         Highlights(
@@ -63,10 +104,11 @@ fun buildQueryResponse(
         )
 
     val disclaimers =
-        if (request.query != null) {
-            listOf("Natural-language answer synthesis isn't implemented yet, showing nearby spots only.")
-        } else {
-            emptyList()
+        buildList {
+            if (location.approximate) add("Using an approximate area based on your network connection.")
+            if (request.query != null) {
+                add("Natural-language answer synthesis isn't implemented yet, showing nearby spots only.")
+            }
         }
 
     return QueryResponse(
@@ -76,5 +118,54 @@ fun buildQueryResponse(
         disclaimers = disclaimers,
         spots = spots,
         highlights = highlights,
+        resolved_location = location,
     )
 }
+
+fun Coordinates.toResolvedLocation(): ResolvedLocation {
+    val source = source?.takeIf { it in setOf("device", "manual") } ?: "device"
+    return ResolvedLocation(
+        lat = lat,
+        lon = lon,
+        source = source,
+        label = if (source == "manual") "Selected neighborhood" else "Your location",
+        approximate = false,
+    )
+}
+
+/**
+ * Re-ranks [structuralSpots] (already radius + amenity filtered, sorted by distance) by semantic
+ * relevance to [queryText]: embeds the query text (EmbeddingClient), runs a Chroma similarity
+ * query over the whole "spots" collection ([totalSpotCount] results, so every structurally-valid
+ * spot has a chance to be covered regardless of where it falls globally), then reorders
+ * [structuralSpots] by that ranking. Spots Chroma didn't return keep their original
+ * distance-sorted relative order, appended after every ranked spot.
+ *
+ * `where` narrows the Chroma-side candidate set using metadata fields that map directly to a
+ * boolean column (only `has_wifi` today); the richer amenity logic in [SpotsRepository] already
+ * fully filtered [structuralSpots], so this is a targeting optimization, not a correctness
+ * requirement.
+ */
+private suspend fun rankBySemanticRelevance(
+    queryText: String,
+    amenities: List<String>,
+    structuralSpots: List<Spot>,
+    totalSpotCount: Int,
+    chromaClient: ChromaClient,
+    embeddingClient: EmbeddingClient,
+): List<Spot> =
+    try {
+        val collection = chromaClient.findCollectionByName(SPOTS_COLLECTION_NAME) ?: return structuralSpots
+        val queryEmbedding = embeddingClient.embed(queryText)
+        val where = if ("wifi" in amenities) buildJsonObject { put("has_wifi", true) } else null
+        val response = chromaClient.query(collection.id, queryEmbedding, where = where, nResults = totalSpotCount)
+
+        val rank = response.matches().withIndex().associate { (index, match) -> match.id to index }
+        structuralSpots.sortedWith(
+            compareBy({ rank[it.spot_id] ?: Int.MAX_VALUE }, { it.distance_meters }),
+        )
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        structuralSpots
+    }

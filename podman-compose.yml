@@ -28,6 +28,28 @@ services:
       retries: 3
       start_period: 120s
 
+  # Separate RamaLama instance serving a small (45MB) embeddings-only model, used by the
+  # backend to embed incoming /api/query text before a Chroma similarity query - never for
+  # chat/synthesis (that's the `ramalama` service above, unchanged). Requires
+  # --runtime-args=--embeddings (the `=` form; a separate token pair gets misparsed) or the
+  # underlying llama.cpp server 501s on /v1/embeddings.
+  ramalama-embeddings:
+    build:
+      context: ./ramalama-embeddings
+      dockerfile: Containerfile
+    ports:
+      - '8180:8080'
+    volumes:
+      - ramalama_embeddings_models:/root/.local/share/ramalama
+    environment:
+      - RAMALAMA_STORE=/root/.local/share/ramalama
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -f http://localhost:8080/v1/models || exit 1']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+
   chroma:
     image: docker.io/chromadb/chroma:1.5.9
     ports:
@@ -37,4 +59,5 @@ services:
 
 volumes:
   ramalama_models:
+  ramalama_embeddings_models:
   chroma_data:
