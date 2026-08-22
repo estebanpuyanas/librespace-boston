@@ -14,7 +14,6 @@ import {
 import { StatusBar } from 'expo-status-bar';
 import type { Spot } from 'shared';
 import { AlternativeSpotRow } from '../components/AlternativeSpotRow';
-import { AmenityFilters } from '../components/AmenityFilters';
 import { AppHeader } from '../components/AppHeader';
 import { LocalSnapshot } from '../components/LocalSnapshot';
 import { NeighborhoodPicker } from '../components/NeighborhoodPicker';
@@ -42,7 +41,6 @@ export const HomeScreen = () => {
   const [manualLocation, setManualLocation] = useState<SearchLocation | null>(null);
   const [profileOpen, setProfileOpen] = useState(false);
   const [savedSpots, setSavedSpots] = useState<Spot[]>([]);
-  const [selectedAmenities, setSelectedAmenities] = useState<AmenityLabel[]>(['Wi-Fi', 'Seating']);
   const [view, setView] = useState<ResultView>('list');
   const { isLive, location: liveLocation } = useLiveLocation();
   const locationForSearch = liveLocation ?? manualLocation;
@@ -58,12 +56,6 @@ export const HomeScreen = () => {
     loading: weatherLoading,
   } = useCurrentWeather(contextLocation);
   const { loading: wifiLoading, spot: wifiSpot } = useNearbyWifi(contextLocation);
-
-  const toggleAmenity = (amenity: AmenityLabel) => {
-    setSelectedAmenities(current =>
-      current.includes(amenity) ? current.filter(item => item !== amenity) : [...current, amenity],
-    );
-  };
 
   const searchWithLocationFallback = async (
     nextQuery: string,
@@ -81,13 +73,12 @@ export const HomeScreen = () => {
 
   const handlePrompt = (prompt: QuickPrompt) => {
     setQuery(prompt.query);
-    setSelectedAmenities(prompt.amenities);
     void searchWithLocationFallback(prompt.query, prompt.amenities);
   };
 
   const submitSearch = () => {
     Keyboard.dismiss();
-    void searchWithLocationFallback(query.trim() || initialQuery, selectedAmenities);
+    void searchWithLocationFallback(query.trim() || initialQuery, []);
   };
   const toggleLanguage = () => setLanguage(current => (current === 'en' ? 'es' : 'en'));
   const openDirections = async (lat: number, lon: number) => {
@@ -101,11 +92,7 @@ export const HomeScreen = () => {
   const chooseNeighborhood = (nextLocation: SearchLocation) => {
     setManualLocation(nextLocation);
     setLocationPickerOpen(false);
-    void searchWithLocationFallback(
-      query.trim() || initialQuery,
-      selectedAmenities,
-      liveLocation ?? nextLocation,
-    );
+    void searchWithLocationFallback(query.trim() || initialQuery, [], liveLocation ?? nextLocation);
   };
   const spots = response?.spots ?? [];
   const mapLocation = contextLocation;
@@ -156,7 +143,6 @@ export const HomeScreen = () => {
           setQuery={setQuery}
           onSubmit={submitSearch}
         />
-        <AmenityFilters copy={copy} selected={selectedAmenities} onToggle={toggleAmenity} />
 
         {!response && !loading && <PromptList language={language} onChoose={handlePrompt} />}
         {loading && (
