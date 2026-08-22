@@ -19,7 +19,7 @@ data class Coordinates(
 @Serializable
 data class QueryRequest(
     val query: String? = null,
-    val location: Coordinates,
+    val location: Coordinates? = null,
     val radius_meters: Int = 800,
     val amenities: List<String> = emptyList(),
     val language: String? = null,
@@ -33,6 +33,21 @@ data class Highlights(
 )
 
 @Serializable
+data class ResolvedLocation(
+    val lat: Double,
+    val lon: Double,
+    val source: String,
+    val label: String,
+    val approximate: Boolean,
+)
+
+@Serializable
+data class LocationRequiredError(
+    val code: String = "location_required",
+    val message: String = "Choose a Boston neighborhood to find nearby places.",
+)
+
+@Serializable
 data class QueryResponse(
     val detected_language: String? = null,
     val translated_query: String? = null,
@@ -40,6 +55,7 @@ data class QueryResponse(
     val disclaimers: List<String> = emptyList(),
     val spots: List<Spot>,
     val highlights: Highlights? = null,
+    val resolved_location: ResolvedLocation? = null,
 )
 
 private const val SPOTS_COLLECTION_NAME = "spots"
@@ -53,13 +69,14 @@ private const val SPOTS_COLLECTION_NAME = "spots"
 suspend fun buildQueryResponse(
     request: QueryRequest,
     repository: SpotsRepository,
+    location: ResolvedLocation,
     chromaClient: ChromaClient = ChromaClient(),
     embeddingClient: EmbeddingClient = EmbeddingClient(),
 ): QueryResponse {
     val structuralSpots =
         repository.nearby(
-            lat = request.location.lat,
-            lon = request.location.lon,
+            lat = location.lat,
+            lon = location.lon,
             radiusMeters = request.radius_meters.toDouble(),
             amenities = request.amenities,
         )
@@ -87,10 +104,11 @@ suspend fun buildQueryResponse(
         )
 
     val disclaimers =
-        if (request.query != null) {
-            listOf("Natural-language answer synthesis isn't implemented yet, showing nearby spots only.")
-        } else {
-            emptyList()
+        buildList {
+            if (location.approximate) add("Using an approximate area based on your network connection.")
+            if (request.query != null) {
+                add("Natural-language answer synthesis isn't implemented yet, showing nearby spots only.")
+            }
         }
 
     return QueryResponse(
@@ -100,6 +118,18 @@ suspend fun buildQueryResponse(
         disclaimers = disclaimers,
         spots = spots,
         highlights = highlights,
+        resolved_location = location,
+    )
+}
+
+fun Coordinates.toResolvedLocation(): ResolvedLocation {
+    val source = source?.takeIf { it in setOf("device", "manual") } ?: "device"
+    return ResolvedLocation(
+        lat = lat,
+        lon = lon,
+        source = source,
+        label = if (source == "manual") "Selected neighborhood" else "Your location",
+        approximate = false,
     )
 }
 

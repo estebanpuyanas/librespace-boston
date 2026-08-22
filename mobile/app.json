@@ -2,22 +2,35 @@
   "expo": {
     "name": "LibreSpace Boston",
     "slug": "librespace-boston",
+    "scheme": "librespace",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/librespace-logo.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "bundleIdentifier": "com.librespace.boston",
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "LibreSpace uses your location to show free places near you."
+      }
     },
     "android": {
+      "package": "com.librespace.boston",
+      "permissions": ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION"],
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "backgroundColor": "#F5F4ED",
+        "foregroundImage": "./assets/librespace-logo.png"
       },
       "predictiveBackGestureEnabled": false
     },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "LibreSpace uses your location to show free places near you."
+        }
+      ]
+    ],
     "web": {
       "favicon": "./assets/favicon.png"
     }
