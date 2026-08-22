@@ -23,11 +23,12 @@ project. `Makefile` ties all three build tools together.
 The ETL's output (`data-service/output/spots.json`) is small and read-mostly,
 so the backend still loads it into memory rather than storing it in Postgres.
 Postgres (Neon, remote-hosted, `DATABASE_URL` in `backend/.env`) exists for
-data that isn't ETL output: `devices` and `favorites` (anonymous per-device
-saved spots — see `backend/src/main/kotlin/com/librespaceboston/Favorites.kt`
-and `Database.kt`). Schema is created idempotently at startup via Exposed's
-`SchemaUtils.create`, not a separate migration step. There's no
-friends/sharing feature yet — that's an unbuilt follow-up.
+data that isn't ETL output: `devices`, `favorites` (anonymous per-device
+saved spots — see `backend/src/main/kotlin/com/librespaceboston/Favorites.kt`),
+and `friend_codes`/`friendships`/`shared_spots` (mutual friending by short
+code + poll-based spot sharing, no push notifications — see `Friends.kt`).
+Schema is created idempotently at startup via Exposed's `SchemaUtils.create`,
+not a separate migration step.
 
 ---
 
@@ -246,6 +247,13 @@ cd mobile && npx tsc --noEmit
   for. Both LLM calls are wrapped in try/catch (same pattern as `rankBySemanticRelevance`)
   so a slow/unreachable/malformed-output model degrades to `disclaimers` explaining
   synthesis is unavailable, never a 500.
+- **Friend codes live in their own `friend_codes` table, not a column on
+  `devices`.** `AppDatabase.connect()` only calls `SchemaUtils.create`, which
+  creates missing tables but never alters existing ones — adding a column to
+  the already-shipped `devices` table wouldn't reach rows created before the
+  change on the live Neon DB. `friendships` stores one row per direction
+  (both `(a,b)` and `(b,a)`) so `listFriends`/`areFriends` stay plain
+  equality lookups instead of needing an OR'd pair comparison.
 - **Podman project name is pinned.** `podman-compose.yml` has an explicit
   `name: librespace-boston`. Don't remove it — without it, container/volume
   names derive from the clone directory name, and the model volume silently

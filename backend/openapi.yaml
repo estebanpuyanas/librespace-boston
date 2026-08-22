@@ -129,6 +129,95 @@ paths:
       responses:
         '204':
           description: Removed (or already absent)
+  /api/me/friend-code:
+    get:
+      operationId: getMyFriendCode
+      summary: >
+        The requesting device's own shareable friend code. Generated and
+        persisted on first request if the device doesn't have one yet;
+        subsequent calls return the same code.
+      parameters:
+        - $ref: '#/components/parameters/DeviceIdHeader'
+      responses:
+        '200':
+          description: This device's friend code
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FriendCodeResponse'
+  /api/friends:
+    get:
+      operationId: listFriends
+      summary: List the requesting device's friends
+      parameters:
+        - $ref: '#/components/parameters/DeviceIdHeader'
+      responses:
+        '200':
+          description: This device's friends
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FriendsResponse'
+    post:
+      operationId: addFriend
+      summary: >
+        Add a friend by their friend code. Creates a mutual friendship
+        immediately — no pending request/accept flow. Idempotent — adding
+        an existing friend twice is a no-op success.
+      parameters:
+        - $ref: '#/components/parameters/DeviceIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddFriendRequest'
+      responses:
+        '204':
+          description: Friendship created (or already existed)
+        '400':
+          description: The friend code belongs to the requesting device itself
+        '404':
+          description: No device is registered with that friend code
+  /api/friends/{friend_device_id}/share:
+    post:
+      operationId: shareSpot
+      summary: >
+        Share a spot with a friend. The two devices must already be
+        friends — sharing with a non-friend is rejected, not silently
+        dropped.
+      parameters:
+        - $ref: '#/components/parameters/DeviceIdHeader'
+        - name: friend_device_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShareSpotRequest'
+      responses:
+        '204':
+          description: Share recorded
+        '403':
+          description: The requesting device and friend_device_id are not friends
+  /api/shared-with-me:
+    get:
+      operationId: getSharedWithMe
+      summary: List spots friends have shared with the requesting device
+      parameters:
+        - $ref: '#/components/parameters/DeviceIdHeader'
+      responses:
+        '200':
+          description: Spots shared with this device, most useful order left to the caller
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SharedWithMeResponse'
   /api/query:
     post:
       operationId: postQuery
@@ -186,6 +275,64 @@ components:
           type: array
           items:
             type: string
+    FriendCodeResponse:
+      type: object
+      required: [friend_code]
+      properties:
+        friend_code:
+          type: string
+          example: 7KQXPM
+    AddFriendRequest:
+      type: object
+      required: [friend_code]
+      properties:
+        friend_code:
+          type: string
+    Friend:
+      type: object
+      required: [device_id]
+      properties:
+        device_id:
+          type: string
+          format: uuid
+        friend_code:
+          type: string
+          nullable: true
+          description: Null if that friend hasn't requested their own code yet.
+    FriendsResponse:
+      type: object
+      required: [friends]
+      properties:
+        friends:
+          type: array
+          items:
+            $ref: '#/components/schemas/Friend'
+    ShareSpotRequest:
+      type: object
+      required: [spot_id]
+      properties:
+        spot_id:
+          type: string
+    SharedSpot:
+      type: object
+      required: [spot_id, from_device_id, shared_at]
+      properties:
+        spot_id:
+          type: string
+        from_device_id:
+          type: string
+          format: uuid
+        shared_at:
+          type: string
+          format: date-time
+    SharedWithMeResponse:
+      type: object
+      required: [shared_spots]
+      properties:
+        shared_spots:
+          type: array
+          items:
+            $ref: '#/components/schemas/SharedSpot'
     QueryRequest:
       type: object
       properties:
