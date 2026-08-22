@@ -212,8 +212,25 @@ cd mobile && npx tsc --noEmit
   (`ChromaClientTest.kt`, `ApplicationTest.kt`) use Ktor's `MockEngine` against
   hand-written fake Chroma/RamaLama responses — same hermetic-fixture precedent as
   `SpotsRepository.loadFromResource`, since CI doesn't run podman/Chroma/RamaLama.
-  LLM-synthesized answers (translation, grounded citation) are still not implemented —
-  that's separate follow-up work layered on top of this retrieval path.
+  Language detection/translation and grounded `answer` synthesis (also in `Query.kt`, via
+  `LlmClient.kt`) are layered on top of this retrieval path — see the `LlmClient.kt` entry
+  below for the local-model behavior to expect.
+- **`LlmClient.kt` calls the `qwen2.5:7b` chat container's OpenAI-compatible
+  `/v1/chat/completions` (`RAMALAMA_URL`/`RAMALAMA_MODEL` from `LlmConfig`), used by
+  `Query.kt` for two calls per `query`-present request: language detection+translation,
+  then grounded answer synthesis.** No hosted/cloud branch — `LlmConfig.hasHostedLlm`/
+  `anthropicApiKey` are unused leftovers, not a real fallback. Two behaviors observed
+  live against the real container worth knowing before touching this code: (1) a local
+  CPU-served 7B model is slow — a synthesis call grounded in several spots' worth of JSON
+  took ~40s; CIO's engine-level default request timeout (15s, independent of the
+  `HttpTimeout` plugin) is well under that, so `defaultLlmHttpClient()` raises it
+  explicitly — don't remove that override. (2) the model doesn't reliably follow a
+  "respond with a JSON string" instruction for `answer` and sometimes emits a JSON array
+  of sentence fragments instead — parsing goes through `RawSynthesisResult.answer` as a
+  `JsonElement` and flattens either shape, rather than trusting the shape the prompt asked
+  for. Both LLM calls are wrapped in try/catch (same pattern as `rankBySemanticRelevance`)
+  so a slow/unreachable/malformed-output model degrades to `disclaimers` explaining
+  synthesis is unavailable, never a 500.
 - **Podman project name is pinned.** `podman-compose.yml` has an explicit
   `name: librespace-boston`. Don't remove it — without it, container/volume
   names derive from the clone directory name, and the model volume silently

@@ -57,14 +57,16 @@ the single source of truth `shared/`'s generated client is built from (see
 npm run generate --workspace=shared
 ```
 
-`POST /api/query` (spec.md section 8) is fully specified. The backend
-implements the structured path (location + optional radius/amenities →
-ranked spots + highlights) plus real semantic retrieval: when `query` is
-present it's embedded and used to re-rank the structurally-filtered spots
-by similarity against ChromaDB (see `ChromaClient.kt`, `EmbeddingClient.kt`).
-Query understanding, translation, and the LLM-synthesized `answer` are still
-intentionally reserved for hackathon-day core product work — see
-`backend/src/main/kotlin/com/librespaceboston/Query.kt`.
+`POST /api/query` (spec.md section 8) is fully specified and fully
+implemented. The structured path (location + optional radius/amenities →
+ranked spots + highlights) never touches an LLM. When `query` is present,
+the backend also: embeds it and re-ranks the structurally-filtered spots by
+similarity against ChromaDB (see `ChromaClient.kt`, `EmbeddingClient.kt`);
+detects its language and translates to English via the local chat LLM; and
+synthesizes a grounded `answer`, in the user's language, citing which
+retrieved spot/dataset field backs each claim, flagging any requested
+attribute the data can't confirm in `disclaimers` (see `LlmClient.kt`,
+`backend/src/main/kotlin/com/librespaceboston/Query.kt`).
 
 ---
 
@@ -129,18 +131,21 @@ CORS, and routing (`/health`, `/api/ping`, `POST /api/query`); `LlmConfig.kt`
 is env-driven config for the local LLM setup below; `Spots.kt` loads
 `data-service/output/spots.json` into memory and ranks by haversine
 distance; `Query.kt` holds the `/api/query` request/response models and the
-query-handling logic (`buildQueryResponse`), including semantic re-ranking
-via `ChromaClient.kt`/`EmbeddingClient.kt` when `query` is present. Route
-handlers stay
-HTTP-only — no business logic past the route, same layering discipline as
-any other backend.
+query-handling logic (`buildQueryResponse`): semantic re-ranking via
+`ChromaClient.kt`/`EmbeddingClient.kt`, then language detection/translation
+and grounded `answer` synthesis via `LlmClient.kt`, both only when `query`
+is present. Route handlers stay HTTP-only — no business logic past the
+route, same layering discipline as any other backend.
 
 ### LLM strategy
 
 RamaLama (local, `qwen2.5:7b`) is the only LLM backend for this event — no
 hosted cloud fallback. Served by the `ramalama` container at
 `localhost:8080`, OpenAI-compatible API, used for query understanding,
-grounded synthesis, and translation quality.
+grounded synthesis, and translation. `LlmClient.kt` is a thin wrapper over
+its `/v1/chat/completions` endpoint; see AGENTS.md's "Common Gotchas" for
+the local-model quirks (slow CPU inference, occasionally malformed JSON
+output) worth knowing before changing the synthesis prompts.
 
 RamaLama, not Ollama: this hackathon is Red Hat-hosted, and RamaLama is Red
 Hat's own model runner (it requires Podman specifically — Docker can't grant
