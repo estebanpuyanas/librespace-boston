@@ -55,6 +55,7 @@ fun Application.module(
     // connection - only evaluated the first time a /api/favorites request comes in.
     favoritesRepository: Lazy<FavoritesRepository> =
         lazy { ExposedFavoritesRepository(AppDatabase.connect(requireDatabaseUrl())) },
+    llmClient: LlmClient = LlmClient(),
 ) {
     install(ContentNegotiation) {
         json(Json { ignoreUnknownKeys = true })
@@ -116,7 +117,7 @@ fun Application.module(
                 call.respond(HttpStatusCode.UnprocessableEntity, LocationRequiredError())
                 return@post
             }
-            call.respond(buildQueryResponse(request, spotsRepository, location, chromaClient, embeddingClient))
+            call.respond(buildQueryResponse(request, spotsRepository, location, chromaClient, embeddingClient, llmClient))
         }
         route("/api/favorites") {
             get {
