@@ -1,10 +1,26 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import type { MobileCopy } from '../content';
+import type { AppLanguage } from '../types/app';
 
 interface AppHeaderProps {
+  copy: MobileCopy;
+  language: AppLanguage;
   location: string;
+  locationIsActive: boolean;
+  onLanguageToggle: () => void;
+  onLocationPress: () => void;
+  onProfilePress: () => void;
 }
 
-export const AppHeader = ({ location }: AppHeaderProps) => (
+export const AppHeader = ({
+  copy,
+  language,
+  location,
+  locationIsActive,
+  onLanguageToggle,
+  onLocationPress,
+  onProfilePress,
+}: AppHeaderProps) => (
   <>
     <View style={styles.topbar}>
       <View style={styles.wordmark}>
@@ -14,19 +30,42 @@ export const AppHeader = ({ location }: AppHeaderProps) => (
         <Text style={styles.brand}>FreeSpace</Text>
         <Text style={styles.city}>BOSTON</Text>
       </View>
-      <Pressable
-        style={styles.languageButton}
-        accessibilityRole='button'
-        accessibilityLabel='Language: English'
-      >
-        <Text style={styles.languageText}>EN⌄</Text>
-      </Pressable>
+      <View style={styles.actions}>
+        <Pressable
+          style={styles.languageButton}
+          onPress={onLanguageToggle}
+          accessibilityRole='button'
+          accessibilityLabel={copy.languageLabel}
+          hitSlop={6}
+        >
+          <Text style={styles.languageText}>{language.toUpperCase()} ↔</Text>
+        </Pressable>
+        <Pressable
+          style={styles.profileButton}
+          onPress={onProfilePress}
+          accessibilityRole='button'
+          accessibilityLabel='Open your profile'
+          hitSlop={6}
+        >
+          <Text style={styles.profileIcon}>◉</Text>
+        </Pressable>
+      </View>
     </View>
-    <View style={styles.locationLine}>
+    <Pressable
+      style={styles.locationLine}
+      onPress={onLocationPress}
+      accessibilityRole='button'
+      accessibilityLabel='Choose your search area'
+    >
       <Text style={styles.locationPin}>●</Text>
       <Text style={styles.locationText}>{location}</Text>
-      <Text style={styles.liveDot}>●</Text>
-    </View>
+      <Text
+        style={[styles.liveDot, !locationIsActive && styles.locationChevron]}
+        accessibilityLabel={locationIsActive ? copy.liveLocation : 'Choose your area'}
+      >
+        {locationIsActive ? '●' : '⌄'}
+      </Text>
+    </Pressable>
   </>
 );
 
@@ -67,10 +106,22 @@ const styles = StyleSheet.create({
   languageButton: {
     backgroundColor: '#E8E9DD',
     borderRadius: 18,
+    minHeight: 44,
+    minWidth: 52,
     paddingHorizontal: 11,
     paddingVertical: 6,
   },
   languageText: { color: '#3E5546', fontSize: 12, fontWeight: '700' },
+  actions: { alignItems: 'center', flexDirection: 'row', gap: 8 },
+  profileButton: {
+    alignItems: 'center',
+    backgroundColor: '#246A48',
+    borderRadius: 22,
+    height: 44,
+    justifyContent: 'center',
+    width: 44,
+  },
+  profileIcon: { color: '#F6F6ED', fontSize: 20 },
   locationLine: {
     alignItems: 'center',
     flexDirection: 'row',
@@ -82,4 +133,5 @@ const styles = StyleSheet.create({
   locationPin: { color: '#C45E3D', fontSize: 10 },
   locationText: { color: '#4F6256', fontSize: 13, fontWeight: '600' },
   liveDot: { color: '#3D9566', fontSize: 9, marginLeft: 2 },
+  locationChevron: { color: '#5E7162', fontSize: 16, lineHeight: 16 },
 });

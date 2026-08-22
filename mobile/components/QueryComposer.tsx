@@ -1,31 +1,36 @@
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import type { MobileCopy } from '../content';
 
 interface QueryComposerProps {
+  copy: MobileCopy;
+  loading: boolean;
   onSubmit: () => void;
   query: string;
   setQuery: (query: string) => void;
 }
 
-export const QueryComposer = ({ onSubmit, query, setQuery }: QueryComposerProps) => (
+export const QueryComposer = ({ copy, loading, onSubmit, query, setQuery }: QueryComposerProps) => (
   <View style={styles.shell}>
     <TextInput
       value={query}
       onChangeText={setQuery}
       multiline
-      placeholder='What do you need right now?'
+      placeholder={copy.describePlace}
       placeholderTextColor='#7E857D'
       style={styles.input}
-      accessibilityLabel='Describe the free place you need'
+      accessibilityLabel={copy.describePlace}
     />
     <View style={styles.footer}>
-      <Text style={styles.freeNote}>Always free to use</Text>
+      <Text style={styles.freeNote}>{copy.freeNote}</Text>
       <Pressable
-        style={styles.submitButton}
+        style={[styles.submitButton, loading && styles.submitButtonLoading]}
         onPress={onSubmit}
+        disabled={loading}
         accessibilityRole='button'
-        accessibilityLabel='Search places'
+        accessibilityLabel={copy.search}
+        accessibilityState={{ disabled: loading }}
       >
-        <Text style={styles.submitIcon}>→</Text>
+        <Text style={styles.submitIcon}>{loading ? '…' : '→'}</Text>
       </Pressable>
     </View>
   </View>
@@ -70,5 +75,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: 34,
   },
+  submitButtonLoading: { opacity: 0.65 },
   submitIcon: { color: '#FFFFFF', fontSize: 22, fontWeight: '700', lineHeight: 24 },
 });

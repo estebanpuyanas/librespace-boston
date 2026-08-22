@@ -1,28 +1,32 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { quickPrompts } from '../data/demo-spots';
-import type { QuickPrompt } from '../types/app';
+import { getMobileCopy, getQuickPrompts } from '../content';
+import type { AppLanguage, QuickPrompt } from '../types/app';
 
 interface PromptListProps {
+  language: AppLanguage;
   onChoose: (prompt: QuickPrompt) => void;
 }
 
-export const PromptList = ({ onChoose }: PromptListProps) => (
-  <View style={styles.container}>
-    <Text style={styles.eyebrow}>TRY ASKING</Text>
-    {quickPrompts.map(prompt => (
-      <Pressable key={prompt.label} style={styles.prompt} onPress={() => onChoose(prompt)}>
-        <Text style={styles.promptText}>“{prompt.label}”</Text>
-        <Text style={styles.promptArrow}>↗</Text>
-      </Pressable>
-    ))}
-    <View style={styles.promise}>
-      <Text style={styles.promiseIcon}>✦</Text>
-      <Text style={styles.promiseText}>
-        Built from Boston’s public data — not sponsored listings.
-      </Text>
+export const PromptList = ({ language, onChoose }: PromptListProps) => {
+  const copy = getMobileCopy(language);
+  const quickPrompts = getQuickPrompts(language);
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.eyebrow}>{copy.tryAsking}</Text>
+      {quickPrompts.map(prompt => (
+        <Pressable key={prompt.label} style={styles.prompt} onPress={() => onChoose(prompt)}>
+          <Text style={styles.promptText}>“{prompt.label}”</Text>
+          <Text style={styles.promptArrow}>↗</Text>
+        </Pressable>
+      ))}
+      <View style={styles.promise}>
+        <Text style={styles.promiseIcon}>✦</Text>
+        <Text style={styles.promiseText}>{copy.noSponsoredListings}</Text>
+      </View>
     </View>
-  </View>
-);
+  );
+};
 
 const styles = StyleSheet.create({
   container: { marginHorizontal: 22, marginTop: 36 },

@@ -1,25 +1,35 @@
-import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { Spot } from 'shared';
+import type { MobileCopy } from '../content';
 
 interface SpotCardProps {
+  copy: MobileCopy;
+  onToggleSave: () => void;
+  saved: boolean;
   spot: Spot;
 }
 
 const formatDistance = (meters: number) => `${(meters / 1609.34).toFixed(1)} mi`;
 const formatWalk = (meters: number) => `${Math.max(1, Math.round(meters / 80))} min walk`;
 
-const getTags = (spot: Spot): string[] =>
+const getTags = (copy: MobileCopy, spot: Spot): string[] =>
   [
-    ...(spot.has_wifi ? ['Public Wi-Fi nearby'] : []),
-    ...(spot.features.includes('seating') ? ['Seating'] : []),
-    ...(spot.features.includes('playground') ? ['Playground'] : []),
-    ...(spot.features.includes('restroom') ? ['Restroom'] : []),
+    ...(spot.has_wifi ? [copy.publicWifi] : []),
+    ...(spot.features.includes('seating') ? [copy.seating] : []),
+    ...(spot.features.includes('playground') ? [copy.playground] : []),
+    ...(spot.features.includes('restroom') ? [copy.restroom] : []),
   ].slice(0, 3);
 
-export const SpotCard = ({ spot }: SpotCardProps) => {
-  const [saved, setSaved] = useState(false);
-  const tags = getTags(spot);
+export const SpotCard = ({ copy, onToggleSave, saved, spot }: SpotCardProps) => {
+  const tags = getTags(copy, spot);
+  const openDirections = async () => {
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${spot.lat},${spot.lon}&travelmode=walking`;
+    try {
+      await Linking.openURL(url);
+    } catch {
+      Alert.alert(copy.directionsUnavailable);
+    }
+  };
 
   return (
     <View style={styles.card}>
@@ -28,10 +38,10 @@ export const SpotCard = ({ spot }: SpotCardProps) => {
           <Text style={styles.numberText}>01</Text>
         </View>
         <Pressable
-          onPress={() => setSaved(current => !current)}
+          onPress={onToggleSave}
           hitSlop={10}
           accessibilityRole='button'
-          accessibilityLabel={saved ? 'Remove saved place' : 'Save place'}
+          accessibilityLabel={saved ? copy.savedPlace : copy.savePlace}
         >
           <Text style={styles.saveIcon}>{saved ? '♥' : '♡'}</Text>
         </Pressable>
@@ -40,9 +50,7 @@ export const SpotCard = ({ spot }: SpotCardProps) => {
       <Text style={styles.distance}>
         {formatDistance(spot.distance_meters)} away · {formatWalk(spot.distance_meters)}
       </Text>
-      <Text style={styles.description}>
-        A free public place with details verified from Boston’s open data.
-      </Text>
+      <Text style={styles.description}>{copy.publicDataDescription}</Text>
       <View style={styles.tagRow}>
         {tags.map(tag => (
           <Text key={tag} style={styles.tag}>
@@ -53,18 +61,20 @@ export const SpotCard = ({ spot }: SpotCardProps) => {
       {spot.accessible.value && (
         <View style={styles.evidenceLine}>
           <Text style={styles.evidenceIcon}>✓</Text>
-          <Text style={styles.evidenceText}>Accessible park details verified</Text>
+          <Text style={styles.evidenceText}>{copy.verifiedAccessible}</Text>
         </View>
       )}
       <View style={styles.shadeNote}>
         <Text style={styles.shadeIcon}>♣</Text>
-        <Text style={styles.shadeText}>
-          {spot.tree_density_nearby} nearby public trees — an approximate shade signal, not canopy
-          data.
-        </Text>
+        <Text style={styles.shadeText}>{copy.shadeNotice(spot.tree_density_nearby)}</Text>
       </View>
-      <Pressable style={styles.directionsButton} accessibilityRole='button'>
-        <Text style={styles.directionsText}>Get directions</Text>
+      <Pressable
+        style={styles.directionsButton}
+        onPress={openDirections}
+        accessibilityRole='button'
+        accessibilityLabel={`${copy.directions} to ${spot.name}`}
+      >
+        <Text style={styles.directionsText}>{copy.directions}</Text>
         <Text style={styles.directionsArrow}>→</Text>
       </Pressable>
     </View>

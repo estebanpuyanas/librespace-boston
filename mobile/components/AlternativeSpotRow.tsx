@@ -1,15 +1,31 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { Spot } from 'shared';
+import type { MobileCopy } from '../content';
 
 interface AlternativeSpotRowProps {
+  copy: MobileCopy;
   index: number;
+  onPress: () => void;
   spot: Spot;
 }
 
-export const AlternativeSpotRow = ({ index, spot }: AlternativeSpotRowProps) => {
-  const features = spot.features.map(feature => feature.replace('_', ' '));
+export const AlternativeSpotRow = ({ copy, index, onPress, spot }: AlternativeSpotRowProps) => {
+  const features = spot.features.map(feature => {
+    const labels: Record<string, string> = {
+      playground: copy.playground,
+      restroom: copy.restroom,
+      seating: copy.seating,
+      shade_structure: copy.amenityLabels.Shade,
+    };
+    return labels[feature] ?? feature.replace('_', ' ');
+  });
   return (
-    <Pressable style={styles.row} accessibilityRole='button'>
+    <Pressable
+      style={styles.row}
+      onPress={onPress}
+      accessibilityRole='button'
+      accessibilityLabel={`${spot.name}, ${copy.directions}`}
+    >
       <View style={styles.index}>
         <Text style={styles.indexText}>{String(index).padStart(2, '0')}</Text>
       </View>
@@ -32,7 +48,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     flexDirection: 'row',
     marginHorizontal: 22,
-    paddingVertical: 16,
+    minHeight: 63,
+    paddingVertical: 12,
   },
   index: {
     alignItems: 'center',

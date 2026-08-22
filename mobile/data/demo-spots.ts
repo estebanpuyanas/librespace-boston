@@ -51,24 +51,6 @@ export const demoSpots: Spot[] = [
   },
 ];
 
-export const quickPrompts = [
-  {
-    label: 'I need Wi-Fi and a place to sit',
-    query: 'I need a free place nearby where I can sit and use Wi-Fi.',
-    amenities: ['Wi-Fi', 'Seating'],
-  },
-  {
-    label: 'Where can I study outside in the shade?',
-    query: 'Where can I study outside in the shade for free?',
-    amenities: ['Seating', 'Shade'],
-  },
-  {
-    label: 'A free place to go with my child',
-    query: 'Find somewhere free with a playground where I can work while my child plays.',
-    amenities: ['Playground', 'Seating'],
-  },
-] satisfies import('../types/app').QuickPrompt[];
-
 const matchesSelectedAmenity = (spot: Spot, amenity: AmenityLabel): boolean => {
   switch (amenity) {
     case 'Wi-Fi':
@@ -101,6 +83,13 @@ export const getDemoResponse = (amenities: AmenityLabel[]): QueryResponse => {
       closest_park: spots[0]?.spot_id ?? null,
       closest_restroom: spots.find(spot => spot.features.includes('restroom'))?.spot_id ?? null,
       closest_wifi: spots.find(spot => spot.has_wifi)?.spot_id ?? null,
+    },
+    resolved_location: {
+      approximate: false,
+      label: 'Downtown Boston',
+      lat: 42.3554,
+      lon: -71.0657,
+      source: 'manual',
     },
     spots,
     translated_query: null,
