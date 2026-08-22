@@ -69,10 +69,9 @@ cd mobile && npx tsc --noEmit
 
 - Routes stay HTTP-only, business logic goes in a services layer, no
   `req`/`call` object leaks past the route handler.
-- `LlmConfig.kt` encodes the two-tier LLM strategy: hosted Claude API primary
-  (`ANTHROPIC_API_KEY`), RamaLama local fallback (`RAMALAMA_URL`,
-  `RAMALAMA_MODEL`, served by the `ramalama` container). Don't hardcode a
-  single provider always route through this config.
+- `LlmConfig.kt` encodes local-only LLM config: RamaLama (`RAMALAMA_URL`,
+  `RAMALAMA_MODEL`, served by the `ramalama` container) is the only backend
+  for this event, no hosted cloud tier. Always route through this config.
 
 ### Frontend (webclient + mobile)
 
@@ -175,7 +174,7 @@ cd mobile && npx tsc --noEmit
   exist, which it does just needs to be current for whatever you're
   building against).
 - **RamaLama vs Ollama.** The `ramalama` container pulls
-  `ollama://llama3.2:3b` — that's RamaLama's syntax for sourcing a model from
+  `ollama://qwen2.5:7b` — that's RamaLama's syntax for sourcing a model from
   Ollama's library, not Ollama itself. Don't add an `ollama` service; RamaLama
   already serves an OpenAI-compatible API on port 8080.
 - **Mobile is pinned to port 8082.** The Ktor backend listens on 8081

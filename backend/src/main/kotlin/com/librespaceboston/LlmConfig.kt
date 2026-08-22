@@ -1,9 +1,9 @@
 package com.librespaceboston
 
 /**
- * Two LLM backends, tried in order: a hosted API for quality (query understanding,
- * grounded synthesis, translation), falling back to a local RamaLama container when
- * no API key is configured or the venue connection drops. See spec.md sections 8-9.
+ * RamaLama (local, `qwen2.5:7b`) is the only LLM backend for this event — no hosted
+ * cloud fallback — used for query understanding, grounded synthesis, and translation.
+ * See spec.md sections 8-9.
  */
 data class LlmConfig(
     val anthropicApiKey: String?,
@@ -17,7 +17,7 @@ data class LlmConfig(
             LlmConfig(
                 anthropicApiKey = envVar("ANTHROPIC_API_KEY"),
                 ramalamaUrl = envVar("RAMALAMA_URL") ?: "http://localhost:8080",
-                ramalamaModel = envVar("RAMALAMA_MODEL") ?: "llama3.2:3b",
+                ramalamaModel = envVar("RAMALAMA_MODEL") ?: "qwen2.5:7b",
             )
     }
 }
