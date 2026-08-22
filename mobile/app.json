@@ -2,10 +2,10 @@
   "expo": {
     "name": "LibreSpace Boston",
     "slug": "librespace-boston",
-    "scheme": "freespace",
+    "scheme": "librespace",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/librespace-logo.png",
     "userInterfaceStyle": "light",
     "ios": {
       "bundleIdentifier": "com.librespace.boston",
@@ -18,10 +18,8 @@
       "package": "com.librespace.boston",
       "permissions": ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION"],
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "backgroundColor": "#F5F4ED",
+        "foregroundImage": "./assets/librespace-logo.png"
       },
       "predictiveBackGestureEnabled": false
     },

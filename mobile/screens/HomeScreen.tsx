@@ -15,6 +15,8 @@ import { StatusBar } from 'expo-status-bar';
 import type { Spot } from 'shared';
 import { AlternativeSpotRow } from '../components/AlternativeSpotRow';
 import { AppHeader } from '../components/AppHeader';
+import { AppTabBar } from '../components/AppTabBar';
+import { FriendsPlansSheet } from '../components/FriendsPlansSheet';
 import { LocalSnapshot } from '../components/LocalSnapshot';
 import { NeighborhoodPicker } from '../components/NeighborhoodPicker';
 import { ProfileSheet } from '../components/ProfileSheet';
@@ -41,6 +43,7 @@ export const HomeScreen = () => {
   const [locationPickerOpen, setLocationPickerOpen] = useState(false);
   const [manualLocation, setManualLocation] = useState<SearchLocation | null>(null);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [friendsPlansOpen, setFriendsPlansOpen] = useState(false);
   const [profile, setProfile] = useState<ProfileDetails>({ email: '', name: '' });
   const [liveLocationEnabled, setLiveLocationEnabled] = useState(true);
   const [savedSpots, setSavedSpots] = useState<Spot[]>([]);
@@ -98,6 +101,15 @@ export const HomeScreen = () => {
     void searchWithLocationFallback(query.trim() || initialQuery, [], liveLocation ?? nextLocation);
   };
   const spots = response?.spots ?? [];
+  const planDestinationSuggestions = Array.from(
+    new Set(
+      [
+        ...spots.slice(0, 2).map(spot => spot.name),
+        ...savedSpots.map(spot => spot.name),
+        contextLocation?.label,
+      ].filter((place): place is string => Boolean(place)),
+    ),
+  ).slice(0, 4);
   const mapLocation = contextLocation;
   const toggleSavedSpot = (spot: Spot) => {
     setSavedSpots(current =>
@@ -114,7 +126,11 @@ export const HomeScreen = () => {
       behavior={Platform.select({ ios: 'padding', default: undefined })}
     >
       <StatusBar style='dark' />
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps='handled'>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps='handled'
+      >
         <AppHeader
           copy={copy}
           language={language}
@@ -122,7 +138,6 @@ export const HomeScreen = () => {
           locationIsActive={contextLocation !== null}
           onLanguageToggle={toggleLanguage}
           onLocationPress={() => setLocationPickerOpen(true)}
-          onProfilePress={() => setProfileOpen(true)}
         />
         <View style={styles.hero}>
           <Text style={styles.headline}>{copy.headline}</Text>
@@ -199,6 +214,10 @@ export const HomeScreen = () => {
           </View>
         )}
       </ScrollView>
+      <AppTabBar
+        onOpenPlans={() => setFriendsPlansOpen(true)}
+        onOpenProfile={() => setProfileOpen(true)}
+      />
       <ProfileSheet
         visible={profileOpen}
         onClose={() => setProfileOpen(false)}
@@ -212,6 +231,15 @@ export const HomeScreen = () => {
           setProfileOpen(false);
           setLocationPickerOpen(true);
         }}
+        onOpenFriends={() => {
+          setProfileOpen(false);
+          setFriendsPlansOpen(true);
+        }}
+      />
+      <FriendsPlansSheet
+        visible={friendsPlansOpen}
+        suggestedDestinations={planDestinationSuggestions}
+        onClose={() => setFriendsPlansOpen(false)}
       />
       <NeighborhoodPicker
         visible={locationPickerOpen}
@@ -226,6 +254,7 @@ export const HomeScreen = () => {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#F5F4ED' },
+  scrollView: { flex: 1 },
   content: { paddingBottom: 42 },
   hero: { paddingHorizontal: 22 },
   headline: {

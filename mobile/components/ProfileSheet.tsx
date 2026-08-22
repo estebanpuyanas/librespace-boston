@@ -20,6 +20,7 @@ export interface ProfileDetails {
 
 interface ProfileSheetProps {
   liveLocationEnabled: boolean;
+  onOpenFriends: () => void;
   onChooseArea: () => void;
   onClose: () => void;
   onOpenDirections: (spot: Spot) => void;
@@ -45,6 +46,7 @@ export const ProfileSheet = ({
   liveLocationEnabled,
   onChooseArea,
   onClose,
+  onOpenFriends,
   onOpenDirections,
   onSaveProfile,
   onToggleLiveLocation,
@@ -169,6 +171,19 @@ export const ProfileSheet = ({
               value={notificationsEnabled}
               onValueChange={setNotificationsEnabled}
             />
+          </View>
+
+          <Text style={styles.sectionTitle}>FRIENDS & PLANS</Text>
+          <View style={styles.card}>
+            <Pressable style={styles.settingRow} onPress={onOpenFriends} accessibilityRole='button'>
+              <View style={styles.settingCopy}>
+                <Text style={styles.settingTitle}>Friends & shared plans</Text>
+                <Text style={styles.settingDescription}>
+                  Invite friends to a place and share location only when you choose.
+                </Text>
+              </View>
+              <Text style={styles.arrow}>›</Text>
+            </Pressable>
           </View>
 
           <Text style={styles.sectionTitle}>ACCOUNT</Text>
