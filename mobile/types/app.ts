@@ -1,6 +1,6 @@
 export type AmenityLabel = 'Wi-Fi' | 'Seating' | 'Shade' | 'Accessible' | 'Playground';
 
-export type AppLanguage = 'en' | 'es';
+export type AppLanguage = 'en' | 'es' | 'vi' | 'zh-Hans';
 
 export type LocationSource = 'device' | 'manual';
 

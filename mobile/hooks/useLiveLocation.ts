@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import * as Location from 'expo-location';
 import type { SearchLocation } from '../types/app';
+import { getBostonAreaLabel } from '../utils/boston-area';
 
 interface LiveLocationState {
   isLive: boolean;
@@ -24,7 +25,7 @@ export const useLiveLocation = (enabled: boolean): LiveLocationState => {
       setState({
         isLive: true,
         location: {
-          label: 'Your live location',
+          label: getBostonAreaLabel(position.coords.latitude, position.coords.longitude),
           lat: position.coords.latitude,
           lon: position.coords.longitude,
           source: 'device',
@@ -38,23 +39,22 @@ export const useLiveLocation = (enabled: boolean): LiveLocationState => {
         const servicesEnabled = await Location.hasServicesEnabledAsync();
         if (status !== Location.PermissionStatus.GRANTED || !servicesEnabled) return;
 
-        const lastKnownPosition = await Location.getLastKnownPositionAsync();
-        if (lastKnownPosition) updateLocation(lastKnownPosition);
-
-        try {
-          const position = await Location.getCurrentPositionAsync({
-            accuracy: Location.Accuracy.Balanced,
-            mayShowUserSettingsDialog: true,
-          });
-          updateLocation(position);
-        } catch {
-          // Emulators can grant permission without having a simulated GPS fix yet.
-        }
-
         subscription = await Location.watchPositionAsync(
           { accuracy: Location.Accuracy.Balanced, distanceInterval: 25 },
           updateLocation,
         );
+
+        const lastKnownPosition = await Location.getLastKnownPositionAsync();
+        if (lastKnownPosition) updateLocation(lastKnownPosition);
+
+        void Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+          mayShowUserSettingsDialog: true,
+        })
+          .then(updateLocation)
+          .catch(() => {
+            // A watch is already active for a location sent later by the emulator.
+          });
       } catch {
         // The app can still request a coarse IP-based location from the backend.
       }

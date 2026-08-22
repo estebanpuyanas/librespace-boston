@@ -17,6 +17,7 @@ import { AlternativeSpotRow } from '../components/AlternativeSpotRow';
 import { AppHeader } from '../components/AppHeader';
 import { AppTabBar } from '../components/AppTabBar';
 import { FriendsPlansSheet } from '../components/FriendsPlansSheet';
+import { LanguagePicker } from '../components/LanguagePicker';
 import { LocalSnapshot } from '../components/LocalSnapshot';
 import { NeighborhoodPicker } from '../components/NeighborhoodPicker';
 import { ProfileSheet } from '../components/ProfileSheet';
@@ -41,6 +42,7 @@ const initialQuery = 'I need a free place near Downtown where I can sit and use 
 export const HomeScreen = () => {
   const [query, setQuery] = useState(initialQuery);
   const [language, setLanguage] = useState<AppLanguage>('en');
+  const [languagePickerOpen, setLanguagePickerOpen] = useState(false);
   const [locationPickerOpen, setLocationPickerOpen] = useState(false);
   const [manualLocation, setManualLocation] = useState<SearchLocation | null>(null);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -90,7 +92,9 @@ export const HomeScreen = () => {
     Keyboard.dismiss();
     void searchWithLocationFallback(query.trim() || initialQuery, []);
   };
-  const toggleLanguage = () => setLanguage(current => (current === 'en' ? 'es' : 'en'));
+  const chooseLanguage = (nextLanguage: AppLanguage) => {
+    setLanguage(nextLanguage);
+  };
   const openDirections = async (lat: number, lon: number) => {
     const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}&travelmode=walking`;
     try {
@@ -138,9 +142,10 @@ export const HomeScreen = () => {
         <AppHeader
           copy={copy}
           language={language}
-          location={isLive ? 'Your live location' : (contextLocation?.label ?? copy.location)}
+          location={contextLocation?.label ?? copy.location}
           locationIsActive={contextLocation !== null}
-          onLanguageToggle={toggleLanguage}
+          locationIsLive={isLive}
+          onLanguageToggle={() => setLanguagePickerOpen(true)}
           onLocationPress={() => setLocationPickerOpen(true)}
         />
         <View style={styles.hero}>
@@ -253,6 +258,12 @@ export const HomeScreen = () => {
         loadingSuggestion={ipLocationLoading}
         onClose={() => setLocationPickerOpen(false)}
         onSelect={chooseNeighborhood}
+      />
+      <LanguagePicker
+        visible={languagePickerOpen}
+        language={language}
+        onClose={() => setLanguagePickerOpen(false)}
+        onSelect={chooseLanguage}
       />
     </KeyboardAvoidingView>
   );

@@ -10,7 +10,20 @@ const BACKEND_PORT = 8081; // must match backend/.env.example's PORT
 // server host (Constants.expoConfig.hostUri, e.g. "192.168.1.23:8082") so
 // physical-device testing works with zero per-laptop .env editing.
 const resolveApiUrl = (): string => {
-  if (process.env.EXPO_PUBLIC_API_URL) return process.env.EXPO_PUBLIC_API_URL;
+  const configuredUrl = process.env.EXPO_PUBLIC_API_URL;
+  if (configuredUrl) {
+    // `localhost` inside Android is the emulator itself. Keep the friendly
+    // local .env setting working by translating it to the host-machine alias.
+    if (
+      Platform.OS === 'android' &&
+      (configuredUrl.includes('://localhost:') || configuredUrl.includes('://127.0.0.1:'))
+    ) {
+      return configuredUrl
+        .replace('://localhost:', '://10.0.2.2:')
+        .replace('://127.0.0.1:', '://10.0.2.2:');
+    }
+    return configuredUrl;
+  }
 
   const host = Constants.expoConfig?.hostUri?.split(':')[0];
   if (host && host !== 'localhost' && host !== '127.0.0.1') {
