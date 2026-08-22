@@ -5,8 +5,12 @@ import type { AxiosRequestConfig } from 'axios';
 // (see orval.config.ts's `override.mutator`) instead of bare axios, so a
 // single `setApiBaseUrl` call in each app's entry point is enough to point
 // the whole generated client at the right backend.
+// 60s ceiling accommodates POST /api/query's LLM-synthesis path when `query`
+// is present, observed to take ~25-40s against the local CPU-served model
+// (see AGENTS.md's LlmClient.kt entry) — the structured-only path is fast
+// and unaffected since this is a max wait, not an added delay.
 export const client = axios.create({
-  timeout: 10000,
+  timeout: 60000,
   headers: { 'Content-Type': 'application/json' },
 });
 

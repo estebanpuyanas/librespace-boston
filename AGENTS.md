@@ -273,6 +273,12 @@ cd mobile && npx tsc --noEmit
   (`webclient/src/services/axios.ts`, `mobile/services/api.ts`) don't
   create a second, parallel axios instance for API calls; import
   `getLibreSpaceBostonAPI` from `shared` instead.
+- **`shared/mutator.ts`'s axios `timeout` covers the slow LLM-synthesis path.**
+  It's one shared client for every generated call, so its timeout has to
+  accommodate `POST /api/query`'s `query`-present path (~25-40s against the
+  local CPU-served model, see the `LlmClient.kt` entry above) even though
+  every other call is fast — don't lower it back toward a "normal" API
+  timeout without giving that path its own per-request override instead.
 - **Mobile resolves the backend host automatically on a physical device.**
   `EXPO_PUBLIC_API_URL` defaults to `localhost`, which on a real phone means
   the phone itself, not your laptop. `mobile/services/api.ts` falls back to
