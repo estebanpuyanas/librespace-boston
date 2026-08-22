@@ -39,6 +39,9 @@ test-results/
 # Misc
 *.local
 
+# Per-session Claude Code local settings (hook wiring churns per lane/session)
+.claude/settings.local.json
+
 # --- Generated shared TS client (see shared/README.md) ---
 shared/generated/
 
