@@ -71,9 +71,7 @@ export const SpotMap = ({ location, onDirections, spots }: SpotMapProps) => {
   );
 };
 
-interface DemoMapProps extends SpotMapProps {}
-
-const DemoMap = ({ location, onDirections, spots }: DemoMapProps) => (
+const DemoMap = ({ location, onDirections, spots }: SpotMapProps) => (
   <View
     style={styles.demoMap}
     accessibilityLabel='Map preview of your location and suggested places'
