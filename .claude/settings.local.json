@@ -1,1 +1,44 @@
-{"hooks":{"UserPromptSubmit":[{"hooks":[{"type":"command","command":"'/home/estebanpuyanas/firstmate/bin/fm-busy-event.sh' apply '/home/estebanpuyanas/firstmate/state' 'lsb-db-favorites' busy --gen 'g1787415180.231883.7158' --source claude-hook --event user-prompt-submit 2>/dev/null || true"}]}],"Stop":[{"hooks":[{"type":"command","command":"touch '/home/estebanpuyanas/firstmate/state/lsb-db-favorites.turn-ended'; '/home/estebanpuyanas/firstmate/bin/fm-busy-event.sh' apply '/home/estebanpuyanas/firstmate/state' 'lsb-db-favorites' idle --gen 'g1787415180.231883.7158' --source claude-hook --event stop 2>/dev/null || true"}]}],"StopFailure":[{"hooks":[{"type":"command","command":"'/home/estebanpuyanas/firstmate/bin/fm-busy-event.sh' apply '/home/estebanpuyanas/firstmate/state' 'lsb-db-favorites' idle --gen 'g1787415180.231883.7158' --source claude-hook --event stop-failure 2>/dev/null || true"}]}],"SessionEnd":[{"hooks":[{"type":"command","command":"'/home/estebanpuyanas/firstmate/bin/fm-busy-event.sh' apply '/home/estebanpuyanas/firstmate/state' 'lsb-db-favorites' idle --gen 'g1787415180.231883.7158' --source claude-hook --event session-end 2>/dev/null || true"}]}]}}
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "'/home/estebanpuyanas/firstmate/bin/fm-busy-event.sh' apply '/home/estebanpuyanas/firstmate/state' 'lsb-llm-synthesis' busy --gen 'g1787416993.344908.13572' --source claude-hook --event user-prompt-submit 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "touch '/home/estebanpuyanas/firstmate/state/lsb-llm-synthesis.turn-ended'; '/home/estebanpuyanas/firstmate/bin/fm-busy-event.sh' apply '/home/estebanpuyanas/firstmate/state' 'lsb-llm-synthesis' idle --gen 'g1787416993.344908.13572' --source claude-hook --event stop 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "StopFailure": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "'/home/estebanpuyanas/firstmate/bin/fm-busy-event.sh' apply '/home/estebanpuyanas/firstmate/state' 'lsb-llm-synthesis' idle --gen 'g1787416993.344908.13572' --source claude-hook --event stop-failure 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "'/home/estebanpuyanas/firstmate/bin/fm-busy-event.sh' apply '/home/estebanpuyanas/firstmate/state' 'lsb-llm-synthesis' idle --gen 'g1787416993.344908.13572' --source claude-hook --event session-end 2>/dev/null || true"
+          }
+        ]
+      }
+    ]
+  }
+}
