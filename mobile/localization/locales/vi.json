@@ -1,0 +1,24 @@
+{
+  "app": { "name": "FreeSpace Boston" },
+  "home": {
+    "headline": "Tìm một nơi miễn phí để ở lại.",
+    "description": "Tìm không gian công cộng để ngồi, sạc thiết bị, tránh nóng và nghỉ ngơi — hoàn toàn miễn phí.",
+    "searchPlaceholder": "Bạn cần gì ngay bây giờ?",
+    "freeNote": "Luôn miễn phí"
+  },
+  "language": {
+    "title": "Chọn ngôn ngữ của bạn",
+    "description": "Bạn có thể thay đổi bất cứ lúc nào trong phần cài đặt.",
+    "deviceLanguage": "Đang dùng ngôn ngữ thiết bị của bạn"
+  },
+  "result": {
+    "bestMatch": "Phù hợp nhất",
+    "getDirections": "Chỉ đường",
+    "save": "Lưu địa điểm",
+    "saved": "Đã lưu",
+    "sources": "Nguồn dữ liệu",
+    "shadeDisclaimer": "Cây công cộng gần đó là chỉ dấu gần đúng về bóng râm, không phải dữ liệu tán cây đã được xác minh."
+  },
+  "settings": { "title": "Cài đặt", "language": "Ngôn ngữ", "notifications": "Thông báo" },
+  "translation": { "disclaimer": "Bản dịch máy — vui lòng kiểm tra chi tiết." }
+}

@@ -1,31 +1,33 @@
 import { useGeolocation } from '../../hooks/useGeolocation';
 import { useNearbySpots } from '../../hooks/useNearbySpots';
+import { useTranslation } from 'react-i18next';
 
 const Home = () => {
+  const { t } = useTranslation();
   const location = useGeolocation();
   const nearby = useNearbySpots(location.data);
 
   return (
     <div className='home'>
-      <h1>LibreSpace Boston</h1>
-      <p className='text-muted'>Ask where you can go in Boston without spending money.</p>
+      <h1>{t('web.home.title')}</h1>
+      <p className='text-muted'>{t('web.home.description')}</p>
 
-      {location.loading && <p className='text-muted'>Finding what's nearby…</p>}
+      {location.loading && <p className='text-muted'>{t('web.home.findingNearby')}</p>}
 
       {!location.loading && !location.data && (
-        <p className='text-muted'>
-          Couldn't determine your location. Ask a question below to get started.
-        </p>
+        <p className='text-muted'>{t('web.home.locationUnavailable')}</p>
       )}
 
-      {nearby.loading && <p className='text-muted'>Loading nearby spots…</p>}
+      {nearby.loading && <p className='text-muted'>{t('web.home.loadingSpots')}</p>}
 
       {nearby.data && (
         <div className='bento-grid'>
           {nearby.data.spots.map(spot => (
             <div key={spot.spot_id} className='bento-tile'>
               <strong>{spot.name}</strong>
-              <span className='text-muted'>{Math.round(spot.distance_meters)}m away</span>
+              <span className='text-muted'>
+                {t('web.home.distanceAway', { distance: Math.round(spot.distance_meters) })}
+              </span>
             </div>
           ))}
         </div>

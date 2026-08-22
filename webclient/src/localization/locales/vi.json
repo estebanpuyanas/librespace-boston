@@ -1,0 +1,16 @@
+{
+  "app": { "name": "FreeSpace Boston" },
+  "settings": { "language": "Ngôn ngữ" },
+  "web": {
+    "navigation": { "home": "Trang chủ" },
+    "theme": { "toggle": "Đổi giao diện" },
+    "home": {
+      "title": "FreeSpace Boston",
+      "description": "Hãy hỏi nơi bạn có thể đến ở Boston mà không phải chi tiền.",
+      "findingNearby": "Đang tìm các địa điểm gần bạn…",
+      "locationUnavailable": "Không thể xác định vị trí của bạn. Hãy đặt câu hỏi bên dưới để bắt đầu.",
+      "loadingSpots": "Đang tải các địa điểm gần bạn…",
+      "distanceAway": "Cách {{distance}} m"
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "app": { "name": "FreeSpace Boston" },
+  "home": {
+    "headline": "找一个可以免费停留的地方。",
+    "description": "寻找可以坐下、充电、避暑和停留的公共空间——完全免费。",
+    "searchPlaceholder": "你现在需要什么？",
+    "freeNote": "始终免费使用"
+  },
+  "language": {
+    "title": "选择你的语言",
+    "description": "你可以随时在设置中更改。",
+    "deviceLanguage": "正在使用设备语言"
+  },
+  "result": {
+    "bestMatch": "最佳匹配",
+    "getDirections": "获取路线",
+    "save": "收藏地点",
+    "saved": "已收藏",
+    "sources": "数据来源",
+    "shadeDisclaimer": "附近的公共树木数量只是阴凉程度的近似参考，并非经过验证的树冠数据。"
+  },
+  "settings": { "title": "设置", "language": "语言", "notifications": "通知" },
+  "translation": { "disclaimer": "机器翻译——请核实详细信息。" }
+}

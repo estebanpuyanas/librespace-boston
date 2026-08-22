@@ -1,0 +1,16 @@
+{
+  "app": { "name": "FreeSpace Boston" },
+  "settings": { "language": "Language" },
+  "web": {
+    "navigation": { "home": "Home" },
+    "theme": { "toggle": "Toggle theme" },
+    "home": {
+      "title": "FreeSpace Boston",
+      "description": "Ask where you can go in Boston without spending money.",
+      "findingNearby": "Finding what's nearby…",
+      "locationUnavailable": "Couldn't determine your location. Ask a question below to get started.",
+      "loadingSpots": "Loading nearby spots…",
+      "distanceAway": "{{distance}}m away"
+    }
+  }
+}
