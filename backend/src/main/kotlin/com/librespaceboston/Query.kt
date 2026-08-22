@@ -103,34 +103,39 @@ suspend fun buildQueryResponse(
         )
     }
 
+    if (structuralSpots.isEmpty()) {
+        return QueryResponse(
+            spots = structuralSpots,
+            highlights = buildHighlights(structuralSpots),
+            resolved_location = location,
+            disclaimers =
+                buildList {
+                    if (location.approximate) add("Using an approximate area based on your network connection.")
+                    add("No nearby spots matched your search, try a larger radius or fewer filters.")
+                },
+        )
+    }
+
     val languageResult = detectAndTranslate(llmClient, queryText)
     val retrievalText = languageResult?.translated_query ?: queryText
 
     val spots =
-        if (structuralSpots.isNotEmpty()) {
-            rankBySemanticRelevance(
-                queryText = retrievalText,
-                amenities = request.amenities,
-                structuralSpots = structuralSpots,
-                totalSpotCount = repository.size,
-                chromaClient = chromaClient,
-                embeddingClient = embeddingClient,
-            )
-        } else {
-            structuralSpots
-        }
+        rankBySemanticRelevance(
+            queryText = retrievalText,
+            amenities = request.amenities,
+            structuralSpots = structuralSpots,
+            totalSpotCount = repository.size,
+            chromaClient = chromaClient,
+            embeddingClient = embeddingClient,
+        )
 
     val synthesis =
-        if (spots.isNotEmpty()) {
-            synthesizeAnswer(
-                llmClient = llmClient,
-                englishQuery = retrievalText,
-                detectedLanguage = languageResult?.detected_language ?: "en",
-                spots = spots.take(MAX_SPOTS_FOR_SYNTHESIS),
-            )
-        } else {
-            null
-        }
+        synthesizeAnswer(
+            llmClient = llmClient,
+            englishQuery = retrievalText,
+            detectedLanguage = languageResult?.detected_language ?: "en",
+            spots = spots.take(MAX_SPOTS_FOR_SYNTHESIS),
+        )
 
     val disclaimers =
         buildList {

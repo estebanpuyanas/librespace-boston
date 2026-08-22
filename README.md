@@ -131,11 +131,12 @@ CORS, and routing (`/health`, `/api/ping`, `POST /api/query`); `LlmConfig.kt`
 is env-driven config for the local LLM setup below; `Spots.kt` loads
 `data-service/output/spots.json` into memory and ranks by haversine
 distance; `Query.kt` holds the `/api/query` request/response models and the
-query-handling logic (`buildQueryResponse`): semantic re-ranking via
-`ChromaClient.kt`/`EmbeddingClient.kt`, then language detection/translation
-and grounded `answer` synthesis via `LlmClient.kt`, both only when `query`
-is present. Route handlers stay HTTP-only — no business logic past the
-route, same layering discipline as any other backend.
+query-handling logic (`buildQueryResponse`): language detection/translation
+via `LlmClient.kt`, then semantic re-ranking against the translated text via
+`ChromaClient.kt`/`EmbeddingClient.kt`, then grounded `answer` synthesis via
+`LlmClient.kt`, all only when `query` is present. Route handlers stay
+HTTP-only — no business logic past the route, same layering discipline as
+any other backend.
 
 ### LLM strategy
 
