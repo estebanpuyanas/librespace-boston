@@ -44,6 +44,7 @@ export const HomeScreen = () => {
   const [language, setLanguage] = useState<AppLanguage>('en');
   const [languagePickerOpen, setLanguagePickerOpen] = useState(false);
   const [locationPickerOpen, setLocationPickerOpen] = useState(false);
+  const [locationMode, setLocationMode] = useState<'live' | 'manual'>('live');
   const [manualLocation, setManualLocation] = useState<SearchLocation | null>(null);
   const [profileOpen, setProfileOpen] = useState(false);
   const [friendsPlansOpen, setFriendsPlansOpen] = useState(false);
@@ -52,7 +53,8 @@ export const HomeScreen = () => {
   const [savedSpots, setSavedSpots] = useState<Spot[]>([]);
   const [view, setView] = useState<ResultView>('list');
   const { isLive, location: liveLocation } = useLiveLocation(liveLocationEnabled);
-  const locationForSearch = liveLocation ?? manualLocation;
+  const locationForSearch =
+    locationMode === 'live' ? (liveLocation ?? manualLocation) : manualLocation;
   const { error, loading, response, search, usingDemoData } = useFreeSpaceSearch(
     locationForSearch,
     language,
@@ -105,8 +107,15 @@ export const HomeScreen = () => {
   };
   const chooseNeighborhood = (nextLocation: SearchLocation) => {
     setManualLocation(nextLocation);
+    setLocationMode('manual');
     setLocationPickerOpen(false);
-    void searchWithLocationFallback(query.trim() || initialQuery, [], liveLocation ?? nextLocation);
+    void searchWithLocationFallback(query.trim() || initialQuery, [], nextLocation);
+  };
+  const switchToLiveLocation = () => {
+    if (!liveLocation) return;
+    setLocationMode('live');
+    setLocationPickerOpen(false);
+    void searchWithLocationFallback(query.trim() || initialQuery, [], liveLocation);
   };
   const spots = response?.spots ?? [];
   const planDestinationSuggestions = Array.from(
@@ -144,7 +153,7 @@ export const HomeScreen = () => {
           language={language}
           location={contextLocation?.label ?? copy.location}
           locationIsActive={contextLocation !== null}
-          locationIsLive={isLive}
+          locationIsLive={locationMode === 'live' && isLive}
           onLanguageToggle={() => setLanguagePickerOpen(true)}
           onLocationPress={() => setLocationPickerOpen(true)}
         />
@@ -255,9 +264,12 @@ export const HomeScreen = () => {
       <NeighborhoodPicker
         visible={locationPickerOpen}
         ipSuggestion={ipSuggestion}
+        liveLocation={liveLocation}
         loadingSuggestion={ipLocationLoading}
         onClose={() => setLocationPickerOpen(false)}
         onSelect={chooseNeighborhood}
+        onUseLiveLocation={switchToLiveLocation}
+        usingLiveLocation={locationMode === 'live' && isLive}
       />
       <LanguagePicker
         visible={languagePickerOpen}

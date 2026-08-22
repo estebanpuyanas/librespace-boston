@@ -23,6 +23,8 @@ const apiAmenity: Partial<Record<AmenityLabel, Amenity>> = {
 const toApiAmenities = (selected: AmenityLabel[]): Amenity[] =>
   selected.flatMap(label => (apiAmenity[label] ? [apiAmenity[label]] : []));
 
+const mentionsWifi = (query: string): boolean => /\bwi[\s-]?fi\b|\binternet\b/i.test(query);
+
 export const useFreeSpaceSearch = (location: SearchLocation | null, language: AppLanguage) => {
   const [state, setState] = useState<SearchState>({
     error: null,
@@ -35,11 +37,14 @@ export const useFreeSpaceSearch = (location: SearchLocation | null, language: Ap
   const search = useCallback(
     async (query: string, amenities: AmenityLabel[], overrideLocation?: SearchLocation | null) => {
       const searchLocation = overrideLocation === undefined ? location : overrideLocation;
+      const searchAmenities: AmenityLabel[] = mentionsWifi(query)
+        ? Array.from(new Set<AmenityLabel>([...amenities, 'Wi-Fi']))
+        : amenities;
       setState(current => ({ ...current, error: null, loading: true, needsManualLocation: false }));
 
       try {
         const response = await postQuery({
-          amenities: toApiAmenities(amenities),
+          amenities: toApiAmenities(searchAmenities),
           ...(searchLocation && {
             location: {
               lat: searchLocation.lat,
@@ -55,7 +60,10 @@ export const useFreeSpaceSearch = (location: SearchLocation | null, language: Ap
           error: null,
           loading: false,
           needsManualLocation: false,
-          response: { ...response, spots: filterSpotsForAmenities(response.spots, amenities) },
+          response: {
+            ...response,
+            spots: filterSpotsForAmenities(response.spots, searchAmenities),
+          },
           usingDemoData: false,
         });
         return false;
@@ -67,7 +75,7 @@ export const useFreeSpaceSearch = (location: SearchLocation | null, language: Ap
             : 'Showing saved demo results while the local search service reconnects.',
           loading: false,
           needsManualLocation,
-          response: needsManualLocation ? null : getDemoResponse(amenities),
+          response: needsManualLocation ? null : getDemoResponse(searchAmenities),
           usingDemoData: !needsManualLocation,
         });
         return needsManualLocation;
