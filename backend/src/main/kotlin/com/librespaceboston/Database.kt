@@ -54,7 +54,7 @@ object AppDatabase {
         try {
             val database = Database.connect(dataSource)
             transaction(database) {
-                SchemaUtils.create(Devices, Favorites)
+                SchemaUtils.create(Devices, Favorites, FriendCodes, Friendships, SharedSpots)
             }
             return database
         } catch (e: Exception) {

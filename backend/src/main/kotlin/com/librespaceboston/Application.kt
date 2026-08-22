@@ -22,6 +22,7 @@ import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import kotlinx.serialization.json.Json
+import org.jetbrains.exposed.sql.Database
 import java.util.UUID
 
 /**
@@ -52,9 +53,13 @@ fun Application.module(
     chromaClient: ChromaClient = ChromaClient(),
     embeddingClient: EmbeddingClient = EmbeddingClient(),
     // Lazy so tests exercising other routes never pay for (or need) a real Postgres
-    // connection - only evaluated the first time a /api/favorites request comes in.
+    // connection - only evaluated the first time a /api/favorites or /api/friends*
+    // request comes in. Shared across both repositories so they use one connection pool.
+    database: Lazy<Database> = lazy { AppDatabase.connect(requireDatabaseUrl()) },
     favoritesRepository: Lazy<FavoritesRepository> =
-        lazy { ExposedFavoritesRepository(AppDatabase.connect(requireDatabaseUrl())) },
+        lazy { ExposedFavoritesRepository(database.value) },
+    friendsRepository: Lazy<FriendsRepository> =
+        lazy { ExposedFriendsRepository(database.value) },
     llmClient: LlmClient = LlmClient(),
 ) {
     install(ContentNegotiation) {
@@ -139,6 +144,57 @@ fun Application.module(
             favoritesRepository.value.registerDevice(deviceId)
             favoritesRepository.value.removeFavorite(deviceId, spotId)
             call.respond(HttpStatusCode.NoContent)
+        }
+        get("/api/me/friend-code") {
+            val deviceId = call.requireDeviceId() ?: return@get
+            favoritesRepository.value.registerDevice(deviceId)
+            call.respond(FriendCodeResponse(friendsRepository.value.getOrCreateFriendCode(deviceId)))
+        }
+        route("/api/friends") {
+            get {
+                val deviceId = call.requireDeviceId() ?: return@get
+                favoritesRepository.value.registerDevice(deviceId)
+                call.respond(FriendsResponse(friendsRepository.value.listFriends(deviceId)))
+            }
+            post {
+                val deviceId = call.requireDeviceId() ?: return@post
+                favoritesRepository.value.registerDevice(deviceId)
+                val request = call.receive<AddFriendRequest>()
+                val friendDeviceId = friendsRepository.value.findDeviceIdByCode(request.friend_code)
+                if (friendDeviceId == null) {
+                    call.respond(HttpStatusCode.NotFound, mapOf("error" to "No device found for that friend code"))
+                    return@post
+                }
+                if (friendDeviceId == deviceId) {
+                    call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Cannot add yourself as a friend"))
+                    return@post
+                }
+                friendsRepository.value.addFriend(deviceId, friendDeviceId)
+                call.respond(HttpStatusCode.NoContent)
+            }
+        }
+        post("/api/friends/{friend_device_id}/share") {
+            val deviceId = call.requireDeviceId() ?: return@post
+            val friendDeviceId = call.parameters["friend_device_id"]?.let { runCatching { UUID.fromString(it) }.getOrNull() }
+            if (friendDeviceId == null) {
+                call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Invalid friend_device_id"))
+                return@post
+            }
+            favoritesRepository.value.registerDevice(deviceId)
+            // Reject rather than silently drop - the requester should know the share
+            // didn't go through instead of assuming their friend can now see the spot.
+            if (!friendsRepository.value.areFriends(deviceId, friendDeviceId)) {
+                call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Not friends with that device"))
+                return@post
+            }
+            val request = call.receive<ShareSpotRequest>()
+            friendsRepository.value.shareSpot(deviceId, friendDeviceId, request.spot_id)
+            call.respond(HttpStatusCode.NoContent)
+        }
+        get("/api/shared-with-me") {
+            val deviceId = call.requireDeviceId() ?: return@get
+            favoritesRepository.value.registerDevice(deviceId)
+            call.respond(SharedWithMeResponse(friendsRepository.value.listSharedWithMe(deviceId)))
         }
     }
 }
