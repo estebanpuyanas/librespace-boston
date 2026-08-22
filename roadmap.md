@@ -6,8 +6,8 @@ Prioritization for hackathon day. Every item below is scored on:
   visual answers, progressive disclosure, multilingual, accessibility,
   personalization, trust/transparency, mobile-first) or product quality.
 - **Complexity** implementation effort given the current stack
-  (React 19/Vite webclient, Expo mobile, Ktor backend, no database, no
-  auth system, ~4.5hr build window).
+  (React 19/Vite webclient, Expo mobile, Ktor backend, Postgres for
+  devices/favorites only, no auth system, ~4.5hr build window).
 
 Sorted into four quadrants. On hacking day: clear **Quick Wins** first,
 then pull from **Major Projects** as time allows, use **Fill-ins** as

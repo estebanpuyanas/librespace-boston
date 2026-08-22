@@ -84,6 +84,51 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LocationRequiredError'
+  /api/favorites:
+    get:
+      operationId: listFavorites
+      summary: List the requesting device's favorite spot IDs
+      parameters:
+        - $ref: '#/components/parameters/DeviceIdHeader'
+      responses:
+        '200':
+          description: Favorite spot IDs for this device (empty if none)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FavoritesResponse'
+    post:
+      operationId: addFavorite
+      summary: >
+        Favorite a spot for the requesting device. Idempotent — favoriting
+        an already-favorited spot is a no-op success, not an error.
+      parameters:
+        - $ref: '#/components/parameters/DeviceIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddFavoriteRequest'
+      responses:
+        '204':
+          description: Favorited (or already was)
+  /api/favorites/{spot_id}:
+    delete:
+      operationId: removeFavorite
+      summary: >
+        Unfavorite a spot for the requesting device. Idempotent — removing a
+        favorite that isn't set (or was already removed) is a no-op success.
+      parameters:
+        - $ref: '#/components/parameters/DeviceIdHeader'
+        - name: spot_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Removed (or already absent)
   /api/query:
     post:
       operationId: postQuery
@@ -112,7 +157,35 @@ paths:
               schema:
                 $ref: '#/components/schemas/LocationRequiredError'
 components:
+  parameters:
+    DeviceIdHeader:
+      name: X-Device-Id
+      in: header
+      required: true
+      description: >
+        Client-generated, persistent per-device identifier (UUID) — the
+        product's anonymous identity model, no login/signup/passwords. The
+        backend trusts this value as-is (no verification) and auto-registers
+        the device on first use. Not a security boundary, an accepted
+        tradeoff for a hackathon demo.
+      schema:
+        type: string
+        format: uuid
   schemas:
+    AddFavoriteRequest:
+      type: object
+      required: [spot_id]
+      properties:
+        spot_id:
+          type: string
+    FavoritesResponse:
+      type: object
+      required: [spot_ids]
+      properties:
+        spot_ids:
+          type: array
+          items:
+            type: string
     QueryRequest:
       type: object
       properties:

@@ -70,13 +70,23 @@ intentionally reserved for hackathon-day core product work — see
 
 ## Data layer
 
-There's no database in this stack. The 5 Analyze Boston source datasets are
-committed under `data-service/raw/` (no download step needed).
-`data-service/etl.py` joins them into `output/spots.json` (spec.md section 7) — a small, read-mostly, batch-computed index — so the backend just loads
-it into memory at startup rather than standing up Postgres/Mongo for a few
-hundred rows. `data-service/ingest.py` embeds a generated natural-language
-description per spot into ChromaDB for the semantic layer (spec.md section
-16). See `data-service/README.md` for how to run both.
+The 5 Analyze Boston source datasets are committed under `data-service/raw/`
+(no download step needed). `data-service/etl.py` joins them into
+`output/spots.json` (spec.md section 7) — a small, read-mostly,
+batch-computed index — so the backend still just loads it into memory at
+startup rather than storing it in a database. `data-service/ingest.py`
+embeds a generated natural-language description per spot into ChromaDB for
+the semantic layer (spec.md section 16). See `data-service/README.md` for
+how to run both.
+
+Postgres (Neon, remote-hosted, via `DATABASE_URL` in `backend/.env`) backs
+data that isn't ETL output — starting with `devices` and `favorites`
+(anonymous per-device saved spots; identity is a client-generated
+`X-Device-Id` header, no login/signup). Exposed (Kotlin SQL DSL) + HikariCP
+handle the connection; schema is created idempotently at startup
+(`SchemaUtils.create`), no separate migration step. See
+`backend/src/main/kotlin/com/librespaceboston/Database.kt` and
+`Favorites.kt`.
 
 ---
 

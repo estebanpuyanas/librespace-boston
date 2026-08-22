@@ -4,6 +4,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
+import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.install
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
@@ -15,10 +16,13 @@ import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondText
+import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
+import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import kotlinx.serialization.json.Json
+import java.util.UUID
 
 /**
  * `PORT` has no safe fallback: `podman-compose.yml` maps the `ramalama` container to host port
@@ -47,6 +51,10 @@ fun Application.module(
     weatherResolver: WeatherResolver = OpenMeteoWeatherResolver(),
     chromaClient: ChromaClient = ChromaClient(),
     embeddingClient: EmbeddingClient = EmbeddingClient(),
+    // Lazy so tests exercising other routes never pay for (or need) a real Postgres
+    // connection - only evaluated the first time a /api/favorites request comes in.
+    favoritesRepository: Lazy<FavoritesRepository> =
+        lazy { ExposedFavoritesRepository(AppDatabase.connect(requireDatabaseUrl())) },
 ) {
     install(ContentNegotiation) {
         json(Json { ignoreUnknownKeys = true })
@@ -65,7 +73,9 @@ fun Application.module(
         allowHost(clientUrl.removePrefix("http://").removePrefix("https://"))
         allowMethod(io.ktor.http.HttpMethod.Get)
         allowMethod(io.ktor.http.HttpMethod.Post)
+        allowMethod(io.ktor.http.HttpMethod.Delete)
         allowHeader(io.ktor.http.HttpHeaders.ContentType)
+        allowHeader("X-Device-Id")
     }
 
     routing {
@@ -108,6 +118,27 @@ fun Application.module(
             }
             call.respond(buildQueryResponse(request, spotsRepository, location, chromaClient, embeddingClient))
         }
+        route("/api/favorites") {
+            get {
+                val deviceId = call.requireDeviceId() ?: return@get
+                favoritesRepository.value.registerDevice(deviceId)
+                call.respond(FavoritesResponse(favoritesRepository.value.listFavorites(deviceId)))
+            }
+            post {
+                val deviceId = call.requireDeviceId() ?: return@post
+                favoritesRepository.value.registerDevice(deviceId)
+                val request = call.receive<AddFavoriteRequest>()
+                favoritesRepository.value.addFavorite(deviceId, request.spot_id)
+                call.respond(HttpStatusCode.NoContent)
+            }
+        }
+        delete("/api/favorites/{spot_id}") {
+            val deviceId = call.requireDeviceId() ?: return@delete
+            val spotId = call.parameters["spot_id"]!!
+            favoritesRepository.value.registerDevice(deviceId)
+            favoritesRepository.value.removeFavorite(deviceId, spotId)
+            call.respond(HttpStatusCode.NoContent)
+        }
     }
 }
 
@@ -118,4 +149,16 @@ private fun clientIp(call: io.ktor.server.application.ApplicationCall): String? 
             ?.trim()
             ?.takeIf { envVar("TRUST_PROXY_HEADERS") == "true" }
     return forwardedIp ?: call.request.origin.remoteHost
+}
+
+// X-Device-Id carries this product's anonymous per-device identity (no login/signup) -
+// the backend trusts it as-is and auto-registers the device on first use. See
+// AGENTS.md and openapi.yaml's DeviceIdHeader for the accepted tradeoffs.
+private suspend fun ApplicationCall.requireDeviceId(): UUID? {
+    val header = request.headers["X-Device-Id"]
+    val deviceId = header?.let { runCatching { UUID.fromString(it) }.getOrNull() }
+    if (deviceId == null) {
+        respond(HttpStatusCode.BadRequest, mapOf("error" to "Missing or invalid X-Device-Id header"))
+    }
+    return deviceId
 }
