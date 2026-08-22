@@ -51,10 +51,15 @@ object AppDatabase {
                     maximumPoolSize = 5
                 },
             )
-        val database = Database.connect(dataSource)
-        transaction(database) {
-            SchemaUtils.create(Devices, Favorites)
+        try {
+            val database = Database.connect(dataSource)
+            transaction(database) {
+                SchemaUtils.create(Devices, Favorites)
+            }
+            return database
+        } catch (e: Exception) {
+            dataSource.close()
+            throw e
         }
-        return database
     }
 }
