@@ -1,4 +1,4 @@
-import { Outlet, NavLink } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import { Sun, Moon } from 'lucide-react';
 import { toggleTheme } from '../../utils/theme';
 import './index.css';
@@ -7,14 +7,12 @@ const Layout = () => (
   <div className='layout'>
     <header className='layout-header'>
       <div className='header-brand'>
-        <span className='brand-name'>LibreSpace Boston</span>
+        <span className='brand-mark' aria-hidden='true'>
+          ●
+        </span>
+        <span className='brand-name'>FreeSpace</span>
+        <span className='brand-city'>BOSTON</span>
       </div>
-
-      <nav className='header-nav'>
-        <NavLink to='/' end className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-          Home
-        </NavLink>
-      </nav>
 
       <div className='header-actions'>
         <button className='icon-btn' onClick={toggleTheme} title='Toggle theme' type='button'>
