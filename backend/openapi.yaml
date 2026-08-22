@@ -41,6 +41,49 @@ paths:
                   message:
                     type: string
                     example: Hello, world!
+  /api/weather:
+    get:
+      operationId: getWeather
+      summary: Current weather for an already resolved search area
+      parameters:
+        - name: lat
+          in: query
+          required: true
+          schema:
+            type: number
+            format: double
+        - name: lon
+          in: query
+          required: true
+          schema:
+            type: number
+            format: double
+      responses:
+        '200':
+          description: Current weather conditions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WeatherConditions'
+        '502':
+          description: Weather provider was unavailable
+  /api/location/ip:
+    get:
+      operationId: getIpLocation
+      summary: Coarse, request-only IP location suggestion for the neighborhood picker
+      responses:
+        '200':
+          description: Approximate Boston-area location inferred from the current request IP
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResolvedLocation'
+        '422':
+          description: No usable Boston-area IP location was available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocationRequiredError'
   /api/query:
     post:
       operationId: postQuery
@@ -62,11 +105,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/QueryResponse'
+        '422':
+          description: Neither device coordinates nor a usable IP-based location was available.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocationRequiredError'
 components:
   schemas:
     QueryRequest:
       type: object
-      required: [location]
       properties:
         query:
           type: string
@@ -78,6 +126,11 @@ components:
           example: I need a free place near Downtown where I can sit and use Wi-Fi.
         location:
           $ref: '#/components/schemas/Coordinates'
+          nullable: true
+          description: >
+            Precise device or manually selected coordinates. If omitted, the server attempts a
+            coarse, request-only IP geolocation lookup and returns 422 when that cannot resolve
+            to the Boston area.
         radius_meters:
           type: integer
           default: 800
@@ -106,14 +159,14 @@ components:
           format: double
         source:
           type: string
-          enum: [device, ip]
-          description: How these coordinates were obtained — precise device geolocation vs. coarse IP-based fallback. Informational only; doesn't change server behavior.
+          enum: [device, ip, manual]
+          description: How these coordinates were obtained — precise device geolocation, coarse IP fallback, or a user-selected neighborhood.
     Amenity:
       type: string
       enum: [wifi, shade, accessible, playground, restroom, free]
     QueryResponse:
       type: object
-      required: [spots, disclaimers]
+      required: [spots, disclaimers, resolved_location]
       properties:
         detected_language:
           type: string
@@ -144,6 +197,45 @@ components:
             $ref: '#/components/schemas/Spot'
         highlights:
           $ref: '#/components/schemas/Highlights'
+        resolved_location:
+          allOf:
+            - $ref: '#/components/schemas/ResolvedLocation'
+          nullable: true
+    ResolvedLocation:
+      type: object
+      required: [lat, lon, source, label, approximate]
+      properties:
+        lat:
+          type: number
+          format: double
+        lon:
+          type: number
+          format: double
+        source:
+          type: string
+          enum: [device, ip, manual]
+        label:
+          type: string
+        approximate:
+          type: boolean
+          description: True for an IP-based location, which is only accurate to a broad area.
+    LocationRequiredError:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          example: location_required
+        message:
+          type: string
+    WeatherConditions:
+      type: object
+      required: [temperature_fahrenheit, weather_code]
+      properties:
+        temperature_fahrenheit:
+          type: integer
+        weather_code:
+          type: integer
     Spot:
       type: object
       required:

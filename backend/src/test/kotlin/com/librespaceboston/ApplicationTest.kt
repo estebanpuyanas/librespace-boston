@@ -41,6 +41,28 @@ class ApplicationTest {
             assertEquals("""{"message":"Hello, world!"}""", response.bodyAsText())
         }
 
+    @Test
+    fun weatherEndpointReturnsProviderConditions() =
+        testApplication {
+            application {
+                module(
+                    weatherResolver =
+                        object : WeatherResolver {
+                            override suspend fun current(
+                                lat: Double,
+                                lon: Double,
+                            ): WeatherConditions = WeatherConditions(temperature_fahrenheit = 72, weather_code = 1)
+                        },
+                )
+            }
+            val response = client.get("/api/weather?lat=42.3554&lon=-71.0657")
+
+            assertEquals(HttpStatusCode.OK, response.status)
+            val body = json.decodeFromString<WeatherConditions>(response.bodyAsText())
+            assertEquals(72, body.temperature_fahrenheit)
+            assertEquals(1, body.weather_code)
+        }
+
     // Boston Common's real coordinates, this verifies the structured (no `query`) path
     // returns real spots (from the fixture, itself real data-service/etl.py output),
     // not stubbed/empty data.
@@ -86,6 +108,62 @@ class ApplicationTest {
             assertNull(body.detected_language)
             assertNull(body.translated_query)
             assertTrue(body.disclaimers.isNotEmpty())
+        }
+
+    @Test
+    fun queryWithoutDeviceCoordinatesUsesTheCoarseLocationResolver() =
+        testApplication {
+            val coarseLocation =
+                ResolvedLocation(
+                    lat = 42.3551,
+                    lon = -71.0657,
+                    source = "ip",
+                    label = "Near Boston (approximate)",
+                    approximate = true,
+                )
+            application {
+                module(
+                    spotsRepository = fixtureSpots,
+                    locationResolver =
+                        object : LocationResolver {
+                            override suspend fun resolve(clientIp: String?): ResolvedLocation? = coarseLocation
+                        },
+                )
+            }
+            val response =
+                client.post("/api/query") {
+                    contentType(ContentType.Application.Json)
+                    setBody("""{"radius_meters": 1500}""")
+                }
+
+            assertEquals(HttpStatusCode.OK, response.status)
+            val body = json.decodeFromString<QueryResponse>(response.bodyAsText())
+            assertEquals("ip", body.resolved_location?.source)
+            assertTrue(body.resolved_location?.approximate == true)
+            assertTrue(body.disclaimers.any { it.contains("approximate area") })
+        }
+
+    @Test
+    fun queryWithoutAnyLocationReturnsAnActionableError() =
+        testApplication {
+            application {
+                module(
+                    spotsRepository = fixtureSpots,
+                    locationResolver =
+                        object : LocationResolver {
+                            override suspend fun resolve(clientIp: String?): ResolvedLocation? = null
+                        },
+                )
+            }
+            val response =
+                client.post("/api/query") {
+                    contentType(ContentType.Application.Json)
+                    setBody("{}")
+                }
+
+            assertEquals(HttpStatusCode.UnprocessableEntity, response.status)
+            val body = json.decodeFromString<LocationRequiredError>(response.bodyAsText())
+            assertEquals("location_required", body.code)
         }
 
     @Test

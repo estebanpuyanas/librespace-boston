@@ -2,6 +2,7 @@
   "expo": {
     "name": "LibreSpace Boston",
     "slug": "librespace-boston",
+    "scheme": "freespace",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

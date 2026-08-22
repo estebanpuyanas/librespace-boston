@@ -7,12 +7,17 @@ interface LiveLocationState {
   location: SearchLocation | null;
 }
 
-export const useLiveLocation = (): LiveLocationState => {
+export const useLiveLocation = (enabled: boolean): LiveLocationState => {
   const [state, setState] = useState<LiveLocationState>({ isLive: false, location: null });
 
   useEffect(() => {
     let isMounted = true;
     let subscription: Location.LocationSubscription | undefined;
+
+    if (!enabled) {
+      setState({ isLive: false, location: null });
+      return undefined;
+    }
 
     const updateLocation = (position: Location.LocationObject) => {
       if (!isMounted) return;
@@ -60,7 +65,7 @@ export const useLiveLocation = (): LiveLocationState => {
       isMounted = false;
       subscription?.remove();
     };
-  }, []);
+  }, [enabled]);
 
   return state;
 };

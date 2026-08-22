@@ -18,6 +18,7 @@ import { AppHeader } from '../components/AppHeader';
 import { LocalSnapshot } from '../components/LocalSnapshot';
 import { NeighborhoodPicker } from '../components/NeighborhoodPicker';
 import { ProfileSheet } from '../components/ProfileSheet';
+import type { ProfileDetails } from '../components/ProfileSheet';
 import { PromptList } from '../components/PromptList';
 import { QueryComposer } from '../components/QueryComposer';
 import { ResultViewToggle } from '../components/ResultViewToggle';
@@ -40,9 +41,11 @@ export const HomeScreen = () => {
   const [locationPickerOpen, setLocationPickerOpen] = useState(false);
   const [manualLocation, setManualLocation] = useState<SearchLocation | null>(null);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [profile, setProfile] = useState<ProfileDetails>({ email: '', name: '' });
+  const [liveLocationEnabled, setLiveLocationEnabled] = useState(true);
   const [savedSpots, setSavedSpots] = useState<Spot[]>([]);
   const [view, setView] = useState<ResultView>('list');
-  const { isLive, location: liveLocation } = useLiveLocation();
+  const { isLive, location: liveLocation } = useLiveLocation(liveLocationEnabled);
   const locationForSearch = liveLocation ?? manualLocation;
   const { loading, response, search, usingDemoData } = useFreeSpaceSearch(locationForSearch);
   const copy = getMobileCopy(language);
@@ -201,6 +204,14 @@ export const HomeScreen = () => {
         onClose={() => setProfileOpen(false)}
         savedSpots={savedSpots}
         onOpenDirections={openSpotDirections}
+        profile={profile}
+        onSaveProfile={setProfile}
+        liveLocationEnabled={liveLocationEnabled}
+        onToggleLiveLocation={setLiveLocationEnabled}
+        onChooseArea={() => {
+          setProfileOpen(false);
+          setLocationPickerOpen(true);
+        }}
       />
       <NeighborhoodPicker
         visible={locationPickerOpen}

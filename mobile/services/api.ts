@@ -1,4 +1,5 @@
 import Constants from 'expo-constants';
+import { Platform } from 'react-native';
 import { setApiBaseUrl } from 'shared/mutator';
 
 const BACKEND_PORT = 8081; // must match backend/.env.example's PORT
@@ -12,7 +13,16 @@ const resolveApiUrl = (): string => {
   if (process.env.EXPO_PUBLIC_API_URL) return process.env.EXPO_PUBLIC_API_URL;
 
   const host = Constants.expoConfig?.hostUri?.split(':')[0];
-  return host ? `http://${host}:${BACKEND_PORT}` : `http://localhost:${BACKEND_PORT}`;
+  if (host && host !== 'localhost' && host !== '127.0.0.1') {
+    return `http://${host}:${BACKEND_PORT}`;
+  }
+
+  // Android's emulator reserves 10.0.2.2 as an alias for the host machine.
+  // This keeps API calls pointed at the backend when Metro is reached through
+  // an adb localhost port reverse during native development.
+  return Platform.OS === 'android'
+    ? `http://10.0.2.2:${BACKEND_PORT}`
+    : `http://localhost:${BACKEND_PORT}`;
 };
 
 // Points the generated client (shared/generated/index.ts) at the backend.
