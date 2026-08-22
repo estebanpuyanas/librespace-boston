@@ -84,8 +84,7 @@ cd mobile && npx tsc --noEmit
 - **Services** (`webclient/src/services/`, `mobile/services/`): Axios calls
   only. No state, no hooks, no React/RN. Returns typed data or throws.
 - **Hooks** (`webclient/src/hooks/`): own state and side effects. Call
-  services, return state + action handlers. (Currently empty post-strip —
-  add feature hooks as you build.)
+  services, return state + action handlers.
 - **Components** (`webclient/src/components/`): call a hook, render the
   result. No direct API calls. Each folder pairs `index.tsx` + `index.css`.
 - There is no auth/user system in this product (spec.md has no accounts) —

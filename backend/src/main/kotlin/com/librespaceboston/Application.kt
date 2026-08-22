@@ -66,7 +66,12 @@ fun Application.module(
         // encodeDefaults = true: without it, kotlinx.serialization omits any field left at its
         // default value (e.g. QueryResponse.disclaimers = emptyList()) from the JSON entirely,
         // violating the OpenAPI contract that marks it required and crashing strict consumers.
-        json(Json { ignoreUnknownKeys = true; encodeDefaults = true })
+        json(
+            Json {
+                ignoreUnknownKeys = true
+                encodeDefaults = true
+            },
+        )
     }
     install(CallLogging)
     install(StatusPages) {
