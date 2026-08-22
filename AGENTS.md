@@ -157,7 +157,7 @@ cd mobile && npx tsc --noEmit
 3. `npm run generate --workspace=shared` regenerate the TS client.
 4. `webclient/src/services/` and/or `mobile/services/` typed wrappers.
 5. `webclient/src/hooks/use<Feature>.ts` state + side effects (webclient).
-6. `webclient/src/components/<Feature>/` index.tsx` + `index.css`.
+6. `webclient/src/components/<Feature>/` index.tsx`+`index.css`.
 7. `webclient/src/App.tsx` add the route.
 8. `backend/src/test/kotlin/` test the new route.
 

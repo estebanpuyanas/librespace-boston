@@ -70,8 +70,7 @@ com/librespaceboston/Query.kt`.
 
 There's no database in this stack. The 5 Analyze Boston source datasets are
 committed under `data-service/raw/` (no download step needed).
-`data-service/etl.py` joins them into `output/spots.json` (spec.md section
-7) — a small, read-mostly, batch-computed index — so the backend just loads
+`data-service/etl.py` joins them into `output/spots.json` (spec.md section 7) — a small, read-mostly, batch-computed index — so the backend just loads
 it into memory at startup rather than standing up Postgres/Mongo for a few
 hundred rows. `data-service/ingest.py` embeds a generated natural-language
 description per spot into ChromaDB for the semantic layer (spec.md section
