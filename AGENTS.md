@@ -20,9 +20,14 @@ hackathon constraints) and `README.md` (fuller architecture rationale).
 `backend` is a separate Gradle root. `data-service` is a separate `uv`
 project. `Makefile` ties all three build tools together.
 
-There is no database. The ETL's output (`data-service/output/spots.json`) is
-small and read-mostly, backend loads it into memory rather than standing up
-Postgres/Mongo.
+The ETL's output (`data-service/output/spots.json`) is small and read-mostly,
+so the backend still loads it into memory rather than storing it in Postgres.
+Postgres (Neon, remote-hosted, `DATABASE_URL` in `backend/.env`) exists for
+data that isn't ETL output: `devices` and `favorites` (anonymous per-device
+saved spots — see `backend/src/main/kotlin/com/librespaceboston/Favorites.kt`
+and `Database.kt`). Schema is created idempotently at startup via Exposed's
+`SchemaUtils.create`, not a separate migration step. There's no
+friends/sharing feature yet — that's an unbuilt follow-up.
 
 ---
 
@@ -84,7 +89,11 @@ cd mobile && npx tsc --noEmit
   result. No direct API calls. Each folder pairs `index.tsx` + `index.css`.
 - There is no auth/user system in this product (spec.md has no accounts) —
   don't reintroduce JWT/login/UserContext patterns from the original
-  template; they were deliberately stripped.
+  template; they were deliberately stripped. Identity for favorites is a
+  client-generated, persistent per-device UUID sent as `X-Device-Id` and
+  trusted as-is (no verification) — not a security boundary, an accepted
+  hackathon-demo tradeoff. The backend auto-registers the device on first
+  use; there's no separate signup call.
 
 ### CSS (webclient)
 
