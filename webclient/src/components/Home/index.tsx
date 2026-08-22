@@ -192,9 +192,9 @@ const Home = () => {
         {search.submitted && !search.loading && !search.error && search.data && (
           <div className='home-search-result'>
             {search.data.answer && <p className='home-answer'>{search.data.answer}</p>}
-            {search.data.disclaimers.length > 0 && (
+            {(search.data.disclaimers ?? []).length > 0 && (
               <ul className='home-disclaimers'>
-                {search.data.disclaimers.map(note => (
+                {(search.data.disclaimers ?? []).map(note => (
                   <li key={note}>{note}</li>
                 ))}
               </ul>

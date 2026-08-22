@@ -219,7 +219,15 @@ class ApplicationTest {
                 }
             assertEquals(HttpStatusCode.OK, response.status)
 
-            val body = json.decodeFromString<QueryResponse>(response.bodyAsText())
+            val rawBody = response.bodyAsText()
+            // Regression: disclaimers = emptyList() is QueryResponse's default value, and
+            // kotlinx.serialization silently drops fields left at their default unless
+            // encodeDefaults is on - which would omit "disclaimers" here even though the OpenAPI
+            // schema marks it required. Assert the key survives serialization, not just that the
+            // client-side decoder (which tolerates a missing key via the same default) fills it in.
+            assertTrue(rawBody.contains("\"disclaimers\""), "expected \"disclaimers\" key in response JSON: $rawBody")
+
+            val body = json.decodeFromString<QueryResponse>(rawBody)
             assertNull(body.answer)
             assertNull(body.detected_language)
             assertNull(body.translated_query)
