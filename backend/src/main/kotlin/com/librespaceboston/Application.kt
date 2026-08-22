@@ -42,6 +42,8 @@ fun Application.module(
         SpotsRepository.loadFromFile(
             envVar("SPOTS_DATA_PATH")?.takeIf { it.isNotBlank() } ?: "../data-service/output/spots.json",
         ),
+    chromaClient: ChromaClient = ChromaClient(),
+    embeddingClient: EmbeddingClient = EmbeddingClient(),
 ) {
     install(ContentNegotiation) {
         json(Json { ignoreUnknownKeys = true })
@@ -74,7 +76,7 @@ fun Application.module(
         }
         post("/api/query") {
             val request = call.receive<QueryRequest>()
-            call.respond(buildQueryResponse(request, spotsRepository))
+            call.respond(buildQueryResponse(request, spotsRepository, chromaClient, embeddingClient))
         }
     }
 }

@@ -1,0 +1,10 @@
+FROM quay.io/ramalama/ramalama:latest
+
+RUN dnf install -y curl --nodocs && dnf clean all
+
+EXPOSE 8080
+
+# --runtime-args=--embeddings must use the `=` form - a separate
+# `--runtime-args --embeddings` token pair gets misparsed and the embeddings
+# endpoint 501s ("This server does not support embeddings").
+ENTRYPOINT ["ramalama", "serve", "--port", "8080", "--runtime-args=--embeddings", "ollama://all-minilm"]

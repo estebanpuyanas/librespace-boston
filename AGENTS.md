@@ -188,14 +188,23 @@ cd mobile && npx tsc --noEmit
   (e.g. client `1.5.x` against server `0.5.x`) fails collection creation with
   `KeyError('_type')` — bump both together.
 - **`ChromaClient.kt` (`backend/src/main/kotlin/com/librespaceboston/`) talks to Chroma's
-  v2 REST API but isn't wired into any route yet.** It supports collection lookup, `count`,
-  and `get` (by id or metadata `where` filter) — not Chroma's similarity `query` endpoint,
-  which needs a query embedding produced the same way `data-service/ingest.py` does
-  (sentence-transformers `all-MiniLM-L6-v2`, 384-dim) and has no JVM-native equivalent
-  wired up yet; see the comment in `ChromaClient.kt` for where that plugs in. Its test
-  (`ChromaClientTest.kt`) uses Ktor's `MockEngine` against hand-written fake Chroma
-  responses — same hermetic-fixture precedent as `SpotsRepository.loadFromResource`, since
-  CI doesn't run podman/Chroma.
+  v2 REST API and is wired into `POST /api/query`'s semantic path (`Query.kt`'s
+  `buildQueryResponse`).** Collection lookup, `count`, `get` (by id or metadata `where`
+  filter), and similarity `query` are all supported. Query embeddings come from
+  `EmbeddingClient.kt`, which calls a *second*, separate RamaLama container
+  (`ramalama-embeddings` in `podman-compose.yml`, `ollama://all-minilm`, port 8180,
+  `EMBEDDING_URL`/`EMBEDDING_MODEL` in `.env.example`) — not the `qwen2.5:7b` chat
+  container. That model needs `--runtime-args=--embeddings` (the `=` form; a separate
+  `--runtime-args --embeddings` token pair gets misparsed) or its `/v1/embeddings`
+  endpoint 501s. Its 384-dim output is empirically confirmed compatible with what
+  `data-service/ingest.py` (sentence-transformers `all-MiniLM-L6-v2`) already pushed into
+  Chroma. When `query` is absent from the request, none of this runs — the endpoint stays
+  on the pure structured geo/amenity path over `SpotsRepository`, unchanged. Tests
+  (`ChromaClientTest.kt`, `ApplicationTest.kt`) use Ktor's `MockEngine` against
+  hand-written fake Chroma/RamaLama responses — same hermetic-fixture precedent as
+  `SpotsRepository.loadFromResource`, since CI doesn't run podman/Chroma/RamaLama.
+  LLM-synthesized answers (translation, grounded citation) are still not implemented —
+  that's separate follow-up work layered on top of this retrieval path.
 - **Podman project name is pinned.** `podman-compose.yml` has an explicit
   `name: librespace-boston`. Don't remove it — without it, container/volume
   names derive from the clone directory name, and the model volume silently
