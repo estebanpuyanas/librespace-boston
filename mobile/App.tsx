@@ -2,6 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { LanguagePicker } from './components/LanguagePicker';
+import './services/api';
 
 export default function App() {
   const { t } = useTranslation();

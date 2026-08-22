@@ -1,6 +1,7 @@
 import type { AmenityLabel, AppLanguage, QuickPrompt } from './types/app';
 
 export interface MobileCopy {
+  answerFromData: string;
   alternativesTitle: string;
   approximateLocation: string;
   amenityLabels: Record<AmenityLabel, string>;
@@ -42,6 +43,7 @@ export interface MobileCopy {
 }
 
 const english: MobileCopy = {
+  answerFromData: 'ANSWER FROM BOSTON PUBLIC DATA',
   alternativesTitle: 'Also worth considering',
   approximateLocation:
     'Approximate area from your network. Tap the location label to choose a neighborhood.',
@@ -91,6 +93,7 @@ const english: MobileCopy = {
 };
 
 const spanish: MobileCopy = {
+  answerFromData: 'RESPUESTA BASADA EN DATOS PÚBLICOS DE BOSTON',
   alternativesTitle: 'Otras opciones para considerar',
   approximateLocation: 'Área aproximada de tu red. Toca la ubicación para elegir un vecindario.',
   amenityLabels: {

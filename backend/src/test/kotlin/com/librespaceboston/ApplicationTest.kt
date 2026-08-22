@@ -172,7 +172,13 @@ class ApplicationTest {
     @Test
     fun queryWithFreeTextDoesNotAttemptSynthesis() =
         testApplication {
-            application { module(fixtureSpots, mockChromaClient(), mockEmbeddingClient()) }
+            application {
+                module(
+                    spotsRepository = fixtureSpots,
+                    chromaClient = mockChromaClient(),
+                    embeddingClient = mockEmbeddingClient(),
+                )
+            }
             val response =
                 client.post("/api/query") {
                     contentType(ContentType.Application.Json)
@@ -202,7 +208,13 @@ class ApplicationTest {
             assertTrue(nearestFirst.size >= 2, "fixture needs at least 2 spots within range for this test")
             val semanticWinner = nearestFirst.last().spot_id
 
-            application { module(fixtureSpots, mockChromaClient(matchIds = listOf(semanticWinner)), mockEmbeddingClient()) }
+            application {
+                module(
+                    spotsRepository = fixtureSpots,
+                    chromaClient = mockChromaClient(matchIds = listOf(semanticWinner)),
+                    embeddingClient = mockEmbeddingClient(),
+                )
+            }
             val response =
                 client.post("/api/query") {
                     contentType(ContentType.Application.Json)
@@ -223,7 +235,13 @@ class ApplicationTest {
     @Test
     fun queryFallsBackToStructuralOrderWhenSemanticRankingFails() =
         testApplication {
-            application { module(fixtureSpots, brokenChromaClient(), mockEmbeddingClient()) }
+            application {
+                module(
+                    spotsRepository = fixtureSpots,
+                    chromaClient = brokenChromaClient(),
+                    embeddingClient = mockEmbeddingClient(),
+                )
+            }
             val response =
                 client.post("/api/query") {
                     contentType(ContentType.Application.Json)
