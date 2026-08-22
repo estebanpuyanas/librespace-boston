@@ -24,12 +24,12 @@ export const useQuerySearch = (location: Coordinates | null) => {
   const submit = useCallback(
     (query: string) => {
       const trimmed = query.trim();
-      if (!trimmed || !location) return;
+      if (!trimmed) return;
 
       const currentRequest = ++requestId.current;
       setState({ data: null, loading: true, error: null, submitted: true });
 
-      postQuery({ query: trimmed, location })
+      postQuery({ query: trimmed, ...(location ? { location } : {}) })
         .then(data => {
           if (currentRequest === requestId.current) {
             setState({ data, loading: false, error: null, submitted: true });

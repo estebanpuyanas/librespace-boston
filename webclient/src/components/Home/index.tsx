@@ -107,7 +107,9 @@ const Home = () => {
           onKeyDown={event => {
             if (event.key === 'Enter' && !event.shiftKey) {
               event.preventDefault();
-              handleSearchSubmit();
+              if (!search.loading) {
+                handleSearchSubmit();
+              }
             }
           }}
           aria-label='Describe the free place you need'
