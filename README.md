@@ -70,8 +70,7 @@ com/librespaceboston/Query.kt`.
 
 There's no database in this stack. The 5 Analyze Boston source datasets are
 committed under `data-service/raw/` (no download step needed).
-`data-service/etl.py` joins them into `output/spots.json` (spec.md section
-7) — a small, read-mostly, batch-computed index — so the backend just loads
+`data-service/etl.py` joins them into `output/spots.json` (spec.md section 7) — a small, read-mostly, batch-computed index — so the backend just loads
 it into memory at startup rather than standing up Postgres/Mongo for a few
 hundred rows. `data-service/ingest.py` embeds a generated natural-language
 description per spot into ChromaDB for the semantic layer (spec.md section
@@ -115,7 +114,7 @@ only component-specific rules, using the tokens via `var(--...)`.
 
 Kotlin + Ktor, single Gradle module. `Application.kt` owns server setup,
 CORS, and routing (`/health`, `/api/ping`, `POST /api/query`); `LlmConfig.kt`
-is env-driven config for the hosted/local LLM split below; `Spots.kt` loads
+is env-driven config for the local LLM setup below; `Spots.kt` loads
 `data-service/output/spots.json` into memory and ranks by haversine
 distance; `Query.kt` holds the `/api/query` request/response models and the
 structured-path logic (`buildQueryResponse`). Route handlers stay
@@ -124,13 +123,10 @@ any other backend.
 
 ### LLM strategy
 
-Two backends, tried in order (`LlmConfig.kt`):
-
-1. **Hosted (Claude API)** — primary, for query understanding, grounded
-   synthesis, and translation quality. Set `ANTHROPIC_API_KEY`.
-2. **RamaLama (local, `llama3.2:3b`)** — fallback when there's no API key or
-   the venue connection drops. Served by the `ramalama` container at
-   `localhost:8080`, OpenAI-compatible API.
+RamaLama (local, `qwen2.5:7b`) is the only LLM backend for this event — no
+hosted cloud fallback. Served by the `ramalama` container at
+`localhost:8080`, OpenAI-compatible API, used for query understanding,
+grounded synthesis, and translation quality.
 
 RamaLama, not Ollama: this hackathon is Red Hat-hosted, and RamaLama is Red
 Hat's own model runner (it requires Podman specifically — Docker can't grant
@@ -177,8 +173,7 @@ cp data-service/.env.example data-service/.env
 | --------------------------------- | ----------------------------------- | ------------------------------------------------------------------------- |
 | `PORT`                            | `backend/.env`                      | Port the Ktor server listens on (8081 — not 8080, which RamaLama uses)    |
 | `CLIENT_URL`                      | `backend/.env`                      | CORS origin (default `http://localhost:5173`)                             |
-| `ANTHROPIC_API_KEY`               | `backend/.env`                      | Hosted LLM (primary) — leave blank to force the RamaLama fallback         |
-| `RAMALAMA_URL` / `RAMALAMA_MODEL` | `backend/.env`                      | Local LLM fallback                                                        |
+| `RAMALAMA_URL` / `RAMALAMA_MODEL` | `backend/.env`                      | Local LLM config                                                          |
 | `CHROMA_URL`                      | `backend/.env`, `data-service/.env` | Vector search                                                             |
 | `SPOTS_DATA_PATH`                 | `backend/.env`                      | Path to `output/spots.json` (default `../data-service/output/spots.json`) |
 | `VITE_API_URL`                    | `webclient/.env`                    | Backend URL for Axios                                                     |
@@ -204,7 +199,7 @@ make infra-up   # ramalama (localhost:8080) + chroma (localhost:8000)
 ```
 
 First run pulls/builds the RamaLama image and, if the model volume doesn't
-already exist, downloads `llama3.2:3b` (~2GB) — do this on a good connection
+already exist, downloads `qwen2.5:7b` (~4.5GB) — do this on a good connection
 before the hackathon, not Saturday morning.
 
 ### 5. Run the ETL (one-time, before you need real data)
@@ -233,7 +228,7 @@ make mobile-dev      # Expo dev server — scan the QR code with Expo Go
 ```bash
 make infra-up    # podman-compose up -d
 make infra-down  # podman-compose down (keeps the model volume)
-make clean       # podman-compose down -v (wipes it — re-downloads llama3.2:3b next time)
+make clean       # podman-compose down -v (wipes it — re-downloads qwen2.5:7b next time)
 ```
 
 `podman-compose.yml` pins an explicit `name: librespace-boston` so
