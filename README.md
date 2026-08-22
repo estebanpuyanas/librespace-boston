@@ -82,13 +82,15 @@ the semantic layer (spec.md section 16). See `data-service/README.md` for
 how to run both.
 
 Postgres (Neon, remote-hosted, via `DATABASE_URL` in `backend/.env`) backs
-data that isn't ETL output — starting with `devices` and `favorites`
-(anonymous per-device saved spots; identity is a client-generated
-`X-Device-Id` header, no login/signup). Exposed (Kotlin SQL DSL) + HikariCP
-handle the connection; schema is created idempotently at startup
-(`SchemaUtils.create`), no separate migration step. See
-`backend/src/main/kotlin/com/librespaceboston/Database.kt` and
-`Favorites.kt`.
+data that isn't ETL output — `devices`, `favorites` (anonymous per-device
+saved spots; identity is a client-generated `X-Device-Id` header, no
+login/signup), and `friend_codes`/`friendships`/`shared_spots` (mutual
+friending by short code + poll-based spot sharing). Exposed (Kotlin SQL DSL)
+and HikariCP handle the connection; schema is created idempotently at
+startup (`SchemaUtils.create`), no separate migration step. See
+`backend/src/main/kotlin/com/librespaceboston/Database.kt`, `Favorites.kt`,
+and `Friends.kt` (see AGENTS.md's "Common Gotchas" for the friend-code and
+friendship table design rationale).
 
 ---
 
