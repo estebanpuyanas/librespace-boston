@@ -191,7 +191,7 @@ cd mobile && npx tsc --noEmit
   v2 REST API and is wired into `POST /api/query`'s semantic path (`Query.kt`'s
   `buildQueryResponse`).** Collection lookup, `count`, `get` (by id or metadata `where`
   filter), and similarity `query` are all supported. Query embeddings come from
-  `EmbeddingClient.kt`, which calls a *second*, separate RamaLama container
+  `EmbeddingClient.kt`, which calls a _second_, separate RamaLama container
   (`ramalama-embeddings` in `podman-compose.yml`, `ollama://all-minilm`, port 8180,
   `EMBEDDING_URL`/`EMBEDDING_MODEL` in `.env.example`) — not the `qwen2.5:7b` chat
   container. That model needs `--runtime-args=--embeddings` (the `=` form; a separate
