@@ -110,7 +110,7 @@ cd mobile && npx tsc --noEmit
   attribute on `<html>`, set via `webclient/src/utils/textSize.ts`, with the
   actual font-size bump living in `index.css` (`html[data-text-size='large']`).
 - `--fs-green` is for button backgrounds paired with white text; `--fs-green-text`
-  is the separate token for green *text/borders* on a themed surface (filter
+  is the separate token for green _text/borders_ on a themed surface (filter
   pill "selected" state, alt-number label). They're intentionally split because
   one green can't satisfy both "readable text on a dark surface" and "readable
   white text on top of it" in dark mode — don't collapse them back into one
