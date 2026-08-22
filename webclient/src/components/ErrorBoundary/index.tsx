@@ -36,7 +36,7 @@ class ErrorBoundary extends Component<Props, State> {
     return (
       <div className='error-boundary'>
         <div className='error-boundary-card card'>
-          <h2 className='error-boundary-title'>Something went wrong</h2>
+          <h1 className='error-boundary-title'>Something went wrong</h1>
           <p className='error-boundary-message text-muted'>
             {this.state.error?.message ?? 'An unexpected error occurred.'}
           </p>

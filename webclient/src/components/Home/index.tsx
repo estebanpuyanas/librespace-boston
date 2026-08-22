@@ -81,7 +81,9 @@ const Home = () => {
         <div className='home-location'>
           <MapPin size={15} aria-hidden='true' />
           <span>{location.data ? 'Near your current location' : 'Downtown Boston'}</span>
-          <span className='home-live-dot' aria-label='Live location status' />
+          <span className='home-live-dot'>
+            <span className='sr-only'>Live location status</span>
+          </span>
         </div>
         <h1>
           A place to be.

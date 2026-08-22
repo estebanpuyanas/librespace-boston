@@ -103,6 +103,21 @@ cd mobile && npx tsc --noEmit
 - Dark theme is `[data-theme='dark']` overrides in `index.css`, toggled via
   `webclient/src/utils/theme.ts`. CSS-only — no conditional rendering for
   theming.
+- All dimension tokens in `index.css` (widths, spacing, font sizes) are `rem`,
+  not `px`, so the layout scales under browser zoom/text-size increases. Keep
+  new tokens in `rem` too.
+- Text-size ("larger text") toggle mirrors the theme toggle: `data-text-size`
+  attribute on `<html>`, set via `webclient/src/utils/textSize.ts`, with the
+  actual font-size bump living in `index.css` (`html[data-text-size='large']`).
+- `--fs-green` is for button backgrounds paired with white text; `--fs-green-text`
+  is the separate token for green _text/borders_ on a themed surface (filter
+  pill "selected" state, alt-number label). They're intentionally split because
+  one green can't satisfy both "readable text on a dark surface" and "readable
+  white text on top of it" in dark mode — don't collapse them back into one
+  token when touching filter/selection styles.
+- Interactive elements use `--touch-target` (2.75rem / 44px) for min height/width
+  — required for touch accessibility. Any new button/pill/icon-control should
+  use it too.
 
 ### data-service (Python/uv)
 

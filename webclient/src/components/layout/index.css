@@ -67,7 +67,7 @@
 }
 
 .language-picker {
-  min-height: 32px;
+  min-height: var(--touch-target);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
   background: var(--bg-color);
@@ -85,7 +85,8 @@
   border: 1px solid var(--fs-border);
   border-radius: var(--pill-radius);
   color: var(--fs-muted-strong);
-  padding: var(--spacing-xs);
+  height: var(--touch-target);
+  width: var(--touch-target);
   transition:
     color var(--transition-fast),
     background-color var(--transition-fast);

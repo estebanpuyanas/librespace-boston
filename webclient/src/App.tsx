@@ -5,10 +5,12 @@ import Layout from './components/layout';
 import Home from './components/Home';
 import NotFound from './components/NotFound';
 import { initTheme } from './utils/theme';
+import { initTextSize } from './utils/textSize';
 
 const App = () => {
   useEffect(() => {
     initTheme();
+    initTextSize();
   }, []);
 
   return (
