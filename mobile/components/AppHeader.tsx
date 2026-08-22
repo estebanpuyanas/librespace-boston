@@ -8,6 +8,7 @@ interface AppHeaderProps {
   language: AppLanguage;
   location: string;
   locationIsActive: boolean;
+  locationIsLive: boolean;
   onLanguageToggle: () => void;
   onLocationPress: () => void;
 }
@@ -17,6 +18,7 @@ export const AppHeader = ({
   language,
   location,
   locationIsActive,
+  locationIsLive,
   onLanguageToggle,
   onLocationPress,
 }: AppHeaderProps) => (
@@ -37,7 +39,7 @@ export const AppHeader = ({
           accessibilityLabel={copy.languageLabel}
           hitSlop={6}
         >
-          <Text style={styles.languageText}>{language.toUpperCase()} ↔</Text>
+          <Text style={styles.languageText}>{language.toUpperCase()} ▾</Text>
         </Pressable>
       </View>
     </View>
@@ -51,12 +53,19 @@ export const AppHeader = ({
         <View style={styles.locationPinCenter} />
       </View>
       <Text style={styles.locationText}>{location}</Text>
-      <Text
-        style={[styles.liveDot, !locationIsActive && styles.locationChevron]}
-        accessibilityLabel={locationIsActive ? copy.liveLocation : 'Choose your area'}
-      >
-        {locationIsActive ? '●' : '›'}
-      </Text>
+      {locationIsLive ? (
+        <View style={styles.liveTag} accessibilityLabel={copy.liveLocation}>
+          <View style={styles.liveTagDot} />
+          <Text style={styles.liveTagText}>LIVE</Text>
+        </View>
+      ) : (
+        <Text
+          style={[styles.liveDot, !locationIsActive && styles.locationChevron]}
+          accessibilityLabel={locationIsActive ? 'Selected area' : 'Choose your area'}
+        >
+          {locationIsActive ? '●' : '›'}
+        </Text>
+      )}
     </Pressable>
   </>
 );
@@ -128,6 +137,18 @@ const styles = StyleSheet.create({
     width: 5,
   },
   locationText: { color: '#4F6256', fontSize: 13, fontWeight: '600' },
+  liveTag: {
+    alignItems: 'center',
+    backgroundColor: '#DFEDE1',
+    borderRadius: 9,
+    flexDirection: 'row',
+    gap: 4,
+    marginLeft: 2,
+    paddingHorizontal: 7,
+    paddingVertical: 4,
+  },
+  liveTagDot: { backgroundColor: '#218453', borderRadius: 3, height: 6, width: 6 },
+  liveTagText: { color: '#216340', fontSize: 9, fontWeight: '800', letterSpacing: 0.7 },
   liveDot: { color: '#3D9566', fontSize: 9, marginLeft: 2 },
   locationChevron: { color: '#5E7162', fontSize: 20, lineHeight: 18, marginLeft: 1 },
 });

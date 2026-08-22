@@ -7,17 +7,6 @@
     "orientation": "portrait",
     "icon": "./assets/librespace-logo.png",
     "userInterfaceStyle": "light",
-    "plugins": [
-      [
-        "expo-localization",
-        {
-          "supportedLocales": {
-            "android": ["en", "es", "vi", "zh-Hans"],
-            "ios": ["en", "es", "vi", "zh-Hans"]
-          }
-        }
-      ]
-    ],
     "ios": {
       "bundleIdentifier": "com.librespace.boston",
       "supportsTablet": true,
@@ -48,6 +37,15 @@
         "expo-location",
         {
           "locationWhenInUsePermission": "LibreSpace uses your location to show free places near you."
+        }
+      ],
+      [
+        "expo-localization",
+        {
+          "supportedLocales": {
+            "android": ["en", "es", "vi", "zh-Hans"],
+            "ios": ["en", "es", "vi", "zh-Hans"]
+          }
         }
       ]
     ],

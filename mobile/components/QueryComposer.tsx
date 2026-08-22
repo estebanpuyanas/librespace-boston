@@ -30,7 +30,14 @@ export const QueryComposer = ({ copy, loading, onSubmit, query, setQuery }: Quer
         accessibilityLabel={copy.search}
         accessibilityState={{ disabled: loading }}
       >
-        <Text style={styles.submitIcon}>{loading ? '…' : '→'}</Text>
+        {loading ? (
+          <Text style={styles.submitLoading}>…</Text>
+        ) : (
+          <View style={styles.arrowIcon}>
+            <View style={styles.arrowShaft} />
+            <View style={styles.arrowHead} />
+          </View>
+        )}
       </Pressable>
     </View>
   </View>
@@ -44,7 +51,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginHorizontal: 22,
     marginTop: 28,
-    padding: 14,
+    overflow: 'hidden',
     shadowColor: '#2A3E30',
     shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.07,
@@ -55,7 +62,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 22,
     minHeight: 67,
-    padding: 0,
+    paddingHorizontal: 18,
+    paddingTop: 16,
     textAlignVertical: 'top',
   },
   footer: {
@@ -64,17 +72,41 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingTop: 10,
+    minHeight: 66,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
   },
   freeNote: { color: '#718076', fontSize: 11, fontWeight: '600' },
   submitButton: {
     alignItems: 'center',
     backgroundColor: '#246A48',
-    borderRadius: 17,
-    height: 34,
+    borderRadius: 21,
+    height: 42,
     justifyContent: 'center',
-    width: 34,
+    width: 42,
   },
   submitButtonLoading: { opacity: 0.65 },
-  submitIcon: { color: '#FFFFFF', fontSize: 22, fontWeight: '700', lineHeight: 24 },
+  submitLoading: { color: '#FFFFFF', fontSize: 22, fontWeight: '700', lineHeight: 24 },
+  arrowIcon: { height: 20, position: 'relative', width: 20 },
+  arrowShaft: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 1,
+    height: 2,
+    left: 1,
+    position: 'absolute',
+    top: 9,
+    width: 17,
+  },
+  arrowHead: {
+    borderRightColor: '#FFFFFF',
+    borderRightWidth: 2,
+    borderTopColor: '#FFFFFF',
+    borderTopWidth: 2,
+    height: 9,
+    position: 'absolute',
+    right: 1,
+    top: 5,
+    transform: [{ rotate: '45deg' }],
+    width: 9,
+  },
 });

@@ -12,17 +12,23 @@ const neighborhoods: SearchLocation[] = [
 
 interface NeighborhoodPickerProps {
   ipSuggestion: ResolvedLocation | null;
+  liveLocation: SearchLocation | null;
   loadingSuggestion: boolean;
   onClose: () => void;
   onSelect: (location: SearchLocation) => void;
+  onUseLiveLocation: () => void;
+  usingLiveLocation: boolean;
   visible: boolean;
 }
 
 export const NeighborhoodPicker = ({
   ipSuggestion,
+  liveLocation,
   loadingSuggestion,
   onClose,
   onSelect,
+  onUseLiveLocation,
+  usingLiveLocation,
   visible,
 }: NeighborhoodPickerProps) => (
   <Modal visible={visible} transparent animationType='slide' onRequestClose={onClose}>
@@ -43,6 +49,24 @@ export const NeighborhoodPicker = ({
             <Text style={styles.closeText}>×</Text>
           </Pressable>
         </View>
+        <Pressable
+          style={[styles.liveOption, usingLiveLocation && styles.liveOptionSelected]}
+          onPress={onUseLiveLocation}
+          disabled={liveLocation === null}
+          accessibilityRole='button'
+          accessibilityState={{ disabled: liveLocation === null, selected: usingLiveLocation }}
+        >
+          <View style={styles.liveIcon}>
+            <View style={styles.liveIconCenter} />
+          </View>
+          <View style={styles.liveCopy}>
+            <Text style={styles.liveTitle}>Use my live location</Text>
+            <Text style={styles.liveDescription}>
+              {liveLocation ? liveLocation.label : 'Waiting for your device location.'}
+            </Text>
+          </View>
+          <Text style={styles.liveCheck}>{usingLiveLocation ? '✓' : '›'}</Text>
+        </Pressable>
         {loadingSuggestion && <Text style={styles.hint}>Finding a nearby area…</Text>}
         {ipSuggestion && (
           <Pressable
@@ -113,6 +137,32 @@ const styles = StyleSheet.create({
   },
   closeText: { color: '#315743', fontSize: 27, fontWeight: '300', lineHeight: 30 },
   hint: { color: '#6B796E', fontSize: 12, marginTop: 18 },
+  liveOption: {
+    alignItems: 'center',
+    backgroundColor: '#E6E9E1',
+    borderColor: '#D5DCD2',
+    borderRadius: 13,
+    borderWidth: 1,
+    flexDirection: 'row',
+    marginTop: 18,
+    minHeight: 64,
+    paddingHorizontal: 13,
+  },
+  liveOptionSelected: { backgroundColor: '#DDEDDD', borderColor: '#39805A' },
+  liveIcon: {
+    alignItems: 'center',
+    borderColor: '#1E7A50',
+    borderRadius: 9,
+    borderWidth: 2,
+    height: 18,
+    justifyContent: 'center',
+    width: 18,
+  },
+  liveIconCenter: { backgroundColor: '#1E7A50', borderRadius: 3, height: 6, width: 6 },
+  liveCopy: { flex: 1, marginLeft: 11 },
+  liveTitle: { color: '#1D5138', fontSize: 14, fontWeight: '800' },
+  liveDescription: { color: '#627367', fontSize: 11, marginTop: 3 },
+  liveCheck: { color: '#24704A', fontSize: 20, fontWeight: '700', marginLeft: 8 },
   suggestion: { backgroundColor: '#E1ECDF', borderRadius: 13, marginTop: 18, padding: 13 },
   suggestionTitle: { color: '#5B7160', fontSize: 10, fontWeight: '800', letterSpacing: 0.8 },
   suggestionName: { color: '#28553B', fontSize: 14, fontWeight: '800', marginTop: 4 },
