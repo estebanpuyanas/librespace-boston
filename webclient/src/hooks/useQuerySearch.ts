@@ -26,10 +26,23 @@ export const useQuerySearch = (location: Coordinates | null) => {
       const trimmed = query.trim();
       if (!trimmed) return;
 
+      // location is required by QueryRequest - surface this visibly (submitted: true,
+      // an error) rather than silently swallowing the click, since a prior fix here
+      // left the user with zero feedback when geolocation hadn't resolved yet.
+      if (!location) {
+        setState({
+          data: null,
+          loading: false,
+          error: 'Waiting for your location before we can search.',
+          submitted: true,
+        });
+        return;
+      }
+
       const currentRequest = ++requestId.current;
       setState({ data: null, loading: true, error: null, submitted: true });
 
-      postQuery({ query: trimmed, ...(location ? { location } : {}) })
+      postQuery({ query: trimmed, location })
         .then(data => {
           if (currentRequest === requestId.current) {
             setState({ data, loading: false, error: null, submitted: true });
