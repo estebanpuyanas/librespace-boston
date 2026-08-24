@@ -227,6 +227,15 @@ cd mobile && npx tsc --noEmit
   (`ChromaClientTest.kt`, `ApplicationTest.kt`) use Ktor's `MockEngine` against
   hand-written fake Chroma/RamaLama responses — same hermetic-fixture precedent as
   `SpotsRepository.loadFromResource`, since CI doesn't run podman/Chroma/RamaLama.
+- **`SpotsRepository.nearby()` (`Spots.kt`) falls back to the closest spots when
+  the requested radius finds none, rather than returning empty.** The spots
+  dataset only covers Boston proper, and `radius_meters` defaults to 800m with
+  no frontend override, so an origin outside that coverage (e.g. Cambridge,
+  across the Charles) would otherwise silently return zero spots on both
+  `/api/query` paths. `Query.kt`'s `buildQueryResponse` detects the fallback
+  (first spot's distance exceeds the requested radius) and adds
+  `OUT_OF_COVERAGE_DISCLAIMER`. Don't reintroduce a hard-cutoff-only version of
+  `nearby()` without preserving this fallback.
   Language detection/translation and grounded `answer` synthesis (also in `Query.kt`, via
   `LlmClient.kt`) are layered on top of this retrieval path — see the `LlmClient.kt` entry
   below for the local-model behavior to expect.
