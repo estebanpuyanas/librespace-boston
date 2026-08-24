@@ -229,10 +229,11 @@ cd mobile && npx tsc --noEmit
   `SpotsRepository.loadFromResource`, since CI doesn't run podman/Chroma/RamaLama.
 - **`SpotsRepository.nearby()` (`Spots.kt`) falls back to the closest spots when
   the requested radius finds none, rather than returning empty.** The spots
-  dataset only covers Boston proper, and `radius_meters` defaults to 800m with
-  no frontend override, so an origin outside that coverage (e.g. Cambridge,
-  across the Charles) would otherwise silently return zero spots on both
-  `/api/query` paths. `Query.kt`'s `buildQueryResponse` detects the fallback
+  dataset only covers Boston proper, and `radius_meters` defaults to 800m
+  (webclient never overrides it; mobile does, but only up to 3000m — still well
+  short of Boston-to-Cambridge), so an origin outside that coverage (e.g.
+  Cambridge, across the Charles) would otherwise silently return zero spots on
+  both `/api/query` paths. `Query.kt`'s `buildQueryResponse` detects the fallback
   (first spot's distance exceeds the requested radius) and adds
   `OUT_OF_COVERAGE_DISCLAIMER`. Don't reintroduce a hard-cutoff-only version of
   `nearby()` without preserving this fallback.
