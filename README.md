@@ -104,8 +104,7 @@ services/ → hooks/ → components/
 typed data or throws.
 
 **`hooks/`**: own all state and side effects for a feature. Call services,
-return state + setters to components. (Currently empty; the posts/auth
-example hooks were stripped, add feature hooks here as you build.)
+return state + setters to components.
 
 **`components/`**: call a hook, render the result. No direct API calls, no
 business logic. Each component folder pairs `index.tsx` + `index.css`.
