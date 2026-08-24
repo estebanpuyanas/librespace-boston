@@ -189,12 +189,12 @@ const Home = () => {
           </div>
         )}
 
-        {search.submitted && !search.loading && !search.error && search.data && (
+        {!activeLoading && !activeError && activeData && (
           <div className='home-search-result'>
-            {search.data.answer && <p className='home-answer'>{search.data.answer}</p>}
-            {(search.data.disclaimers ?? []).length > 0 && (
+            {activeData.answer && <p className='home-answer'>{activeData.answer}</p>}
+            {(activeData.disclaimers ?? []).length > 0 && (
               <ul className='home-disclaimers'>
-                {(search.data.disclaimers ?? []).map(note => (
+                {(activeData.disclaimers ?? []).map(note => (
                   <li key={note}>{note}</li>
                 ))}
               </ul>

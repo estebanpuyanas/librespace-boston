@@ -238,6 +238,63 @@ class ApplicationTest {
             assertTrue(body.spots.any { it.name.contains("Boston Common", ignoreCase = true) })
         }
 
+    // Captain-reported bug fix: an origin outside the dataset's Boston-only coverage (e.g.
+    // Cambridge) must never render a bare empty state - SpotsRepository.nearby() falls back to
+    // the closest spots regardless of distance, and buildQueryResponse must flag that with a
+    // disclaimer rather than presenting the fallback spots as if they were within range.
+    @Test
+    fun queryWithLocationOnlyOutsideCoverageFallsBackToClosestSpots() =
+        testApplication {
+            application { module(fixtureSpots) }
+            val response =
+                client.post("/api/query") {
+                    contentType(ContentType.Application.Json)
+                    setBody(
+                        """{"location": {"lat": 0.0, "lon": 0.0}, "radius_meters": 100}""",
+                    )
+                }
+            assertEquals(HttpStatusCode.OK, response.status)
+
+            val body = json.decodeFromString<QueryResponse>(response.bodyAsText())
+            assertTrue(body.spots.isNotEmpty(), "expected a fallback list of closest spots, not an empty state")
+            assertTrue(body.spots.all { it.distance_meters > 100 }, "fallback spots are, by definition, outside the requested radius")
+            assertTrue(body.spots.zipWithNext().all { (a, b) -> a.distance_meters <= b.distance_meters })
+            assertTrue(body.disclaimers.any { it.contains("coverage area", ignoreCase = true) })
+        }
+
+    // Same fallback, but on the query-present path: once SpotsRepository.nearby() returns the
+    // closest-anyway spots, semantic ranking + LLM synthesis proceed normally against them (the
+    // structural filter is no longer empty), with the out-of-coverage disclaimer layered on top of
+    // whatever buildDisclaimers() already adds.
+    @Test
+    fun queryWithFreeTextOutsideCoverageStillSynthesizesUsingFallbackSpots() =
+        testApplication {
+            val languageResponse = """{"detected_language": "en", "translated_query": null}"""
+            val synthesisResponse =
+                """{"answer": "Boston Common has Wi-Fi (Wicked Free Wi-Fi Locations).", "unsupported_attributes": []}"""
+            application {
+                module(
+                    spotsRepository = fixtureSpots,
+                    chromaClient = mockChromaClient(),
+                    embeddingClient = mockEmbeddingClient(),
+                    llmClient = sequencedLlmClient(languageResponse, synthesisResponse),
+                )
+            }
+            val response =
+                client.post("/api/query") {
+                    contentType(ContentType.Application.Json)
+                    setBody(
+                        """{"query": "somewhere with wifi", "location": {"lat": 0.0, "lon": 0.0}, "radius_meters": 100}""",
+                    )
+                }
+            assertEquals(HttpStatusCode.OK, response.status)
+
+            val body = json.decodeFromString<QueryResponse>(response.bodyAsText())
+            assertTrue(body.spots.isNotEmpty())
+            assertTrue(body.answer!!.contains("Boston Common"))
+            assertTrue(body.disclaimers.any { it.contains("coverage area", ignoreCase = true) })
+        }
+
     // Happy path for the full natural-language pipeline: language detection (English here),
     // semantic re-ranking, and a grounded answer that cites real retrieved spot data plus a
     // disclaimer for the one requested attribute ("quiet") with no supporting dataset field.
@@ -336,10 +393,12 @@ class ApplicationTest {
             assertTrue(body.disclaimers.isNotEmpty())
         }
 
-    // Regression for the review fix in this change: when no spots match the structural filter,
-    // buildQueryResponse must return early with the "no nearby spots" disclaimer and skip both
-    // LLM calls entirely, rather than translating/synthesizing against an empty spot list. Wiring
-    // a brokenLlmClient() here proves it: if either LLM call were attempted, the broken client's
+    // Regression for the review fix in this change: when no spots match the structural filter -
+    // now including the amenity filter, since SpotsRepository.nearby()'s distance fallback still
+    // respects amenities (none of the fixtures have a "shade_structure" feature, so this stays
+    // genuinely empty even after falling back past the radius) - buildQueryResponse must return
+    // early with the "no nearby spots" disclaimer and skip both LLM calls entirely. Wiring a
+    // brokenLlmClient() here proves it: if either LLM call were attempted, the broken client's
     // failure would surface as the "unavailable" disclaimers instead of the expected one.
     @Test
     fun queryWithFreeTextAndNoMatchingSpotsSkipsLlmCallsEntirely() =
@@ -356,7 +415,7 @@ class ApplicationTest {
                 client.post("/api/query") {
                     contentType(ContentType.Application.Json)
                     setBody(
-                        """{"query": "somewhere quiet with wifi", "location": {"lat": 0.0, "lon": 0.0}, "radius_meters": 100}""",
+                        """{"query": "somewhere quiet with wifi", "location": {"lat": 42.3551, "lon": -71.0657}, "amenities": ["shade"]}""",
                     )
                 }
             assertEquals(HttpStatusCode.OK, response.status)
