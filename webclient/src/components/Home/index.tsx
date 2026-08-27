@@ -13,6 +13,9 @@ import {
 import { useGeolocation } from '../../hooks/useGeolocation';
 import { useNearbySpots } from '../../hooks/useNearbySpots';
 import { useQuerySearch } from '../../hooks/useQuerySearch';
+import { getWalkingDirectionsUrl } from '../../utils/directions';
+import ResultViewToggle, { type ResultView } from '../ResultViewToggle';
+import SpotMap from '../SpotMap';
 import type { Spot } from 'shared';
 import './index.css';
 
@@ -43,8 +46,6 @@ const isMatch = (spot: Spot, filter: Filter) => {
 
 const formatDistance = (distance: number) => `${(distance / 1609.34).toFixed(1)} mi`;
 const formatWalk = (distance: number) => `${Math.max(1, Math.round(distance / 80))} min walk`;
-const directionsUrl = (spot: Spot) =>
-  `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${spot.lat},${spot.lon}`)}&travelmode=walking`;
 
 const spotTags = (spot: Spot) =>
   [
@@ -63,6 +64,7 @@ const Home = () => {
   );
   const [selectedFilters, setSelectedFilters] = useState<Filter[]>([]);
   const [saved, setSaved] = useState(false);
+  const [resultView, setResultView] = useState<ResultView>('list');
 
   const activeData = search.submitted ? search.data : nearby.data;
   const activeLoading = search.submitted ? search.loading : nearby.loading;
@@ -78,6 +80,7 @@ const Home = () => {
   const handleSearchSubmit = () => search.submit(query);
 
   const topSpot = matchedSpots[0];
+  const mapLocation = activeData?.resolved_location ?? location.data;
   const toggleFilter = (filter: Filter) => {
     setSelectedFilters(current =>
       current.includes(filter) ? current.filter(item => item !== filter) : [...current, filter],
@@ -204,82 +207,107 @@ const Home = () => {
           </div>
         )}
 
-        {topSpot && (
-          <article className='home-featured-spot'>
-            <div className='home-card-top'>
-              <span className='home-card-number'>01</span>
-              <button
-                className='home-save-button'
-                onClick={() => setSaved(current => !current)}
-                type='button'
-                aria-label={saved ? 'Remove saved place' : 'Save place'}
-              >
-                <Heart size={23} fill={saved ? 'currentColor' : 'none'} aria-hidden='true' />
-              </button>
-            </div>
-            <h3>{topSpot.name}</h3>
-            <p className='home-distance'>
-              {formatDistance(topSpot.distance_meters)} away · {formatWalk(topSpot.distance_meters)}
-            </p>
-            <p className='home-card-description'>
-              A free public place with details verified from Boston’s open data.
-            </p>
-            <div className='home-tag-list'>
-              {spotTags(topSpot).map(tag => (
-                <span key={tag}>{tag}</span>
-              ))}
-            </div>
-            {topSpot.accessible.value && (
-              <p className='home-evidence'>
-                <Check size={15} aria-hidden='true' /> Accessible park details verified
-              </p>
-            )}
-            <p className='home-shade-note'>
-              <TreePine size={15} aria-hidden='true' /> {topSpot.tree_density_nearby} nearby public
-              trees — an approximate shade signal, not canopy data.
-            </p>
-            <a
-              className='home-directions-button'
-              href={directionsUrl(topSpot)}
-              target='_blank'
-              rel='noopener noreferrer'
-            >
-              Get directions <ArrowUpRight size={17} aria-hidden='true' />
-            </a>
-          </article>
-        )}
-
-        {!activeLoading && !activeError && location.data && matchedSpots.length === 0 && (
-          <div className='home-empty'>
-            <strong>No exact matches nearby yet.</strong>
-            <span>Try removing a filter or widening your search.</span>
+        {!activeLoading && !activeError && activeData && (
+          <div className='home-view-toggle'>
+            <ResultViewToggle onChange={setResultView} view={resultView} />
           </div>
         )}
 
-        {matchedSpots.length > 1 && (
-          <div className='home-alternatives'>
-            <h3>Also worth considering</h3>
-            {matchedSpots.slice(1, 4).map((spot, index) => (
+        <div
+          aria-labelledby='result-view-list'
+          className='home-view-panel home-list-panel'
+          hidden={resultView !== 'list'}
+          id='list-results-panel'
+          role='tabpanel'
+        >
+          {topSpot && (
+            <article className='home-featured-spot'>
+              <div className='home-card-top'>
+                <span className='home-card-number'>01</span>
+                <button
+                  className='home-save-button'
+                  onClick={() => setSaved(current => !current)}
+                  type='button'
+                  aria-label={saved ? 'Remove saved place' : 'Save place'}
+                >
+                  <Heart size={23} fill={saved ? 'currentColor' : 'none'} aria-hidden='true' />
+                </button>
+              </div>
+              <h3>{topSpot.name}</h3>
+              <p className='home-distance'>
+                {formatDistance(topSpot.distance_meters)} away ·{' '}
+                {formatWalk(topSpot.distance_meters)}
+              </p>
+              <p className='home-card-description'>
+                A free public place with details verified from Boston’s open data.
+              </p>
+              <div className='home-tag-list'>
+                {spotTags(topSpot).map(tag => (
+                  <span key={tag}>{tag}</span>
+                ))}
+              </div>
+              {topSpot.accessible.value && (
+                <p className='home-evidence'>
+                  <Check size={15} aria-hidden='true' /> Accessible park details verified
+                </p>
+              )}
+              <p className='home-shade-note'>
+                <TreePine size={15} aria-hidden='true' /> {topSpot.tree_density_nearby} nearby
+                public trees — an approximate shade signal, not canopy data.
+              </p>
               <a
-                className='home-alternative'
-                href={directionsUrl(spot)}
-                key={spot.spot_id}
+                className='home-directions-button'
+                href={getWalkingDirectionsUrl(topSpot)}
                 target='_blank'
                 rel='noopener noreferrer'
               >
-                <span className='home-alt-number'>{String(index + 2).padStart(2, '0')}</span>
-                <span className='home-alt-copy'>
-                  <strong>{spot.name}</strong>
-                  <small>
-                    {formatDistance(spot.distance_meters)} ·{' '}
-                    {spotTags(spot).slice(0, 2).join(' · ') || 'Public open space'}
-                  </small>
-                </span>
-                <ArrowUpRight size={19} aria-hidden='true' />
+                Get directions <ArrowUpRight size={17} aria-hidden='true' />
               </a>
-            ))}
-          </div>
-        )}
+            </article>
+          )}
+
+          {!activeLoading && !activeError && location.data && matchedSpots.length === 0 && (
+            <div className='home-empty'>
+              <strong>No exact matches nearby yet.</strong>
+              <span>Try removing a filter or widening your search.</span>
+            </div>
+          )}
+
+          {matchedSpots.length > 1 && (
+            <div className='home-alternatives'>
+              <h3>Also worth considering</h3>
+              {matchedSpots.slice(1, 4).map((spot, index) => (
+                <a
+                  className='home-alternative'
+                  href={getWalkingDirectionsUrl(spot)}
+                  key={spot.spot_id}
+                  target='_blank'
+                  rel='noopener noreferrer'
+                >
+                  <span className='home-alt-number'>{String(index + 2).padStart(2, '0')}</span>
+                  <span className='home-alt-copy'>
+                    <strong>{spot.name}</strong>
+                    <small>
+                      {formatDistance(spot.distance_meters)} ·{' '}
+                      {spotTags(spot).slice(0, 2).join(' · ') || 'Public open space'}
+                    </small>
+                  </span>
+                  <ArrowUpRight size={19} aria-hidden='true' />
+                </a>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div
+          aria-labelledby='result-view-map'
+          className='home-view-panel home-map-panel'
+          hidden={resultView !== 'map'}
+          id='map-results-panel'
+          role='tabpanel'
+        >
+          {resultView === 'map' && <SpotMap location={mapLocation} spots={matchedSpots} />}
+        </div>
       </section>
 
       <details className='home-live-data'>

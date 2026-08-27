@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { QueryResponse, Spot } from 'shared';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import Home from '.';
@@ -54,7 +54,28 @@ vi.mock('../../hooks/useQuerySearch', () => ({
 
 afterEach(cleanup);
 
-describe('Home directions links', () => {
+describe('Home result views and directions', () => {
+  it('switches the current results between list and map modes', () => {
+    render(<Home />);
+
+    expect(screen.getByRole('tabpanel', { name: 'List' })).toHaveTextContent('Primary Park');
+    expect(
+      screen.queryByLabelText('Map of the search location and free places'),
+    ).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Map' }));
+
+    expect(screen.getByRole('tab', { name: 'Map' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tabpanel', { name: 'Map' })).toBeVisible();
+    expect(screen.getByTitle('Top pick: Primary Park')).toBeInTheDocument();
+    expect(screen.getByTitle('Alternative 2: Alternative Plaza')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('tab', { name: 'List' }));
+
+    expect(screen.getByRole('tab', { name: 'List' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tabpanel', { name: 'List' })).toBeVisible();
+  });
+
   it('opens walking directions for the primary spot', () => {
     render(<Home />);
 

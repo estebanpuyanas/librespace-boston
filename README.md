@@ -117,7 +117,10 @@ The Home page (`webclient/src/components/Home/`) is mobile-first, single
 column by default, with a `min-width: 1024px` layout in its `index.css`
 that puts the hero and search side by side and splits results into a
 featured-spot column plus a card grid of alternatives, rather than just
-stretching the mobile column wider.
+stretching the mobile column wider. A `ResultViewToggle` lets results
+render as that list or as a Leaflet/OpenStreetMap `SpotMap`
+(`webclient/src/components/SpotMap/`) of the same data, with distinct
+markers for the search location, the featured spot, and alternatives.
 
 ---
 
