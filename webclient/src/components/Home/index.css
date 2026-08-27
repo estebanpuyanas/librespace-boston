@@ -166,6 +166,19 @@
   justify-content: space-between;
 }
 
+.home-view-toggle {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.home-view-panel[hidden] {
+  display: none;
+}
+
+.home-map-panel {
+  margin-top: var(--spacing-md);
+}
+
 .eyebrow {
   color: var(--fs-muted);
   display: block;
@@ -514,11 +527,24 @@
 
   .home-results-heading,
   .home-notice,
-  .home-empty {
+  .home-search-result,
+  .home-view-toggle,
+  .home-view-panel {
     grid-column: 1 / -1;
   }
 
-  .home-featured-spot {
+  .home-list-panel {
+    column-gap: var(--spacing-2xl);
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+  }
+
+  .home-list-panel .home-empty {
+    grid-column: 1 / -1;
+  }
+
+  .home-featured-spot,
+  .home-map-panel {
     margin-top: 0;
   }
 

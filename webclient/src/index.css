@@ -62,6 +62,9 @@
   --fs-card-note-text: #d9e4d7;
   --fs-card-check: #a6dfaa;
   --fs-button-text: #ffffff;
+  --fs-map-alternative: #a8660d;
+  --fs-map-tile-filter: none;
+  --fs-map-featured-ring: 0 0 0 0.2rem rgba(255, 255, 255, 0.9), 0 0 0 0.32rem var(--fs-green);
 
   /* FreeSpace dimensions */
   --content-width: 47.5rem;
@@ -94,6 +97,12 @@
   --card-number-padding: 0.28rem 0.55rem;
   --direction-padding: 0.75rem 0.9rem;
   --data-card-min-width: 11rem;
+  --map-height: 28rem;
+  --map-height-mobile: 23rem;
+  --map-marker-size: 2.25rem;
+  --map-marker-border: 0.1875rem;
+  --fs-hairline: 0.0625rem;
+  --result-toggle-option-width: 6.5rem;
   --fs-card-shadow: 0 0.45rem 1.3rem rgba(42, 62, 48, 0.08);
 
   /* Borders & Shadows */
@@ -183,6 +192,8 @@
   --fs-filter-selected-bg: #294836;
   --fs-notice-bg: #294235;
   --fs-notice-text: #d2e7d2;
+  --fs-map-alternative: #e0a84c;
+  --fs-map-tile-filter: brightness(0.72) contrast(1.15) saturate(0.75);
 }
 
 /* ============================================================
