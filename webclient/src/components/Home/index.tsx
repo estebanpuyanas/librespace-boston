@@ -43,6 +43,8 @@ const isMatch = (spot: Spot, filter: Filter) => {
 
 const formatDistance = (distance: number) => `${(distance / 1609.34).toFixed(1)} mi`;
 const formatWalk = (distance: number) => `${Math.max(1, Math.round(distance / 80))} min walk`;
+const directionsUrl = (spot: Spot) =>
+  `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${spot.lat},${spot.lon}`)}&travelmode=walking`;
 
 const spotTags = (spot: Spot) =>
   [
@@ -236,9 +238,14 @@ const Home = () => {
               <TreePine size={15} aria-hidden='true' /> {topSpot.tree_density_nearby} nearby public
               trees — an approximate shade signal, not canopy data.
             </p>
-            <button className='home-directions-button' type='button'>
+            <a
+              className='home-directions-button'
+              href={directionsUrl(topSpot)}
+              target='_blank'
+              rel='noopener noreferrer'
+            >
               Get directions <ArrowUpRight size={17} aria-hidden='true' />
-            </button>
+            </a>
           </article>
         )}
 
@@ -253,7 +260,13 @@ const Home = () => {
           <div className='home-alternatives'>
             <h3>Also worth considering</h3>
             {matchedSpots.slice(1, 4).map((spot, index) => (
-              <button className='home-alternative' key={spot.spot_id} type='button'>
+              <a
+                className='home-alternative'
+                href={directionsUrl(spot)}
+                key={spot.spot_id}
+                target='_blank'
+                rel='noopener noreferrer'
+              >
                 <span className='home-alt-number'>{String(index + 2).padStart(2, '0')}</span>
                 <span className='home-alt-copy'>
                   <strong>{spot.name}</strong>
@@ -263,7 +276,7 @@ const Home = () => {
                   </small>
                 </span>
                 <ArrowUpRight size={19} aria-hidden='true' />
-              </button>
+              </a>
             ))}
           </div>
         )}

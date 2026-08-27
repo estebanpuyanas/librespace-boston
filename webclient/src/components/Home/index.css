@@ -324,6 +324,7 @@
   margin-top: var(--spacing-md);
   min-height: var(--touch-target);
   padding: var(--direction-padding);
+  text-decoration: none;
   width: 100%;
 }
 
@@ -346,6 +347,7 @@
   min-height: var(--touch-target);
   padding: var(--spacing-md) 0;
   text-align: left;
+  text-decoration: none;
   width: 100%;
 }
 
