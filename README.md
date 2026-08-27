@@ -175,8 +175,9 @@ it the privileges it needs at runtime).
 
 ## Testing Strategy
 
-`backend/src/test/kotlin/`: Ktor's `testApplication` test host + `kotlin.test`.
-Run: `cd backend && ./gradlew test`.
+Backend tests use Ktor's `testApplication` test host and `kotlin.test`; run them with
+`cd backend && ./gradlew test`. Web component tests use Vitest and Testing Library; run
+them with `npm test --workspace=webclient`.
 
 ---
 

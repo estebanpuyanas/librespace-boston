@@ -324,7 +324,12 @@
   margin-top: var(--spacing-md);
   min-height: var(--touch-target);
   padding: var(--direction-padding);
+  text-decoration: none;
   width: 100%;
+}
+
+.home-directions-button:hover {
+  color: var(--fs-button-text);
 }
 
 .home-alternatives {
@@ -346,6 +351,7 @@
   min-height: var(--touch-target);
   padding: var(--spacing-md) 0;
   text-align: left;
+  text-decoration: none;
   width: 100%;
 }
 
