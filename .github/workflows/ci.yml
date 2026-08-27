@@ -59,5 +59,8 @@ jobs:
       - name: Typecheck webclient against generated client
         run: npm run type-check --workspace=webclient
 
+      - name: Test webclient
+        run: npm test --workspace=webclient
+
       - name: Typecheck mobile against generated client
         run: npx tsc --noEmit -p mobile

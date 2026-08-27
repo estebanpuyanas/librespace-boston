@@ -328,6 +328,10 @@
   width: 100%;
 }
 
+.home-directions-button:hover {
+  color: var(--fs-button-text);
+}
+
 .home-alternatives {
   margin-top: var(--spacing-xl);
 }
