@@ -84,8 +84,7 @@ cd mobile && npx tsc --noEmit
 - **Services** (`webclient/src/services/`, `mobile/services/`): Axios calls
   only. No state, no hooks, no React/RN. Returns typed data or throws.
 - **Hooks** (`webclient/src/hooks/`): own state and side effects. Call
-  services, return state + action handlers. (Currently empty post-strip —
-  add feature hooks as you build.)
+  services, return state + action handlers.
 - **Components** (`webclient/src/components/`): call a hook, render the
   result. No direct API calls. Each folder pairs `index.tsx` + `index.css`.
 - There is no auth/user system in this product (spec.md has no accounts) —
@@ -228,6 +227,16 @@ cd mobile && npx tsc --noEmit
   (`ChromaClientTest.kt`, `ApplicationTest.kt`) use Ktor's `MockEngine` against
   hand-written fake Chroma/RamaLama responses — same hermetic-fixture precedent as
   `SpotsRepository.loadFromResource`, since CI doesn't run podman/Chroma/RamaLama.
+- **`SpotsRepository.nearby()` (`Spots.kt`) falls back to the closest spots when
+  the requested radius finds none, rather than returning empty.** The spots
+  dataset only covers Boston proper, and `radius_meters` defaults to 800m
+  (webclient never overrides it; mobile does, but only up to 3000m — still well
+  short of Boston-to-Cambridge), so an origin outside that coverage (e.g.
+  Cambridge, across the Charles) would otherwise silently return zero spots on
+  both `/api/query` paths. `Query.kt`'s `buildQueryResponse` detects the fallback
+  (first spot's distance exceeds the requested radius) and adds
+  `OUT_OF_COVERAGE_DISCLAIMER`. Don't reintroduce a hard-cutoff-only version of
+  `nearby()` without preserving this fallback.
   Language detection/translation and grounded `answer` synthesis (also in `Query.kt`, via
   `LlmClient.kt`) are layered on top of this retrieval path — see the `LlmClient.kt` entry
   below for the local-model behavior to expect.
@@ -273,6 +282,12 @@ cd mobile && npx tsc --noEmit
   (`webclient/src/services/axios.ts`, `mobile/services/api.ts`) don't
   create a second, parallel axios instance for API calls; import
   `getLibreSpaceBostonAPI` from `shared` instead.
+- **`shared/mutator.ts`'s axios `timeout` covers the slow LLM-synthesis path.**
+  It's one shared client for every generated call, so its timeout has to
+  accommodate `POST /api/query`'s `query`-present path (~25-40s against the
+  local CPU-served model, see the `LlmClient.kt` entry above) even though
+  every other call is fast — don't lower it back toward a "normal" API
+  timeout without giving that path its own per-request override instead.
 - **Mobile resolves the backend host automatically on a physical device.**
   `EXPO_PUBLIC_API_URL` defaults to `localhost`, which on a real phone means
   the phone itself, not your laptop. `mobile/services/api.ts` falls back to

@@ -46,6 +46,7 @@ data class Spot(
 )
 
 private const val EARTH_RADIUS_METERS = 6_371_000.0
+private const val FALLBACK_SPOT_LIMIT = 5
 
 fun haversineMeters(
     lat1: Double,
@@ -65,7 +66,22 @@ fun haversineMeters(
 class SpotsRepository(private val records: List<SpotRecord>) {
     val size: Int get() = records.size
 
+    // If nothing falls within radiusMeters (e.g. an origin outside Boston, where the dataset's
+    // Boston-only coverage begins well past any reasonable radius), fall back to the closest
+    // FALLBACK_SPOT_LIMIT spots regardless of distance rather than a bare empty result - Query.kt
+    // detects this (the first spot's distance exceeds the requested radius) and adds a disclaimer.
     fun nearby(
+        lat: Double,
+        lon: Double,
+        radiusMeters: Double,
+        amenities: List<String>,
+    ): List<Spot> {
+        val withinRadius = spotsWithin(lat, lon, radiusMeters, amenities)
+        if (withinRadius.isNotEmpty()) return withinRadius
+        return spotsWithin(lat, lon, Double.MAX_VALUE, amenities).take(FALLBACK_SPOT_LIMIT)
+    }
+
+    private fun spotsWithin(
         lat: Double,
         lon: Double,
         radiusMeters: Double,

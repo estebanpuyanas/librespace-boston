@@ -66,6 +66,9 @@ data class QueryResponse(
 private const val SPOTS_COLLECTION_NAME = "spots"
 private const val MAX_SPOTS_FOR_SYNTHESIS = 8
 private val TIER_ONE_LANGUAGES = setOf("en", "es")
+private const val OUT_OF_COVERAGE_DISCLAIMER =
+    "No spots were within your usual search range, so we're showing the closest spots in " +
+        "LibreSpace Boston's coverage area (Boston only) instead."
 private val json = Json { ignoreUnknownKeys = true }
 
 // Natural-language RAG synthesis: when `query` is present, one LLM call detects the query's
@@ -90,6 +93,12 @@ suspend fun buildQueryResponse(
             amenities = request.amenities,
         )
 
+    // SpotsRepository.nearby() falls back to the closest spots regardless of distance when
+    // nothing is within radius_meters (e.g. an origin outside Boston) - detect that here (the
+    // closest spot ended up farther than what was requested) to flag it for the caller instead
+    // of silently presenting fallback spots as if they were within the usual range.
+    val usedOutOfRangeFallback = structuralSpots.isNotEmpty() && structuralSpots.first().distance_meters > request.radius_meters
+
     val queryText = request.query
     if (queryText.isNullOrBlank()) {
         return QueryResponse(
@@ -99,6 +108,7 @@ suspend fun buildQueryResponse(
             disclaimers =
                 buildList {
                     if (location.approximate) add("Using an approximate area based on your network connection.")
+                    if (usedOutOfRangeFallback) add(OUT_OF_COVERAGE_DISCLAIMER)
                 },
         )
     }
@@ -140,6 +150,7 @@ suspend fun buildQueryResponse(
     val disclaimers =
         buildList {
             if (location.approximate) add("Using an approximate area based on your network connection.")
+            if (usedOutOfRangeFallback) add(OUT_OF_COVERAGE_DISCLAIMER)
             addAll(buildDisclaimers(languageResult, synthesis))
         }
 

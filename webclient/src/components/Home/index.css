@@ -112,6 +112,22 @@
   width: var(--round-button-size);
 }
 
+.home-search-button:disabled {
+  opacity: 0.6;
+}
+
+.home-clear-button {
+  background: transparent;
+  border: 0;
+  color: var(--fs-green-text);
+  font: inherit;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  min-height: var(--touch-target);
+  padding: 0;
+  text-decoration: underline;
+}
+
 .home-filter-row {
   display: flex;
   gap: var(--spacing-sm);
@@ -185,6 +201,28 @@
 .home-notice.is-error {
   background: var(--error-subtle);
   color: var(--error-color);
+}
+
+.home-search-result {
+  background: var(--fs-notice-bg);
+  border-radius: var(--fs-small-radius);
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-md);
+}
+
+.home-answer {
+  color: var(--fs-notice-text);
+  font-size: var(--font-size-sm);
+  line-height: var(--body-line-height);
+}
+
+.home-disclaimers {
+  color: var(--fs-notice-text);
+  display: grid;
+  font-size: var(--font-size-xs);
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-sm);
+  padding-left: var(--spacing-md);
 }
 
 .home-featured-spot {

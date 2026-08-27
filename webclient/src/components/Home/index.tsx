@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useGeolocation } from '../../hooks/useGeolocation';
 import { useNearbySpots } from '../../hooks/useNearbySpots';
+import { useQuerySearch } from '../../hooks/useQuerySearch';
 import type { Spot } from 'shared';
 import './index.css';
 
@@ -54,19 +55,25 @@ const spotTags = (spot: Spot) =>
 const Home = () => {
   const location = useGeolocation();
   const nearby = useNearbySpots(location.data);
+  const search = useQuerySearch(location.data);
   const [query, setQuery] = useState(
     'I need a free place near Downtown where I can sit and use Wi-Fi.',
   );
   const [selectedFilters, setSelectedFilters] = useState<Filter[]>([]);
   const [saved, setSaved] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+
+  const activeData = search.submitted ? search.data : nearby.data;
+  const activeLoading = search.submitted ? search.loading : nearby.loading;
+  const activeError = search.submitted ? search.error : nearby.error;
 
   const matchedSpots = useMemo(() => {
-    const spots = nearby.data?.spots ?? [];
+    const spots = activeData?.spots ?? [];
     return selectedFilters.length === 0
       ? spots
       : spots.filter(spot => selectedFilters.every(filter => isMatch(spot, filter)));
-  }, [nearby.data, selectedFilters]);
+  }, [activeData, selectedFilters]);
+
+  const handleSearchSubmit = () => search.submit(query);
 
   const topSpot = matchedSpots[0];
   const toggleFilter = (filter: Filter) => {
@@ -97,15 +104,31 @@ const Home = () => {
         <textarea
           value={query}
           onChange={event => setQuery(event.target.value)}
+          onKeyDown={event => {
+            if (event.key === 'Enter' && !event.shiftKey) {
+              event.preventDefault();
+              if (!search.loading) {
+                handleSearchSubmit();
+              }
+            }
+          }}
           aria-label='Describe the free place you need'
           rows={3}
         />
         <div className='home-search-footer'>
-          <span>Always free to use</span>
+          {search.submitted ? (
+            <button className='home-clear-button' onClick={search.clear} type='button'>
+              Clear search
+            </button>
+          ) : (
+            <span>Always free to use</span>
+          )}
           <button
             className='home-search-button'
-            onClick={() => setSubmitted(true)}
+            onClick={handleSearchSubmit}
             type='button'
+            disabled={search.loading}
+            aria-busy={search.loading}
             aria-label='Search spaces'
           >
             <Search size={18} aria-hidden='true' />
@@ -140,13 +163,13 @@ const Home = () => {
           <div>
             <span className='eyebrow'>BEST MATCH</span>
             <h2>
-              {nearby.loading || location.loading
+              {location.loading || activeLoading
                 ? 'Finding free spaces…'
                 : `${matchedSpots.length} free places nearby`}
             </h2>
           </div>
           <span className='home-sort-label'>
-            {submitted ? 'Live nearby data' : 'Sorted by distance'}
+            {search.submitted ? 'Search results' : 'Sorted by distance'}
           </span>
         </div>
 
@@ -155,10 +178,27 @@ const Home = () => {
             We couldn’t use your location. Showing live data when a location is available.
           </div>
         )}
-        {nearby.error && (
+        {search.submitted && search.loading && (
+          <div className='home-notice'>Finding a synthesized answer for your search…</div>
+        )}
+        {activeError && (
           <div className='home-notice is-error'>
-            Couldn’t load nearby places yet. The live-data panel below will show the connection
-            state.
+            {search.submitted
+              ? 'Couldn’t get a search result right now. Try again in a moment.'
+              : 'Couldn’t load nearby places yet. The live-data panel below will show the connection state.'}
+          </div>
+        )}
+
+        {!activeLoading && !activeError && activeData && (
+          <div className='home-search-result'>
+            {activeData.answer && <p className='home-answer'>{activeData.answer}</p>}
+            {(activeData.disclaimers ?? []).length > 0 && (
+              <ul className='home-disclaimers'>
+                {(activeData.disclaimers ?? []).map(note => (
+                  <li key={note}>{note}</li>
+                ))}
+              </ul>
+            )}
           </div>
         )}
 
@@ -202,7 +242,7 @@ const Home = () => {
           </article>
         )}
 
-        {!nearby.loading && location.data && matchedSpots.length === 0 && (
+        {!activeLoading && !activeError && location.data && matchedSpots.length === 0 && (
           <div className='home-empty'>
             <strong>No exact matches nearby yet.</strong>
             <span>Try removing a filter or widening your search.</span>

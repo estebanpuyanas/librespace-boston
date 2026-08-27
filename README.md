@@ -104,8 +104,7 @@ services/ → hooks/ → components/
 typed data or throws.
 
 **`hooks/`**: own all state and side effects for a feature. Call services,
-return state + setters to components. (Currently empty; the posts/auth
-example hooks were stripped, add feature hooks here as you build.)
+return state + setters to components.
 
 **`components/`**: call a hook, render the result. No direct API calls, no
 business logic. Each component folder pairs `index.tsx` + `index.css`.
@@ -210,8 +209,8 @@ cp data-service/.env.example data-service/.env
 ```
 
 | Variable                            | Where                               | Purpose                                                                   |
-| ------------------------------------ | ------------------------------------ | -------------------------------------------------------------------------- |
-| `PORT`                              | `backend/.env`                      | Port the Ktor server listens on (8081, not 8080, which RamaLama uses)    |
+| ----------------------------------- | ----------------------------------- | ------------------------------------------------------------------------- |
+| `PORT`                              | `backend/.env`                      | Port the Ktor server listens on (8081, not 8080, which RamaLama uses)     |
 | `CLIENT_URL`                        | `backend/.env`                      | CORS origin (default `http://localhost:5173`)                             |
 | `RAMALAMA_URL` / `RAMALAMA_MODEL`   | `backend/.env`                      | Local LLM config                                                          |
 | `CHROMA_URL`                        | `backend/.env`, `data-service/.env` | Vector search                                                             |
