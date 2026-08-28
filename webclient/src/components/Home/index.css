@@ -419,8 +419,7 @@
     grid-template-areas:
       'hero search'
       'filters filters'
-      'results results'
-      'live live';
+      'results results';
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     max-width: var(--max-width);
     row-gap: var(--spacing-xl);
