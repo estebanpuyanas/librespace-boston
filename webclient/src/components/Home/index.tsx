@@ -1,15 +1,5 @@
 import { useMemo, useState } from 'react';
-import {
-  Accessibility,
-  ArrowUpRight,
-  Check,
-  ChevronDown,
-  Heart,
-  MapPin,
-  Search,
-  TreePine,
-  Wifi,
-} from 'lucide-react';
+import { ArrowUpRight, Check, ChevronDown, Heart, MapPin, Search, TreePine } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useGeolocation } from '../../hooks/useGeolocation';
 import { useNearbySpots } from '../../hooks/useNearbySpots';
@@ -19,31 +9,6 @@ import ResultViewToggle, { type ResultView } from '../ResultViewToggle';
 import SpotMap from '../SpotMap';
 import type { Spot } from 'shared';
 import './index.css';
-
-const filters = [
-  { icon: Wifi, label: 'Wi-Fi', value: 'wifi' },
-  { icon: Check, label: 'Seating', value: 'seating' },
-  { icon: TreePine, label: 'Shade', value: 'shade' },
-  { icon: Accessibility, label: 'Accessible', value: 'accessible' },
-  { icon: Check, label: 'Playground', value: 'playground' },
-] as const;
-
-type Filter = (typeof filters)[number]['value'];
-
-const isMatch = (spot: Spot, filter: Filter) => {
-  switch (filter) {
-    case 'wifi':
-      return spot.has_wifi;
-    case 'seating':
-      return spot.features.includes('seating');
-    case 'shade':
-      return spot.features.includes('shade_structure') || spot.tree_density_nearby >= 30;
-    case 'accessible':
-      return spot.accessible.value;
-    case 'playground':
-      return spot.features.includes('playground');
-  }
-};
 
 const formatDistance = (distance: number) => `${(distance / 1609.34).toFixed(1)} mi`;
 const formatWalk = (distance: number) => `${Math.max(1, Math.round(distance / 80))} min walk`;
@@ -64,7 +29,6 @@ const Home = () => {
   const [query, setQuery] = useState(
     'I need a free place near Downtown where I can sit and use Wi-Fi.',
   );
-  const [selectedFilters, setSelectedFilters] = useState<Filter[]>([]);
   const [saved, setSaved] = useState(false);
   const [resultView, setResultView] = useState<ResultView>('list');
 
@@ -72,22 +36,12 @@ const Home = () => {
   const activeLoading = search.submitted ? search.loading : nearby.loading;
   const activeError = search.submitted ? search.error : nearby.error;
 
-  const matchedSpots = useMemo(() => {
-    const spots = activeData?.spots ?? [];
-    return selectedFilters.length === 0
-      ? spots
-      : spots.filter(spot => selectedFilters.every(filter => isMatch(spot, filter)));
-  }, [activeData, selectedFilters]);
+  const matchedSpots = useMemo(() => activeData?.spots ?? [], [activeData]);
 
   const handleSearchSubmit = () => search.submit(query);
 
   const topSpot = matchedSpots[0];
   const mapLocation = activeData?.resolved_location ?? location.data;
-  const toggleFilter = (filter: Filter) => {
-    setSelectedFilters(current =>
-      current.includes(filter) ? current.filter(item => item !== filter) : [...current, filter],
-    );
-  };
 
   return (
     <div className='home'>
@@ -142,28 +96,6 @@ const Home = () => {
           </button>
         </div>
       </section>
-
-      <div className='home-filter-row' aria-label='Amenities'>
-        {filters.map(({ icon: Icon, label, value }) => {
-          const selected = selectedFilters.includes(value);
-          return (
-            <button
-              className={`home-filter ${selected ? 'is-selected' : ''}`}
-              key={value}
-              onClick={() => toggleFilter(value)}
-              type='button'
-              aria-pressed={selected}
-            >
-              {selected ? (
-                <Check size={14} aria-hidden='true' />
-              ) : (
-                <Icon size={14} aria-hidden='true' />
-              )}
-              {label}
-            </button>
-          );
-        })}
-      </div>
 
       <section className='home-results' aria-live='polite'>
         <div className='home-results-heading'>
