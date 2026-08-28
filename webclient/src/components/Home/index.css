@@ -127,34 +127,6 @@
   text-decoration: underline;
 }
 
-.home-filter-row {
-  display: flex;
-  gap: var(--spacing-sm);
-  overflow-x: auto;
-  padding-bottom: var(--spacing-xs);
-}
-
-.home-filter {
-  align-items: center;
-  background: var(--fs-filter-bg);
-  border: 1px solid var(--fs-filter-border);
-  border-radius: var(--pill-radius);
-  color: var(--fs-muted-strong);
-  display: inline-flex;
-  flex: 0 0 auto;
-  font-size: var(--font-size-sm);
-  font-weight: 700;
-  gap: var(--spacing-xs);
-  min-height: var(--touch-target);
-  padding: var(--filter-padding);
-}
-
-.home-filter.is-selected {
-  background: var(--fs-filter-selected-bg);
-  border-color: var(--fs-green-text);
-  color: var(--fs-green-text);
-}
-
 .home-results {
   max-width: var(--results-width);
 }
@@ -418,7 +390,6 @@
     display: grid;
     grid-template-areas:
       'hero search'
-      'filters filters'
       'results results';
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     max-width: var(--max-width);
@@ -436,10 +407,6 @@
     grid-area: search;
     max-width: none;
     width: 100%;
-  }
-
-  .home-filter-row {
-    grid-area: filters;
   }
 
   .home-results {

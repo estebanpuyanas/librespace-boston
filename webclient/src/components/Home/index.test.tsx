@@ -107,6 +107,19 @@ describe('Home result views and directions', () => {
   });
 });
 
+describe('Home amenity filters', () => {
+  it('no longer renders the manual amenity filter-pill row', () => {
+    render(<Home />);
+
+    expect(screen.queryByLabelText('Amenities')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Wi-Fi' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Seating' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Shade' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Accessible' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Playground' })).not.toBeInTheDocument();
+  });
+});
+
 describe('Home search submission', () => {
   it('sends the typed query text to the backend search, with the current language', () => {
     render(<Home />);
