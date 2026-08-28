@@ -1,16 +1,102 @@
 {
   "app": { "name": "FreeSpace Boston" },
   "settings": { "language": "语言" },
+  "result": {
+    "bestMatch": "最佳匹配",
+    "getDirections": "获取路线",
+    "save": "收藏地点",
+    "removeSaved": "取消收藏",
+    "saved": "已收藏",
+    "sources": "数据来源",
+    "shadeDisclaimer": "附近的公共树木数量只是阴凉程度的近似参考，并非经过验证的树冠数据。"
+  },
   "web": {
+    "skipToMain": "跳到主要内容",
     "navigation": { "home": "首页" },
     "theme": { "toggle": "切换主题" },
+    "textSize": { "toggle": "切换为大号文字" },
+    "notFound": {
+      "title": "未找到页面",
+      "message": "你要访问的页面不存在或已被移动。",
+      "goHome": "返回首页"
+    },
+    "resultView": {
+      "ariaLabel": "结果视图",
+      "list": "列表",
+      "map": "地图"
+    },
+    "map": {
+      "unavailableTitle": "这些结果暂无地图",
+      "unavailableHint": "这些地点没有有效的地图坐标。请切换到列表查看详情。",
+      "hiddenOne": "有一个地点无法显示在地图上，其详情仍可在列表中查看。",
+      "hiddenMany": "有 {{count}} 个地点无法显示在地图上，其详情仍可在列表中查看。",
+      "ariaLabel": "搜索位置与免费地点的地图",
+      "legendAriaLabel": "地图图例",
+      "searchLocation": "搜索位置",
+      "topPick": "首选",
+      "otherPlaces": "其他地点",
+      "topPickMarker": "首选：{{name}}",
+      "alternativeLabel": "备选 {{index}}",
+      "alternativeMarker": "备选 {{index}}：{{name}}",
+      "walkingDirectionsTo": "前往 {{name}} 的步行路线"
+    },
     "home": {
       "title": "FreeSpace Boston",
-      "description": "询问在波士顿有哪些不用花钱就能去的地方。",
+      "description": "寻找可以坐下、充电、避暑和停留的公共空间——完全免费。",
+      "headline": "一个可以停留的地方。",
+      "headlineSub": "无需消费。",
       "findingNearby": "正在查找附近地点…",
       "locationUnavailable": "无法确定你的位置。请在下方提问以开始使用。",
       "loadingSpots": "正在加载附近地点…",
-      "distanceAway": "{{distance}} 米外"
+      "distanceAway": "{{distance}} 米外",
+      "location": {
+        "near": "靠近你当前的位置",
+        "default": "波士顿市中心",
+        "liveStatus": "实时位置状态"
+      },
+      "search": {
+        "ariaLabel": "查找免费空间",
+        "textareaLabel": "描述你需要的免费地点",
+        "exampleQuery": "我需要在市中心附近找一个可以坐下并使用 Wi-Fi 的免费地点。",
+        "clear": "清除搜索",
+        "freeNote": "始终免费使用",
+        "submit": "搜索地点"
+      },
+      "results": {
+        "bestMatch": "最佳匹配",
+        "finding": "正在查找免费地点…",
+        "countLabel": "附近有 {{count}} 个免费地点",
+        "searchResults": "搜索结果",
+        "sortedByDistance": "按距离排序"
+      },
+      "notices": {
+        "noLocation": "我们无法使用你的位置。位置可用时将显示实时数据。",
+        "searching": "正在为你的搜索生成综合答案…",
+        "searchError": "暂时无法获取搜索结果，请稍后再试。",
+        "nearbyError": "尚未加载附近地点。请稍后再试。"
+      },
+      "spot": {
+        "verifiedDescription": "一个免费的公共场所，详情已根据波士顿开放数据核实。",
+        "accessibleVerified": "无障碍详情已核实",
+        "shadeNote": "附近有 {{count}} 棵公共树木——这只是阴凉程度的近似参考，并非树冠数据。",
+        "distanceValue": "{{value}} 英里",
+        "walkValue": "步行 {{value}} 分钟",
+        "distanceSummary": "{{distance}}外 · {{walk}}"
+      },
+      "tags": {
+        "wifi": "附近有公共 Wi-Fi",
+        "seating": "座位",
+        "playground": "游乐场",
+        "restroom": "洗手间"
+      },
+      "alternatives": {
+        "title": "同样值得考虑",
+        "fallbackTag": "公共开放空间"
+      },
+      "empty": {
+        "title": "附近暂无完全匹配的地点。",
+        "subtitle": "请尝试移除一个筛选条件或扩大搜索范围。"
+      }
     }
   }
 }

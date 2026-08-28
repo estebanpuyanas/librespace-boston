@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/vitest';
-import '../../localization/i18n';
+import i18n, { setAppLanguage } from '../../localization/i18n';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { QueryResponse, Spot } from 'shared';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -57,9 +57,11 @@ const { submit, useQuerySearch } = vi.hoisted(() => {
 
 vi.mock('../../hooks/useQuerySearch', () => ({ useQuerySearch }));
 
-afterEach(() => {
+afterEach(async () => {
   cleanup();
   submit.mockClear();
+  await setAppLanguage('en');
+  localStorage.clear();
 });
 
 describe('Home result views and directions', () => {
@@ -143,5 +145,43 @@ describe('Home search submission', () => {
     fireEvent.keyDown(textarea, { key: 'Enter' });
 
     expect(submit).toHaveBeenCalledWith('free wifi downtown');
+  });
+});
+
+describe('Home localization', () => {
+  it('renders English content by default for a first-time visitor', () => {
+    render(<Home />);
+
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('A place to be.');
+    expect(screen.getByText('Get directions')).toBeInTheDocument();
+  });
+
+  it('re-renders headline, description, and result content when the language changes', async () => {
+    render(<Home />);
+
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('A place to be.');
+    expect(screen.getByText('Get directions')).toBeInTheDocument();
+
+    await setAppLanguage('es');
+
+    await screen.findByText('Cómo llegar');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Un lugar donde estar.');
+    expect(screen.getByRole('heading', { level: 1 })).not.toHaveTextContent('A place to be.');
+  });
+
+  it('never translates spot data such as spot names', async () => {
+    render(<Home />);
+
+    await setAppLanguage('zh-Hans');
+
+    expect((await screen.findAllByText('Primary Park')).length).toBeGreaterThan(0);
+  });
+});
+
+describe('i18n resolvedLanguage integration', () => {
+  it('exposes the persisted language on the shared i18n instance', async () => {
+    await setAppLanguage('vi');
+    expect(i18n.resolvedLanguage).toBe('vi');
+    expect(localStorage.getItem('language')).toBe('vi');
   });
 });

@@ -13,7 +13,7 @@ const Layout = () => {
   return (
     <div className='layout'>
       <a href='#main-content' className='skip-link'>
-        Skip to main content
+        {t('web.skipToMain')}
       </a>
       <header className='layout-header'>
         <div className='header-brand'>
@@ -28,8 +28,8 @@ const Layout = () => {
           <button
             className='icon-btn'
             onClick={toggleTextSize}
-            title='Toggle larger text'
-            aria-label='Toggle larger text'
+            title={t('web.textSize.toggle')}
+            aria-label={t('web.textSize.toggle')}
             type='button'
           >
             <ALargeSmall size={18} aria-hidden='true' />

@@ -1,16 +1,102 @@
 {
   "app": { "name": "FreeSpace Boston" },
   "settings": { "language": "Idioma" },
+  "result": {
+    "bestMatch": "Mejor opción",
+    "getDirections": "Cómo llegar",
+    "save": "Guardar lugar",
+    "removeSaved": "Quitar lugar guardado",
+    "saved": "Guardado",
+    "sources": "Fuentes",
+    "shadeDisclaimer": "Los árboles públicos cercanos son una señal aproximada de sombra, no datos verificados de cobertura arbórea."
+  },
   "web": {
+    "skipToMain": "Saltar al contenido principal",
     "navigation": { "home": "Inicio" },
     "theme": { "toggle": "Cambiar tema" },
+    "textSize": { "toggle": "Cambiar a texto más grande" },
+    "notFound": {
+      "title": "Página no encontrada",
+      "message": "La página que buscas no existe o fue movida.",
+      "goHome": "Ir al inicio"
+    },
+    "resultView": {
+      "ariaLabel": "Vista de resultados",
+      "list": "Lista",
+      "map": "Mapa"
+    },
+    "map": {
+      "unavailableTitle": "Mapa no disponible para estos resultados",
+      "unavailableHint": "Estos lugares no tienen coordenadas de mapa válidas. Cambia a Lista para ver sus detalles.",
+      "hiddenOne": "No se pudo ubicar un lugar en el mapa. Sus detalles siguen disponibles en Lista.",
+      "hiddenMany": "{{count}} lugares no se pudieron ubicar en el mapa. Sus detalles siguen disponibles en Lista.",
+      "ariaLabel": "Mapa de la ubicación de búsqueda y los lugares gratuitos",
+      "legendAriaLabel": "Leyenda del mapa",
+      "searchLocation": "Ubicación de búsqueda",
+      "topPick": "Mejor opción",
+      "otherPlaces": "Otros lugares",
+      "topPickMarker": "Mejor opción: {{name}}",
+      "alternativeLabel": "Alternativa {{index}}",
+      "alternativeMarker": "Alternativa {{index}}: {{name}}",
+      "walkingDirectionsTo": "Cómo llegar caminando a {{name}}"
+    },
     "home": {
       "title": "FreeSpace Boston",
-      "description": "Pregunta adónde puedes ir en Boston sin gastar dinero.",
-      "findingNearby": "Buscando lugares cercanos…",
+      "description": "Encuentra lugares públicos para sentarte, recargar, refrescarte y pasar el tiempo — gratis.",
+      "headline": "Un lugar donde estar.",
+      "headlineSub": "No necesitas comprar nada.",
+      "findingNearby": "Buscando lo que hay cerca…",
       "locationUnavailable": "No se pudo determinar tu ubicación. Haz una pregunta abajo para comenzar.",
       "loadingSpots": "Cargando lugares cercanos…",
-      "distanceAway": "A {{distance}} m"
+      "distanceAway": "A {{distance}} m",
+      "location": {
+        "near": "Cerca de tu ubicación actual",
+        "default": "Downtown Boston",
+        "liveStatus": "Estado de ubicación en vivo"
+      },
+      "search": {
+        "ariaLabel": "Encontrar un espacio gratuito",
+        "textareaLabel": "Describe el lugar gratuito que necesitas",
+        "exampleQuery": "Necesito un lugar gratuito cerca del centro donde pueda sentarme y usar Wi-Fi.",
+        "clear": "Borrar búsqueda",
+        "freeNote": "Siempre gratis",
+        "submit": "Buscar espacios"
+      },
+      "results": {
+        "bestMatch": "MEJOR OPCIÓN",
+        "finding": "Buscando espacios gratuitos…",
+        "countLabel": "{{count}} lugares gratuitos cerca",
+        "searchResults": "Resultados de búsqueda",
+        "sortedByDistance": "Ordenado por distancia"
+      },
+      "notices": {
+        "noLocation": "No pudimos usar tu ubicación. Mostraremos datos en vivo cuando haya una ubicación disponible.",
+        "searching": "Buscando una respuesta sintetizada para tu búsqueda…",
+        "searchError": "No se pudo obtener un resultado de búsqueda ahora. Inténtalo de nuevo en un momento.",
+        "nearbyError": "Aún no se pudieron cargar los lugares cercanos. Inténtalo de nuevo en un momento."
+      },
+      "spot": {
+        "verifiedDescription": "Un lugar público gratuito con detalles verificados a partir de los datos abiertos de Boston.",
+        "accessibleVerified": "Detalles de accesibilidad verificados",
+        "shadeNote": "{{count}} árboles públicos cercanos — una señal aproximada de sombra, no datos de cobertura arbórea.",
+        "distanceValue": "{{value}} mi",
+        "walkValue": "{{value}} min caminando",
+        "distanceSummary": "A {{distance}} · {{walk}}"
+      },
+      "tags": {
+        "wifi": "Wi-Fi público cerca",
+        "seating": "Asientos",
+        "playground": "Zona de juegos",
+        "restroom": "Baño"
+      },
+      "alternatives": {
+        "title": "También vale la pena considerar",
+        "fallbackTag": "Espacio público abierto"
+      },
+      "empty": {
+        "title": "Aún no hay coincidencias exactas cerca.",
+        "subtitle": "Intenta quitar un filtro o ampliar tu búsqueda."
+      }
     }
   }
 }
