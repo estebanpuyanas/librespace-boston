@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom/vitest';
+import '../../localization/i18n';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { QueryResponse, Spot } from 'shared';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -41,18 +42,25 @@ vi.mock('../../hooks/useNearbySpots', () => ({
   useNearbySpots: () => ({ data: response, loading: false, error: null }),
 }));
 
-vi.mock('../../hooks/useQuerySearch', () => ({
-  useQuerySearch: () => ({
+const { submit, useQuerySearch } = vi.hoisted(() => {
+  const submit = vi.fn();
+  const useQuerySearch = vi.fn(() => ({
     data: null,
     loading: false,
     error: null,
     submitted: false,
-    submit: vi.fn(),
+    submit,
     clear: vi.fn(),
-  }),
-}));
+  }));
+  return { submit, useQuerySearch };
+});
 
-afterEach(cleanup);
+vi.mock('../../hooks/useQuerySearch', () => ({ useQuerySearch }));
+
+afterEach(() => {
+  cleanup();
+  submit.mockClear();
+});
 
 describe('Home result views and directions', () => {
   it('switches the current results between list and map modes', () => {
@@ -96,5 +104,31 @@ describe('Home result views and directions', () => {
     expect(alternativeLink).toHaveAttribute('target', '_blank');
     expect(alternativeLink).toHaveAttribute('rel', 'noopener noreferrer');
     expect(alternativeLink).not.toHaveAttribute('href', expect.stringContaining('42.3551'));
+  });
+});
+
+describe('Home search submission', () => {
+  it('sends the typed query text to the backend search, with the current language', () => {
+    render(<Home />);
+
+    const textarea = screen.getByLabelText('Describe the free place you need');
+    fireEvent.change(textarea, { target: { value: 'Somewhere quiet with shade near Fenway' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Search spaces' }));
+
+    expect(submit).toHaveBeenCalledWith('Somewhere quiet with shade near Fenway');
+    expect(useQuerySearch).toHaveBeenLastCalledWith(
+      { lat: 42.36, lon: -71.06 },
+      expect.any(String),
+    );
+  });
+
+  it('submits on Enter without a shift key, mirroring the mobile search composer', () => {
+    render(<Home />);
+
+    const textarea = screen.getByLabelText('Describe the free place you need');
+    fireEvent.change(textarea, { target: { value: 'free wifi downtown' } });
+    fireEvent.keyDown(textarea, { key: 'Enter' });
+
+    expect(submit).toHaveBeenCalledWith('free wifi downtown');
   });
 });

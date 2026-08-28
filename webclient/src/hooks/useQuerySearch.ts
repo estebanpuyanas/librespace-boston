@@ -17,7 +17,7 @@ const initialState: QuerySearchState = {
 // Fires the free-text search path (`query` present), which is what triggers
 // the backend's semantic retrieval + LLM synthesis, unlike useNearbySpots'
 // plain "what's near me" bento-grid path (no `query` field).
-export const useQuerySearch = (location: Coordinates | null) => {
+export const useQuerySearch = (location: Coordinates | null, language?: string | null) => {
   const [state, setState] = useState<QuerySearchState>(initialState);
   const requestId = useRef(0);
 
@@ -42,7 +42,7 @@ export const useQuerySearch = (location: Coordinates | null) => {
       const currentRequest = ++requestId.current;
       setState({ data: null, loading: true, error: null, submitted: true });
 
-      postQuery({ query: trimmed, location })
+      postQuery({ query: trimmed, location, language })
         .then(data => {
           if (currentRequest === requestId.current) {
             setState({ data, loading: false, error: null, submitted: true });
@@ -54,7 +54,7 @@ export const useQuerySearch = (location: Coordinates | null) => {
           }
         });
     },
-    [location],
+    [location, language],
   );
 
   const clear = useCallback(() => {
