@@ -28,8 +28,8 @@ const Layout = () => {
           <button
             className='icon-btn'
             onClick={toggleTextSize}
-            title='Toggle larger text'
-            aria-label='Toggle larger text'
+            title={t('web.textSize.toggle')}
+            aria-label={t('web.textSize.toggle')}
             type='button'
           >
             <ALargeSmall size={18} aria-hidden='true' />

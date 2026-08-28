@@ -14,6 +14,7 @@
     "skipToMain": "Skip to main content",
     "navigation": { "home": "Home" },
     "theme": { "toggle": "Toggle theme" },
+    "textSize": { "toggle": "Toggle larger text" },
     "notFound": {
       "title": "Page not found",
       "message": "The page you're looking for doesn't exist or has been moved.",
@@ -56,6 +57,7 @@
       "search": {
         "ariaLabel": "Find a free space",
         "textareaLabel": "Describe the free place you need",
+        "exampleQuery": "I need a free place near Downtown where I can sit and use Wi-Fi.",
         "clear": "Clear search",
         "freeNote": "Always free to use",
         "submit": "Search spaces"

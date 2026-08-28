@@ -15,9 +15,7 @@ const Home = () => {
   const location = useGeolocation();
   const nearby = useNearbySpots(location.data);
   const search = useQuerySearch(location.data, i18n.resolvedLanguage);
-  const [query, setQuery] = useState(
-    'I need a free place near Downtown where I can sit and use Wi-Fi.',
-  );
+  const [query, setQuery] = useState(t('web.home.search.exampleQuery'));
   const [saved, setSaved] = useState(false);
   const [resultView, setResultView] = useState<ResultView>('list');
 

@@ -14,6 +14,7 @@
     "skipToMain": "Bỏ qua để đến nội dung chính",
     "navigation": { "home": "Trang chủ" },
     "theme": { "toggle": "Đổi giao diện" },
+    "textSize": { "toggle": "Chuyển sang cỡ chữ lớn hơn" },
     "notFound": {
       "title": "Không tìm thấy trang",
       "message": "Trang bạn tìm không tồn tại hoặc đã được chuyển đi.",
@@ -56,6 +57,7 @@
       "search": {
         "ariaLabel": "Tìm một không gian miễn phí",
         "textareaLabel": "Mô tả nơi miễn phí bạn cần",
+        "exampleQuery": "Tôi cần một nơi miễn phí gần khu trung tâm để ngồi và dùng Wi-Fi.",
         "clear": "Xóa tìm kiếm",
         "freeNote": "Luôn miễn phí",
         "submit": "Tìm địa điểm"

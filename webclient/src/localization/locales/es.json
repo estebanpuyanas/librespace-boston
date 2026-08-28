@@ -14,6 +14,7 @@
     "skipToMain": "Saltar al contenido principal",
     "navigation": { "home": "Inicio" },
     "theme": { "toggle": "Cambiar tema" },
+    "textSize": { "toggle": "Cambiar a texto más grande" },
     "notFound": {
       "title": "Página no encontrada",
       "message": "La página que buscas no existe o fue movida.",
@@ -56,6 +57,7 @@
       "search": {
         "ariaLabel": "Encontrar un espacio gratuito",
         "textareaLabel": "Describe el lugar gratuito que necesitas",
+        "exampleQuery": "Necesito un lugar gratuito cerca del centro donde pueda sentarme y usar Wi-Fi.",
         "clear": "Borrar búsqueda",
         "freeNote": "Siempre gratis",
         "submit": "Buscar espacios"
