@@ -10,6 +10,7 @@ import {
   TreePine,
   Wifi,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useGeolocation } from '../../hooks/useGeolocation';
 import { useNearbySpots } from '../../hooks/useNearbySpots';
 import { useQuerySearch } from '../../hooks/useQuerySearch';
@@ -56,9 +57,10 @@ const spotTags = (spot: Spot) =>
   ].filter(Boolean) as string[];
 
 const Home = () => {
+  const { i18n } = useTranslation();
   const location = useGeolocation();
   const nearby = useNearbySpots(location.data);
-  const search = useQuerySearch(location.data);
+  const search = useQuerySearch(location.data, i18n.resolvedLanguage);
   const [query, setQuery] = useState(
     'I need a free place near Downtown where I can sit and use Wi-Fi.',
   );
