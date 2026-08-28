@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom/vitest';
+import '../../localization/i18n';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { Spot } from 'shared';
 import { afterEach, describe, expect, it } from 'vitest';

@@ -13,7 +13,7 @@ const Layout = () => {
   return (
     <div className='layout'>
       <a href='#main-content' className='skip-link'>
-        Skip to main content
+        {t('web.skipToMain')}
       </a>
       <header className='layout-header'>
         <div className='header-brand'>

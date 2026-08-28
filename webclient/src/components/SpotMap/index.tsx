@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { divIcon } from 'leaflet';
 import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet';
+import { useTranslation } from 'react-i18next';
 import type { Coordinates, Spot } from 'shared';
 import { getWalkingDirectionsUrl } from '../../utils/directions';
 import 'leaflet/dist/leaflet.css';
@@ -59,6 +60,7 @@ const FitViewport = ({ points }: { points: MapPoint[] }) => {
 };
 
 const SpotMap = ({ location, spots }: SpotMapProps) => {
+  const { t } = useTranslation();
   const validSpots = useMemo(
     () => spots.map((spot, index) => ({ index, spot })).filter(({ spot }) => isValidPoint(spot)),
     [spots],
@@ -73,10 +75,8 @@ const SpotMap = ({ location, spots }: SpotMapProps) => {
   if (points.length === 0) {
     return (
       <div className='spot-map-fallback' role='status'>
-        <strong>Map unavailable for these results</strong>
-        <span>
-          The places don’t have valid map coordinates. Switch to List to view their details.
-        </span>
+        <strong>{t('web.map.unavailableTitle')}</strong>
+        <span>{t('web.map.unavailableHint')}</span>
       </div>
     );
   }
@@ -86,12 +86,12 @@ const SpotMap = ({ location, spots }: SpotMapProps) => {
       {hiddenSpotCount > 0 && (
         <p className='spot-map-status' role='status'>
           {hiddenSpotCount === 1
-            ? 'One place could not be placed on the map. Its details remain available in List.'
-            : `${hiddenSpotCount} places could not be placed on the map. Their details remain available in List.`}
+            ? t('web.map.hiddenOne')
+            : t('web.map.hiddenMany', { count: hiddenSpotCount })}
         </p>
       )}
       <MapContainer
-        aria-label='Map of the search location and free places'
+        aria-label={t('web.map.ariaLabel')}
         center={[points[0].lat, points[0].lon]}
         className='spot-map-canvas'
         keyboard
@@ -105,22 +105,22 @@ const SpotMap = ({ location, spots }: SpotMapProps) => {
         <FitViewport points={points} />
         {validLocation && (
           <Marker
-            alt='Search location'
+            alt={t('web.map.searchLocation')}
             icon={userIcon}
             keyboard
             position={[validLocation.lat, validLocation.lon]}
-            title='Search location'
+            title={t('web.map.searchLocation')}
           >
             <Popup>
-              <strong>Search location</strong>
+              <strong>{t('web.map.searchLocation')}</strong>
             </Popup>
           </Marker>
         )}
         {validSpots.map(({ index, spot }) => {
           const featured = index === 0;
           const markerLabel = featured
-            ? `Top pick: ${spot.name}`
-            : `Alternative ${index + 1}: ${spot.name}`;
+            ? t('web.map.topPickMarker', { name: spot.name })
+            : t('web.map.alternativeMarker', { index: index + 1, name: spot.name });
 
           return (
             <Marker
@@ -133,10 +133,14 @@ const SpotMap = ({ location, spots }: SpotMapProps) => {
             >
               <Popup>
                 <div className='spot-map-callout'>
-                  <span>{featured ? 'Top pick' : `Alternative ${index + 1}`}</span>
+                  <span>
+                    {featured
+                      ? t('web.map.topPick')
+                      : t('web.map.alternativeLabel', { index: index + 1 })}
+                  </span>
                   <strong>{spot.name}</strong>
                   <a href={getWalkingDirectionsUrl(spot)} target='_blank' rel='noopener noreferrer'>
-                    Walking directions to {spot.name}
+                    {t('web.map.walkingDirectionsTo', { name: spot.name })}
                   </a>
                 </div>
               </Popup>
@@ -144,18 +148,18 @@ const SpotMap = ({ location, spots }: SpotMapProps) => {
           );
         })}
       </MapContainer>
-      <div className='spot-map-legend' aria-label='Map legend'>
+      <div className='spot-map-legend' aria-label={t('web.map.legendAriaLabel')}>
         <span>
           <i className='is-user' />
-          Search location
+          {t('web.map.searchLocation')}
         </span>
         <span>
           <i className='is-featured' />
-          Top pick
+          {t('web.map.topPick')}
         </span>
         <span>
           <i className='is-alternative' />
-          Other places
+          {t('web.map.otherPlaces')}
         </span>
       </div>
     </div>

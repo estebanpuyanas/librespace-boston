@@ -1,16 +1,100 @@
 {
   "app": { "name": "FreeSpace Boston" },
   "settings": { "language": "Ngôn ngữ" },
+  "result": {
+    "bestMatch": "Phù hợp nhất",
+    "getDirections": "Chỉ đường",
+    "save": "Lưu địa điểm",
+    "removeSaved": "Bỏ lưu địa điểm",
+    "saved": "Đã lưu",
+    "sources": "Nguồn dữ liệu",
+    "shadeDisclaimer": "Cây công cộng gần đó là chỉ dấu gần đúng về bóng râm, không phải dữ liệu tán cây đã được xác minh."
+  },
   "web": {
+    "skipToMain": "Bỏ qua để đến nội dung chính",
     "navigation": { "home": "Trang chủ" },
     "theme": { "toggle": "Đổi giao diện" },
+    "notFound": {
+      "title": "Không tìm thấy trang",
+      "message": "Trang bạn tìm không tồn tại hoặc đã được chuyển đi.",
+      "goHome": "Về trang chủ"
+    },
+    "resultView": {
+      "ariaLabel": "Chế độ xem kết quả",
+      "list": "Danh sách",
+      "map": "Bản đồ"
+    },
+    "map": {
+      "unavailableTitle": "Không có bản đồ cho các kết quả này",
+      "unavailableHint": "Các địa điểm này không có tọa độ hợp lệ. Chuyển sang Danh sách để xem chi tiết.",
+      "hiddenOne": "Không thể hiển thị một địa điểm trên bản đồ. Chi tiết vẫn có ở Danh sách.",
+      "hiddenMany": "{{count}} địa điểm không thể hiển thị trên bản đồ. Chi tiết vẫn có ở Danh sách.",
+      "ariaLabel": "Bản đồ vị trí tìm kiếm và các địa điểm miễn phí",
+      "legendAriaLabel": "Chú giải bản đồ",
+      "searchLocation": "Vị trí tìm kiếm",
+      "topPick": "Lựa chọn hàng đầu",
+      "otherPlaces": "Địa điểm khác",
+      "topPickMarker": "Lựa chọn hàng đầu: {{name}}",
+      "alternativeLabel": "Lựa chọn thay thế {{index}}",
+      "alternativeMarker": "Lựa chọn thay thế {{index}}: {{name}}",
+      "walkingDirectionsTo": "Chỉ đường đi bộ đến {{name}}"
+    },
     "home": {
       "title": "FreeSpace Boston",
-      "description": "Hãy hỏi nơi bạn có thể đến ở Boston mà không phải chi tiền.",
-      "findingNearby": "Đang tìm các địa điểm gần bạn…",
+      "description": "Tìm không gian công cộng để ngồi, sạc thiết bị, tránh nóng và nghỉ ngơi — hoàn toàn miễn phí.",
+      "headline": "Một nơi để ở lại.",
+      "headlineSub": "Không cần mua gì cả.",
+      "findingNearby": "Đang tìm những gì gần bạn…",
       "locationUnavailable": "Không thể xác định vị trí của bạn. Hãy đặt câu hỏi bên dưới để bắt đầu.",
       "loadingSpots": "Đang tải các địa điểm gần bạn…",
-      "distanceAway": "Cách {{distance}} m"
+      "distanceAway": "Cách {{distance}} m",
+      "location": {
+        "near": "Gần vị trí hiện tại của bạn",
+        "default": "Downtown Boston",
+        "liveStatus": "Trạng thái vị trí trực tiếp"
+      },
+      "search": {
+        "ariaLabel": "Tìm một không gian miễn phí",
+        "textareaLabel": "Mô tả nơi miễn phí bạn cần",
+        "clear": "Xóa tìm kiếm",
+        "freeNote": "Luôn miễn phí",
+        "submit": "Tìm địa điểm"
+      },
+      "results": {
+        "bestMatch": "PHÙ HỢP NHẤT",
+        "finding": "Đang tìm không gian miễn phí…",
+        "countLabel": "{{count}} địa điểm miễn phí gần đây",
+        "searchResults": "Kết quả tìm kiếm",
+        "sortedByDistance": "Sắp xếp theo khoảng cách"
+      },
+      "notices": {
+        "noLocation": "Chúng tôi không thể dùng vị trí của bạn. Sẽ hiển thị dữ liệu trực tiếp khi có vị trí.",
+        "searching": "Đang tìm câu trả lời tổng hợp cho tìm kiếm của bạn…",
+        "searchError": "Hiện chưa thể lấy kết quả tìm kiếm. Hãy thử lại sau ít phút.",
+        "nearbyError": "Chưa tải được các địa điểm gần đây. Hãy thử lại sau ít phút."
+      },
+      "spot": {
+        "verifiedDescription": "Một địa điểm công cộng miễn phí với thông tin được xác minh từ dữ liệu mở của Boston.",
+        "accessibleVerified": "Thông tin về khả năng tiếp cận đã được xác minh",
+        "shadeNote": "{{count}} cây công cộng gần đó — chỉ dấu gần đúng về bóng râm, không phải dữ liệu tán cây.",
+        "distanceValue": "{{value}} mi",
+        "walkValue": "{{value}} phút đi bộ",
+        "distanceSummary": "Cách {{distance}} · {{walk}}"
+      },
+      "tags": {
+        "wifi": "Wi-Fi công cộng gần đó",
+        "seating": "Chỗ ngồi",
+        "playground": "Sân chơi",
+        "restroom": "Nhà vệ sinh"
+      },
+      "alternatives": {
+        "title": "Cũng đáng cân nhắc",
+        "fallbackTag": "Không gian công cộng mở"
+      },
+      "empty": {
+        "title": "Chưa có kết quả trùng khớp chính xác gần đây.",
+        "subtitle": "Hãy thử bỏ bớt một bộ lọc hoặc mở rộng tìm kiếm."
+      }
     }
   }
 }

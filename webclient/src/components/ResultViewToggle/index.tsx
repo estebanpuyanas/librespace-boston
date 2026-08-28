@@ -1,4 +1,5 @@
 import { List, Map } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import './index.css';
 
 export type ResultView = 'list' | 'map';
@@ -11,16 +12,17 @@ interface ResultViewToggleProps {
 const views: ResultView[] = ['list', 'map'];
 
 const ResultViewToggle = ({ onChange, view }: ResultViewToggleProps) => {
+  const { t } = useTranslation();
   const selectAndFocus = (nextView: ResultView) => {
     onChange(nextView);
     document.getElementById(`result-view-${nextView}`)?.focus();
   };
 
   return (
-    <div className='result-view-toggle' role='tablist' aria-label='Result view'>
+    <div className='result-view-toggle' role='tablist' aria-label={t('web.resultView.ariaLabel')}>
       {views.map(option => {
         const selected = option === view;
-        const label = option === 'list' ? 'List' : 'Map';
+        const label = option === 'list' ? t('web.resultView.list') : t('web.resultView.map');
         const Icon = option === 'list' ? List : Map;
 
         return (

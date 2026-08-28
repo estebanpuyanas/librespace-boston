@@ -1,16 +1,100 @@
 {
   "app": { "name": "FreeSpace Boston" },
   "settings": { "language": "Language" },
+  "result": {
+    "bestMatch": "Best match",
+    "getDirections": "Get directions",
+    "save": "Save place",
+    "removeSaved": "Remove saved place",
+    "saved": "Saved",
+    "sources": "Sources",
+    "shadeDisclaimer": "Nearby public trees are an approximate shade signal, not verified canopy data."
+  },
   "web": {
+    "skipToMain": "Skip to main content",
     "navigation": { "home": "Home" },
     "theme": { "toggle": "Toggle theme" },
+    "notFound": {
+      "title": "Page not found",
+      "message": "The page you're looking for doesn't exist or has been moved.",
+      "goHome": "Go home"
+    },
+    "resultView": {
+      "ariaLabel": "Result view",
+      "list": "List",
+      "map": "Map"
+    },
+    "map": {
+      "unavailableTitle": "Map unavailable for these results",
+      "unavailableHint": "The places don’t have valid map coordinates. Switch to List to view their details.",
+      "hiddenOne": "One place could not be placed on the map. Its details remain available in List.",
+      "hiddenMany": "{{count}} places could not be placed on the map. Their details remain available in List.",
+      "ariaLabel": "Map of the search location and free places",
+      "legendAriaLabel": "Map legend",
+      "searchLocation": "Search location",
+      "topPick": "Top pick",
+      "otherPlaces": "Other places",
+      "topPickMarker": "Top pick: {{name}}",
+      "alternativeLabel": "Alternative {{index}}",
+      "alternativeMarker": "Alternative {{index}}: {{name}}",
+      "walkingDirectionsTo": "Walking directions to {{name}}"
+    },
     "home": {
       "title": "FreeSpace Boston",
-      "description": "Ask where you can go in Boston without spending money.",
+      "description": "Find public places to sit, recharge, cool off, and spend time — for free.",
+      "headline": "A place to be.",
+      "headlineSub": "No purchase needed.",
       "findingNearby": "Finding what's nearby…",
       "locationUnavailable": "Couldn't determine your location. Ask a question below to get started.",
       "loadingSpots": "Loading nearby spots…",
-      "distanceAway": "{{distance}}m away"
+      "distanceAway": "{{distance}}m away",
+      "location": {
+        "near": "Near your current location",
+        "default": "Downtown Boston",
+        "liveStatus": "Live location status"
+      },
+      "search": {
+        "ariaLabel": "Find a free space",
+        "textareaLabel": "Describe the free place you need",
+        "clear": "Clear search",
+        "freeNote": "Always free to use",
+        "submit": "Search spaces"
+      },
+      "results": {
+        "bestMatch": "BEST MATCH",
+        "finding": "Finding free spaces…",
+        "countLabel": "{{count}} free places nearby",
+        "searchResults": "Search results",
+        "sortedByDistance": "Sorted by distance"
+      },
+      "notices": {
+        "noLocation": "We couldn’t use your location. Showing live data when a location is available.",
+        "searching": "Finding a synthesized answer for your search…",
+        "searchError": "Couldn’t get a search result right now. Try again in a moment.",
+        "nearbyError": "Couldn’t load nearby places yet. Try again in a moment."
+      },
+      "spot": {
+        "verifiedDescription": "A free public place with details verified from Boston’s open data.",
+        "accessibleVerified": "Accessible park details verified",
+        "shadeNote": "{{count}} nearby public trees — an approximate shade signal, not canopy data.",
+        "distanceValue": "{{value}} mi",
+        "walkValue": "{{value}} min walk",
+        "distanceSummary": "{{distance}} away · {{walk}}"
+      },
+      "tags": {
+        "wifi": "Public Wi-Fi nearby",
+        "seating": "Seating",
+        "playground": "Playground",
+        "restroom": "Restroom"
+      },
+      "alternatives": {
+        "title": "Also worth considering",
+        "fallbackTag": "Public open space"
+      },
+      "empty": {
+        "title": "No exact matches nearby yet.",
+        "subtitle": "Try removing a filter or widening your search."
+      }
     }
   }
 }
