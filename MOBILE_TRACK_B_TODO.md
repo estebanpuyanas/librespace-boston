@@ -118,7 +118,7 @@ Store preferences locally on the device; do not build accounts/login.
 ## Web companion — last priority
 
 - [ ] Keep the redesigned web page functioning as a laptop demo and API test surface.
-- [ ] Preserve the expandable live-data/testing panel.
+- [x] Live-data/testing panel removed post-hackathon (#39).
 - [ ] Reuse the same citations, freshness text, and shade disclaimer from mobile.
 - [ ] Do not introduce web-only features before the mobile flow is complete.
 
