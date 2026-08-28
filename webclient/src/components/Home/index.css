@@ -27,8 +27,7 @@
   color: var(--fs-accent);
 }
 
-.home-live-dot,
-.home-test-dot {
+.home-live-dot {
   background: var(--fs-live);
   border-radius: 50%;
   display: inline-block;
@@ -396,78 +395,6 @@
   gap: var(--spacing-xs);
 }
 
-.home-live-data {
-  background: var(--fs-surface);
-  border: 1px solid var(--fs-border);
-  border-radius: var(--fs-card-radius);
-  color: var(--fs-ink);
-  margin-top: var(--spacing-xl);
-  overflow: hidden;
-}
-
-.home-live-data summary {
-  align-items: center;
-  cursor: pointer;
-  display: flex;
-  font-size: var(--font-size-sm);
-  font-weight: 800;
-  justify-content: space-between;
-  list-style: none;
-  min-height: var(--touch-target);
-  padding: var(--spacing-md);
-}
-
-.home-live-data summary::-webkit-details-marker {
-  display: none;
-}
-.home-live-data summary span {
-  align-items: center;
-  display: flex;
-  gap: var(--spacing-sm);
-}
-.home-live-data[open] summary svg {
-  transform: rotate(180deg);
-}
-
-.home-live-data-content {
-  border-top: 1px solid var(--fs-divider);
-  padding: var(--spacing-md);
-}
-.home-live-data-content > p {
-  color: var(--fs-muted);
-  font-size: var(--font-size-sm);
-  line-height: var(--body-line-height);
-}
-.home-data-status {
-  color: var(--fs-muted-strong);
-  display: flex;
-  flex-wrap: wrap;
-  font-size: var(--font-size-xs);
-  font-weight: 700;
-  gap: var(--spacing-md);
-  margin-top: var(--spacing-md);
-}
-.home-data-grid {
-  display: grid;
-  gap: var(--spacing-sm);
-  grid-template-columns: repeat(auto-fit, minmax(var(--data-card-min-width), 1fr));
-  margin-top: var(--spacing-md);
-}
-.home-data-item {
-  background: var(--fs-filter-bg);
-  border-radius: var(--fs-small-radius);
-  display: grid;
-  gap: var(--spacing-xs);
-  padding: var(--spacing-sm);
-}
-.home-data-item span,
-.home-data-item small,
-.home-live-data pre {
-  color: var(--fs-muted);
-  font-size: var(--font-size-xs);
-  white-space: pre-wrap;
-}
-
 @media (max-width: 640px) {
   .home {
     padding-top: var(--spacing-lg);
@@ -561,9 +488,5 @@
     border-radius: var(--fs-card-radius);
     box-shadow: var(--fs-card-shadow);
     padding: var(--spacing-md);
-  }
-
-  .home-live-data {
-    grid-area: live;
   }
 }

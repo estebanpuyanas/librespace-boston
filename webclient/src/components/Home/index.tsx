@@ -3,7 +3,6 @@ import {
   Accessibility,
   ArrowUpRight,
   Check,
-  ChevronDown,
   Heart,
   MapPin,
   Search,
@@ -192,7 +191,7 @@ const Home = () => {
           <div className='home-notice is-error'>
             {search.submitted
               ? 'Couldn’t get a search result right now. Try again in a moment.'
-              : 'Couldn’t load nearby places yet. The live-data panel below will show the connection state.'}
+              : 'Couldn’t load nearby places yet. Try again in a moment.'}
           </div>
         )}
 
@@ -311,50 +310,6 @@ const Home = () => {
           {resultView === 'map' && <SpotMap location={mapLocation} spots={matchedSpots} />}
         </div>
       </section>
-
-      <details className='home-live-data'>
-        <summary>
-          <span>
-            <span className='home-test-dot' /> Live data &amp; testing
-          </span>
-          <ChevronDown size={18} aria-hidden='true' />
-        </summary>
-        <div className='home-live-data-content'>
-          <p>
-            This panel preserves the original live query output while the polished experience above
-            evolves.
-          </p>
-          <div className='home-data-status'>
-            <span>
-              Location:{' '}
-              {location.loading
-                ? 'resolving…'
-                : location.data
-                  ? `${location.data.lat.toFixed(4)}, ${location.data.lon.toFixed(4)}`
-                  : 'unavailable'}
-            </span>
-            <span>Results: {nearby.loading ? 'loading…' : (nearby.data?.spots.length ?? 0)}</span>
-          </div>
-          {nearby.data?.spots.length ? (
-            <div className='home-data-grid'>
-              {nearby.data.spots.map(spot => (
-                <div key={spot.spot_id} className='home-data-item'>
-                  <strong>{spot.name}</strong>
-                  <span>{Math.round(spot.distance_meters)}m away</span>
-                  <small>
-                    {Object.values(spot.source_dataset)
-                      .filter((value, index, values) => values.indexOf(value) === index)
-                      .slice(0, 2)
-                      .join(' · ')}
-                  </small>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <pre>{JSON.stringify({ location: location.error, nearby: nearby.error }, null, 2)}</pre>
-          )}
-        </div>
-      </details>
     </div>
   );
 };
