@@ -1,13 +1,5 @@
 import { useMemo, useState } from 'react';
-import {
-  ArrowUpRight,
-  Check,
-  ChevronDown,
-  Heart,
-  MapPin,
-  Search,
-  TreePine,
-} from 'lucide-react';
+import { ArrowUpRight, Check, ChevronDown, Heart, MapPin, Search, TreePine } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useGeolocation } from '../../hooks/useGeolocation';
 import { useNearbySpots } from '../../hooks/useNearbySpots';
