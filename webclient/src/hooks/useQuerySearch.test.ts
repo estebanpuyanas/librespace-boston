@@ -43,7 +43,9 @@ describe('useQuerySearch', () => {
   });
 
   it('does not fire a request for a blank query', () => {
-    renderHook(() => useQuerySearch({ lat: 42.36, lon: -71.06 }, 'en')).result.current.submit('   ');
+    renderHook(() => useQuerySearch({ lat: 42.36, lon: -71.06 }, 'en')).result.current.submit(
+      '   ',
+    );
 
     expect(mockedPostQuery).not.toHaveBeenCalled();
   });
