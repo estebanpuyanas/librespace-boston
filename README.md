@@ -1,4 +1,4 @@
-# LibreSpace Boston
+a# LibreSpace Boston
 
 A situational, multi-constraint assistant for finding free places to be in
 Boston (see `spec.md` for the full product spec, dataset list, and

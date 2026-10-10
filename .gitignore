@@ -5,6 +5,7 @@ node_modules/
 dist/
 build/
 out/
+*/bin
 
 # Environment variables — never commit secrets
 .env
@@ -65,3 +66,4 @@ data-service/.venv/
 *.pyc
 data-service/output/*
 !data-service/output/.gitkeep
+/.vscode/
